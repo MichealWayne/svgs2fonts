@@ -7,12 +7,12 @@ svg图标转字体图标库（svgs -> svg,ttf,eot,woff,woff2）。
 
 ## 安装
 ```
-    $ npm i -g svgs2fonts
+    npm i -g svgs2fonts
 ```
 
 ### 验证
 ```
-	$ svgs2fonts -v
+	svgs2fonts -v
 ```
 
 ## 使用
