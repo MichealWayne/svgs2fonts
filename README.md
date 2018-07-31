@@ -3,7 +3,7 @@
 svg图标转字体图标库（svgs -> svg,ttf,eot,woff,woff2）。
 
 ## 版本
-1.0.0
+1.0.2
 
 ## 安装
 ```
