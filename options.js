@@ -43,6 +43,47 @@ module.exports = {
                     flex-wrap: wrap;
                     justify-content: space-around;
                 }
+                
+                @keyframes colors {
+                    from {
+                        font-size: 26px;
+                        color: red;
+                    }
+                    25% {
+                        color: yellow;
+                    }
+                    50% {
+                        font-size: 66px;
+                        color: green;
+                    } 
+                    75% {
+                        color: blue;
+                    }
+                    to {
+                        font-size: 26px;
+                        color: red;
+                    }
+                }
+                @-webkit-keyframes colors {
+                    from {
+                        font-size: 26px;
+                        color: red;
+                    }
+                    25% {
+                        color: yellow;
+                    }
+                    50% {
+                        font-size: 66px;
+                        color: green;
+                    } 
+                    75% {
+                        color: blue;
+                    }
+                    to {
+                        font-size: 26px;
+                        color: red;
+                    }
+                }
             </style>
             <style type="text/css">
                 {{democss}}
@@ -60,6 +101,8 @@ module.exports = {
                     display: inline-block;
                     font-size:26px;
                     font-style:normal;
+                    -webkit-animation: colors 3s infinite linear;
+                    animation: colors 3s infinite linear;
                 }
             </style>
 

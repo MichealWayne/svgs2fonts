@@ -6,24 +6,26 @@
  * @email: michealwayne@163.com
  */
 
-const join = require('path').join;
+const mkdirp = require('mkdirp');
 const Fsfuncs = require('./fsfuncs');
 const Builder = require('./svgs2fonts');
 const OPTIONS = require('./options');
 let DEMO_CSS = OPTIONS.DEMO_CSS;
 let DEMO_HTML = OPTIONS.DEMO_HTML;
-let dirname = process.cwd() || __dirname;
+
 
 module.exports = {
     init (options) {
-        options.dist = join(dirname, options.dist || OPTIONS.dist);
-        options.src = join(dirname, options.src || '');
+        options.dist = options.dist || OPTIONS.dist;
+        options.src = options.src || '';
 
         Builder.init(options);
         let nodemo = options.nodemo;
         let fontName = options.fontName;
         let dist = options.dist;
-        Fsfuncs.setFolder(dist);
+        mkdirp.sync(dist, function (err) {
+            if (err) console.error(err);
+        });
 
         Builder.svg(function () {
             Builder.ttf(function () {
@@ -41,7 +43,7 @@ module.exports = {
                         let _num = Number(_code.replace('&#', '').replace(';', '')).toString(16);
 
                         if (typeof _code !== 'string') continue;
-                        _codehtml += `<li><em class="u-iconfont">${_code}</em><p>${i}： ${_code}</p></li>`;
+                        _codehtml += `<li><em class="u-iconfont">${_code}</em><p>${i}： ${_code.replace('&', '&amp;')}</p></li>`;
                         _classhtml += `<li><em class="u-iconfont icon-${i}"></em><p>${i}： .icon-${i}</p></li>`;
                         _classcss += `\r\n.icon-${i}:before { content: "\\${_num}"; }`
                     }

@@ -27,6 +27,20 @@ svg图标转字体图标库（svgs -> svg,ttf,eot,woff,woff2）。
     svgs2fonts svg dist
 ```
 
+### nodejs
+``` js
+    const svgs2fonts = require('svgs2fonts');
+    const join = require('path').join;
+
+    svgs2fonts.init({
+        src: __dirname,		// svg path
+        dist: join(__dirname, 'dest'),	// output path
+        fontName: 'myIconfont',	// font name
+        startNumber: 20000	// unicode start number
+        nodemo: true        // no demo html files
+    });
+```
+
 ## 参数
 
 ### -n / --name

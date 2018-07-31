@@ -1,6 +1,6 @@
 {
   "name": "svgs2fonts",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "svg icons to icons fonts(svg,ttf,eot,woff,woff2)",
   "main": "index.js",
   "scripts": {
@@ -8,7 +8,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+ssh://git@github.com/MichealWayne/component.git%1B%5BD%1B%5BD%1B%5BD%1B%5BD%1B%5BD%1B%5BC%1B%5BC%1B%5Bsvgs2fonts.git"
+    "url": "git+ssh://git@github.com/MichealWayne/svgs2fonts.git"
   },
   "keywords": [
     "svg",
@@ -22,11 +22,12 @@
   "author": "Micheal Wayne",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/MichealWayne/component.git%1B%5BD%1B%5BD%1B%5BD%1B%5BD%1B%5BD%1B%5BC%1B%5BC%1B%5Bsvgs2fonts/issues"
+    "url": "https://github.com/MichealWayne/svgs2fonts.git"
   },
-  "homepage": "https://github.com/MichealWayne/component.git%1B%5BD%1B%5BD%1B%5BD%1B%5BD%1B%5BD%1B%5BC%1B%5BC%1B%5Bsvgs2fonts#readme",
-  "devDependencies": {
+  "homepage": "https://github.com/MichealWayne/svgs2fonts.git",
+  "dependencies": {
     "minimist": "^1.2.0",
+    "mkdirp": "^0.5.1",
     "svg2ttf": "^4.1.0",
     "svgicons2svgfont": "^9.0.3",
     "ttf2eot": "^2.0.0",
