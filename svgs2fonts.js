@@ -16,14 +16,29 @@ const ttf2eot = require('ttf2eot');
 let OPTIONS = require('./options');
 let number = OPTIONS.unicodeStart; // 编码值起点，避免覆盖，随意
 let UnicodeObj = {}; // demo html中unicode的值
+
 /*
  * get icon unicode
  * @return {Array} unicode array
  */
 function getIconUnicode(name) {
-    UnicodeObj[name] = '&#' + number + ';'
-    number++;
-    return [String.fromCharCode(number)];
+	if (!name) return false;
+	//number++;
+	
+	let _num = 1;
+	for (let i = 0; i < name.length; i++) {
+		_num *= name.charCodeAt(i);
+	}
+	
+	while (_num > 59999) {
+		_num = _num / 10;
+	}
+	if (_num < number) _num += number;
+	_num = parseInt(_num)
+	console.log(_num)
+
+    UnicodeObj[name] = '&#' + _num + ';'
+    return [String.fromCharCode(+_num)];
 }
 /*
  * filter svg files

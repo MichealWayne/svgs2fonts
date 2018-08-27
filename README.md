@@ -3,7 +3,7 @@
 svg图标转字体图标库（svgs -> svg,ttf,eot,woff,woff2）。
 
 ## 版本
-1.0.2
+1.0.4
 
 ## 安装
 ```
@@ -71,4 +71,4 @@ Micheal Wayne
 
 ## Update time
 
-2018.07.30
+2018.08.26

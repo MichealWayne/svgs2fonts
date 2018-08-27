@@ -1,10 +1,10 @@
 {
   "name": "svgs2fonts",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "svg icons to icons fonts(svg,ttf,eot,woff,woff2)",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node test/index"
   },
   "repository": {
     "type": "git",
