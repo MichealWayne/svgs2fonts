@@ -2,13 +2,14 @@ const fs = require('fs');
 const path = require('path');
 
 /**
+ * make folder(sync)
  * @param {String} dirpath 要创建的目录,支持多层级创建
  */
 function mkdirsSync(dirpath, mode) {
     try {
         if (!fs.existsSync(dirpath)) {
             let pathtmp;
-            dirpath.split(/[/\\]/).forEach(function(dirname) { //这里指用/ 或\ 都可以分隔目录  如  linux的/usr/local/services   和windows的 d:\temp\aaaa
+            dirpath.split(/[/\\]/).forEach(function(dirname) { // 这里指用/ 或\ 都可以分隔目录  如  linux的/usr/local/services和windows的 d:\temp\aaaa
                 if (pathtmp) {
                     pathtmp = path.join(pathtmp, dirname);
                 } else {
@@ -29,7 +30,7 @@ function mkdirsSync(dirpath, mode) {
 }
 
 
-/*
+/**
  * find folder, if not exist, build it
  * @param {String} path: folder path;
  */
@@ -41,7 +42,7 @@ function setFolder(folderPath, notip) {
     }
 }
 
-/*
+/**
  * find folder or file
  * @param {String} path: folder or file path;
  * @return {Boolean}: if exist, true || false;
@@ -56,7 +57,7 @@ function fsExistsSync(folderPath) {
     return true;
 }
 
-/*
+/**
  * find file, if not exist, build it
  */
 function setFile(filePath, filedata, cb, replacebool) {

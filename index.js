@@ -1,8 +1,8 @@
-/*
+/**
  * svgs2fonts
  * @author: Micheal Wayne
  * @build time: 2018.07.30
- * @version: 1.0.0
+ * @version: 1.0.4
  * @email: michealwayne@163.com
  */
 

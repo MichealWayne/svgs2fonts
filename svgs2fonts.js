@@ -1,8 +1,8 @@
-/*
+/**
  * svgs2fonts
  * @author: Micheal Wayne
  * @build time: 2018.07.30
- * @version: 1.0.0
+ * @version: 1.0.4
  * @email: michealwayne@163.com
  */
 const fs = require('fs');
@@ -13,11 +13,11 @@ const svg2ttf = require('svg2ttf');
 const ttf2woff = require('ttf2woff');
 const ttf2woff2 = require('ttf2woff2');
 const ttf2eot = require('ttf2eot');
-let OPTIONS = require('./options');
+let OPTIONS = require('./options'); // config
 let number = OPTIONS.unicodeStart; // 编码值起点，避免覆盖，随意
 let UnicodeObj = {}; // demo html中unicode的值
 
-/*
+/**
  * get icon unicode
  * @return {Array} unicode array
  */
@@ -35,13 +35,16 @@ function getIconUnicode(name) {
 	}
 	if (_num < number) _num += number;
 	_num = parseInt(_num)
-	console.log(_num)
+	//console.log(_num)
 
     UnicodeObj[name] = '&#' + _num + ';'
     return [String.fromCharCode(+_num)];
 }
-/*
+
+/**
  * filter svg files
+ * @param {String} svgFolderPath svg folder path.
+ * @return {Array} svgs paths.
  */
 function filterSvgFiles(svgFolderPath) {
     let files = fs.readdirSync(svgFolderPath, 'utf-8');
@@ -57,17 +60,21 @@ function filterSvgFiles(svgFolderPath) {
     return svgArr;
 }
 
-
+/**
+ * task builder
+ */
 const Builder = {
     files: null,
     UnicodeObj: null,
 
-    /*
+    /**
      * build svg font
+     * @param {Function} cb callback function.
      */
     svg: cb => {
-        /*
-         * 写入字体数据流
+        /**
+         * write font stream
+	 * @param {String} svgPath svg path.
          */
         function writeFontStream (svgPath) {
           let _name = path.basename(svgPath).split('.')[0];
@@ -109,8 +116,9 @@ const Builder = {
         fontStream.end();
     },
 
-    /*
+    /**
      * build ttf font
+     * @param {Function} cb callback function.
      */
     ttf: cb => {
         const DIST_PATH = join(OPTIONS.dist, OPTIONS.fontName + '.ttf');     // 输出地址
@@ -128,8 +136,9 @@ const Builder = {
         });
     },
 
-    /*
+    /**
      * build eot font
+     * @param {Function} cb callback function.
      */
     eot: cb => {
         const DIST_PATH = join(OPTIONS.dist, OPTIONS.fontName + '.eot');     // 输出地址
@@ -148,8 +157,9 @@ const Builder = {
         });
     },
 
-    /*
+    /**
      * build woff font
+     * @param {Function} cb callback function.
      */
     woff: cb => {
         const DIST_PATH = join(OPTIONS.dist, OPTIONS.fontName + '.woff');     // 输出地址
@@ -168,8 +178,9 @@ const Builder = {
         });
     },
 
-    /*
+    /**
      * build woff2 font
+     * @param {Function} cb callback function.
      */
     woff2: cb => {
         const DIST_PATH = join(OPTIONS.dist, OPTIONS.fontName + '.woff2');     // 输出地址
@@ -188,7 +199,10 @@ const Builder = {
         });
     },
 
-
+    /**
+     * init
+     * @param {Object} options set options
+     */
     init: ({
         fontName,
         src,
