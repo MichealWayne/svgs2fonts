@@ -2,8 +2,10 @@ const fs = require('fs');
 const path = require('path');
 
 /**
- * make folder(sync)
+ * @function mkdirsSync
+ * @description make folder(sync)
  * @param {String} dirpath 要创建的目录,支持多层级创建
+ * @param {String} mode 创建文件夹的模式
  */
 function mkdirsSync(dirpath, mode) {
     try {
@@ -31,8 +33,10 @@ function mkdirsSync(dirpath, mode) {
 
 
 /**
- * find folder, if not exist, build it
- * @param {String} path: folder path;
+ * @function setFolder
+ * @description find folder, if not exist, build it
+ * @param {String} folderPath: folder path;
+ * @param {String} notip: no tip log;
  */
 function setFolder(folderPath, notip) {
     if (!fs.existsSync(folderPath)) {
@@ -43,7 +47,8 @@ function setFolder(folderPath, notip) {
 }
 
 /**
- * find folder or file
+ * @function fsExistsSync
+ * @description find folder or file
  * @param {String} path: folder or file path;
  * @return {Boolean}: if exist, true || false;
  */
@@ -58,7 +63,12 @@ function fsExistsSync(folderPath) {
 }
 
 /**
- * find file, if not exist, build it
+ * @function setFile
+ * @description find file, if not exist, build it
+ * @param {String} filePath file path
+ * @param {String} filedata file data
+ * @param {Function} cb callback funciton
+ * @param {Boolean} replacebool replace original data or add
  */
 function setFile(filePath, filedata, cb, replacebool) {
     let dirpath = path.dirname(filePath);
@@ -85,12 +95,10 @@ function setFile(filePath, filedata, cb, replacebool) {
                     return false;
                 }
 
-                //console.log(`${filePath}创建成功。`);
                 if (cb) cb();
             });
         });
     } else { // new file
-
         fs.appendFile(filePath, filedata, {
             encoding: 'utf8'
         }, (err) => {
@@ -99,7 +107,6 @@ function setFile(filePath, filedata, cb, replacebool) {
                 return false;
             }
 
-            //console.log(`${filePath}创建成功。`);
             if (cb) cb();
         });
     }

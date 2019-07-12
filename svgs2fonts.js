@@ -26,7 +26,7 @@ function getIconUnicode(name) {
 	//number++;
 	
 	let _num = 1;
-	for (let i = 0; i < name.length; i++) {
+	for (let i = 0, len = name.length; i < len; i++) {
 		_num *= name.charCodeAt(i);
 	}
 	
@@ -74,7 +74,7 @@ const Builder = {
     svg: cb => {
         /**
          * write font stream
-	 * @param {String} svgPath svg path.
+	     * @param {String} svgPath svg path.
          */
         function writeFontStream (svgPath) {
           let _name = path.basename(svgPath).split('.')[0];

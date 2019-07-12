@@ -1,3 +1,7 @@
+/**
+ * config file
+ */
+
 module.exports = {
     fontName: 'iconfont',
     unicodeStart: 10000,
