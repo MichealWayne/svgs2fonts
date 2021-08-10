@@ -2,71 +2,71 @@
  * svgs2fonts
  * @author: Micheal Wayne
  * @build time: 2018.07.30
- * @version: 1.0.4
+ * @version: 1.0.5
  * @email: michealwayne@163.com
  */
 
 const mkdirp = require('mkdirp');
-const Fsfuncs = require('./fsfuncs');
-const Builder = require('./svgs2fonts');
+const Builder = require('./lib/Builder');
 const OPTIONS = require('./options');
-let DEMO_CSS = OPTIONS.DEMO_CSS;
-let DEMO_HTML = OPTIONS.DEMO_HTML;
-
+const { timeTag } = require('./constant');
 
 module.exports = {
-    init (options) {
-        options.dist = options.dist || OPTIONS.dist;
-        options.src = options.src || '';
+  /**
+   * @function init
+   * @param {Object} options
+   */
+  init(options) {
+    return new Promise((resolve, reject) => {
+      options.dist = options.dist || OPTIONS.dist;
+      options.src = options.src || '';
 
-        Builder.init(options);
-        let nodemo = options.nodemo;
-        let fontName = options.fontName;
-        let dist = options.dist;
-        mkdirp.sync(dist, function (err) {
-            if (err) console.error(err);
-        });
+      const { noDemo, dist, debug } = options;
+      if (debug) {
+        OPTIONS.logger = console;
+        OPTIONS.logger.time(timeTag);
+      }
+      Builder.init(options);
 
-        Builder.svg(function () {
-            Builder.ttf(function () {
-                Builder.eot();
-                Builder.woff();
-                Builder.woff2();
+      const _timer = setTimeout(() => {
+        OPTIONS.logger.error('[failed] timeout');
+        reject(new Error('timeout'));
+      }, options.timeout || OPTIONS.timeout);
+      const _successFunc = () => {
+        clearTimeout(_timer);
+        OPTIONS.logger.timeEnd(timeTag);
+        resolve(true);
+      };
+      const _failFunc = e => {
+        clearTimeout(_timer);
+        OPTIONS.logger.timeEnd(timeTag);
+        reject(e);
+      };
 
-                if (!nodemo) {
-                    let _codehtml = '',
-                        _classhtml = '',
-                        _classcss = '';
+      // mkdir output folder
+      mkdirp.sync(dist, err => {
+        OPTIONS.logger.error('mkdirp failed.', err);
+        reject(err);
+      });
 
-                    for (let i in Builder.UnicodeObj) {
-                        let _code = Builder.UnicodeObj[i];
-                        let _num = Number(_code.replace('&#', '').replace(';', '')).toString(16);
-
-                        if (typeof _code !== 'string') continue;
-                        _codehtml += `<li><em class="u-iconfont">${_code}</em><p>${i}： ${_code.replace('&', '&amp;')}</p></li>`;
-                        _classhtml += `<li><em class="u-iconfont icon-${i}"></em><p>${i}： .icon-${i}</p></li>`;
-                        _classcss += `\r\n.icon-${i}:before { content: "\\${_num}"; }`
-                    }
-
-                    DEMO_CSS = DEMO_CSS.replace(/\{\{fontName\}\}/g, fontName || OPTIONS.fontName);
-                    DEMO_HTML = DEMO_HTML.replace(/\{\{fontName\}\}/g, fontName || OPTIONS.fontName);
-                    let CODE_HTML = DEMO_HTML.replace('\{\{democss\}\}', DEMO_CSS).replace('\{\{demohtml\}\}', _codehtml);
-                    let CLASS_HTML = DEMO_HTML.replace('\{\{democss\}\}', DEMO_CSS + _classcss).replace('\{\{demohtml\}\}', _classhtml);
-
-                    Fsfuncs.setFile(dist + '/demo_unicode.html', CODE_HTML, () => {
-                        CODE_HTML = null;
-                        console.log(`[success] demo_unicode.html successfully created!${dist + '/demo_unicode.html'}`);
-
-                        if (!CODE_HTML && !CLASS_HTML) console.log('task success!');
-                    }, true);
-                    Fsfuncs.setFile(dist + '/demo_fontclass.html', CLASS_HTML, () => {
-                        CLASS_HTML = null;
-                        console.log(`[success] demo_fontclass.html successfully created!${dist + '/demo_fontclass.html'}`);
-
-                        if (!CODE_HTML && !CLASS_HTML) console.log('task success!');
-                    }, true);
-                }
-            })
-        });
-    }
-}
+      return Builder.svg()
+        .then(() => {
+          OPTIONS.logger.log('[success] svg builded.');
+          Builder.ttf()
+            .then(() =>
+              Promise.all([Builder.eot(), Builder.woff(), Builder.woff2()])
+                .then(() => {
+                  if (!noDemo) {
+                    Builder.demo().then(_successFunc).catch(_failFunc);
+                  } else {
+                    _successFunc();
+                  }
+                })
+                .catch(_failFunc)
+            )
+            .catch(_failFunc);
+        })
+        .catch(_failFunc);
+    });
+  },
+};

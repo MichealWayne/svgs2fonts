@@ -1,6 +1,6 @@
 {
   "name": "svgs2fonts",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "svg icons to icons fonts(svg,ttf,eot,woff,woff2)",
   "main": "index.js",
   "scripts": {
@@ -28,11 +28,11 @@
   "dependencies": {
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
-    "svg2ttf": "^4.1.0",
+    "svg2ttf": "^6.0.2",
     "svgicons2svgfont": "^9.0.3",
     "ttf2eot": "^2.0.0",
     "ttf2woff": "^2.0.1",
-    "ttf2woff2": "^2.0.3"
+    "ttf2woff2": "^4.0.4"
   },
   "bin": {
     "svgs2fonts": "./bin/index.js"
