@@ -1,11 +1,16 @@
 /**
- * constant
+ * @module constant
+ * @author Micheal Wayne<michealwayne@163.com>
+ * @buildTime 2018.07.30
+ * @lastModified 2021.09.19
  */
 
 module.exports = {
   timeTag: 'svgs2fonts time-consuming',
+
+  // for demo html
   fontNameReg: /\{\{fontName\}\}/g,
-  demoCssReg: /\{\{demoCss\}\}/,
+  demoCssReg: /\{\{demoCss\}\}/g,
   demoHtmlReg: /\{\{demoHtml\}\}/,
   DEMO_CSS: `
 @font-face {
@@ -28,71 +33,34 @@ module.exports = {
   <meta name="format-detection" content="telephone=no" />
   <meta name="apple-touch-fullscreen" content="YES" />
   <style type="text/css">
-  * {
-    margin: 0;
-    padding: 0;
-  }
-  html, body {
-    width: 100%;
-  }
-  li {
-    list-style: none;
-    text-align: center;
-    width: 150px;
-    min-height: 150px;
-  }
-  ul {
-    margin-top: 50px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
-  }
+  * {margin: 0;padding: 0;}
+  html, body {width: 100%;}
+  h3 {font-weight: normal;}
+  .m-demos_ctn {margin-top: 50px;padding-right: 320px;display: flex;flex-wrap: wrap;justify-content: space-around;}
+  .m-demos_ctn li {list-style: none;text-align: center;width: 150px;min-height: 150px;}
+  .m-icon_ctn {width: 150px;height: 60px;}
+  .m-code_ctn {position: fixed;right: 0;top: 0;z-index: 2;padding: 5px 10px;width: 300px;max-height: 100%;overflow-y: auto;background-color: #fff;box-shadow: 0 0 20px #999;}
+  .m-code_ctn pre {white-space: pre-wrap;padding: 5px;color: #fff;background-color: #222;}
   
   @-webkit-keyframes colors {
-    from {
-      font-size: 26px;
-      color: red;
-    }
-    25% {
-      color: yellow;
-    }
-    50% {
-      font-size: 66px;
-      color: green;
-    } 
-    75% {
-      color: blue;
-    }
-    to {
-      font-size: 26px;
-      color: red;
-    }
+    from {font-size: 26px;color: red;}
+    25% {color: yellow;}
+    50% {font-size: 66px;color: green;} 
+    75% {color: blue;}
+    to {font-size: 26px;color: red;}
   }
   @keyframes colors {
-    from {
-      font-size: 26px;
-      color: red;
-    }
-    25% {
-      color: yellow;
-    }
-    50% {
-      font-size: 66px;
-      color: green;
-    } 
-    75% {
-      color: blue;
-    }
-    to {
-      font-size: 26px;
-      color: red;
-    }
+    from {font-size: 26px;color: red;}
+    25% {color: yellow;}
+    50% {font-size: 66px;color: green;} 
+    75% {color: blue;}
+    to {font-size: 26px;color: red;}
   }
   </style>
   <style type="text/css">
   {{demoCss}}
   </style>
-  <title>iconfont demo</title>
+  <title>svg2fonts demo</title>
 </head>
 <body>
   <style type="text/css">
@@ -110,12 +78,20 @@ module.exports = {
   }
   </style>
 
-  <h1>iconfont</h1>
-  <ul>
+  <h1>iconfont(by svgs2fonts)</h1>
+
+  <section class="m-code_ctn">
+  <h3>Main CSS codes: </h3>
+    <pre>
+    {{demoCss}}
+    </pre>
+  </section>
+
+  <ul class="m-demos_ctn">
   <!-- <em class="u-iconfont">&#xE002;</em> -->
+
   {{demoHtml}}
   </li>
-
 </body>
 </html>
   `,

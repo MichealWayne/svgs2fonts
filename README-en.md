@@ -5,7 +5,7 @@ svg 图标转字体图标库（svgs fonts -> svg,ttf,eot,woff,woff2）。
 
 ## Version
 
-1.0.5
+1.1.0
 
 ## Install
 
@@ -127,6 +127,10 @@ svgs2fonts svg dist --debug
 
 [Micheal Wayne](mailto:michealwayne@163.com)
 
-## Update time
+## Build time
 
 2018.08.26
+
+## Last modified
+
+2021.09.19

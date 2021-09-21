@@ -8,7 +8,7 @@ const dirname = process.cwd();
 
 const Config = {
   version: require('../package.json').version,
-  time: '2018.07.30',
+  startTime: '2018.07.30',
 };
 
 // version
@@ -37,6 +37,7 @@ if (argv.v || argv.version) {
       '    -n   --name   iconfont name(default: iconfont.*)',
       '         --number unicode start code number',
       '         --nodemo no demo files',
+      '         --debug  output debug log',
     ].join('\n')
   );
   process.exit();

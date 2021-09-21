@@ -9,65 +9,28 @@
   <meta name="format-detection" content="telephone=no" />
   <meta name="apple-touch-fullscreen" content="YES" />
   <style type="text/css">
-  * {
-    margin: 0;
-    padding: 0;
-  }
-  html, body {
-    width: 100%;
-  }
-  li {
-    list-style: none;
-    text-align: center;
-    width: 150px;
-    min-height: 150px;
-  }
-  ul {
-    margin-top: 50px;
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
-  }
+  * {margin: 0;padding: 0;}
+  html, body {width: 100%;}
+  h3 {font-weight: normal;}
+  .m-demos_ctn {margin-top: 50px;padding-right: 320px;display: flex;flex-wrap: wrap;justify-content: space-around;}
+  .m-demos_ctn li {list-style: none;text-align: center;width: 150px;min-height: 150px;}
+  .m-icon_ctn {width: 150px;height: 60px;}
+  .m-code_ctn {position: fixed;right: 0;top: 0;z-index: 2;padding: 5px 10px;width: 300px;max-height: 100%;overflow-y: auto;background-color: #fff;box-shadow: 0 0 20px #999;}
+  .m-code_ctn pre {white-space: pre-wrap;padding: 5px;color: #fff;background-color: #222;}
   
   @-webkit-keyframes colors {
-    from {
-      font-size: 26px;
-      color: red;
-    }
-    25% {
-      color: yellow;
-    }
-    50% {
-      font-size: 66px;
-      color: green;
-    } 
-    75% {
-      color: blue;
-    }
-    to {
-      font-size: 26px;
-      color: red;
-    }
+    from {font-size: 26px;color: red;}
+    25% {color: yellow;}
+    50% {font-size: 66px;color: green;} 
+    75% {color: blue;}
+    to {font-size: 26px;color: red;}
   }
   @keyframes colors {
-    from {
-      font-size: 26px;
-      color: red;
-    }
-    25% {
-      color: yellow;
-    }
-    50% {
-      font-size: 66px;
-      color: green;
-    } 
-    75% {
-      color: blue;
-    }
-    to {
-      font-size: 26px;
-      color: red;
-    }
+    from {font-size: 26px;color: red;}
+    25% {color: yellow;}
+    50% {font-size: 66px;color: green;} 
+    75% {color: blue;}
+    to {font-size: 26px;color: red;}
   }
   </style>
   <style type="text/css">
@@ -168,7 +131,7 @@
 .icon-diamond-1:before { content: "\74c1"; }
 .icon-dollar-1:before { content: "\7b50"; }
   </style>
-  <title>iconfont demo</title>
+  <title>svg2fonts demo</title>
 </head>
 <body>
   <style type="text/css">
@@ -186,12 +149,115 @@
   }
   </style>
 
-  <h1>iconfont</h1>
-  <ul>
-  <!-- <em class="u-iconfont">&#xE002;</em> -->
-  <li><em class="u-iconfont icon-24"></em><p>24： .icon-24</p></li><li><em class="u-iconfont icon-ad-1"></em><p>ad-1： .icon-ad-1</p></li><li><em class="u-iconfont icon-add-pluss-1"></em><p>add-pluss-1： .icon-add-pluss-1</p></li><li><em class="u-iconfont icon-add-pluss-2"></em><p>add-pluss-2： .icon-add-pluss-2</p></li><li><em class="u-iconfont icon-add-pluss-3"></em><p>add-pluss-3： .icon-add-pluss-3</p></li><li><em class="u-iconfont icon-alarm-1"></em><p>alarm-1： .icon-alarm-1</p></li><li><em class="u-iconfont icon-alarm-clock"></em><p>alarm-clock： .icon-alarm-clock</p></li><li><em class="u-iconfont icon-arrow-down-1"></em><p>arrow-down-1： .icon-arrow-down-1</p></li><li><em class="u-iconfont icon-arrow-down-2"></em><p>arrow-down-2： .icon-arrow-down-2</p></li><li><em class="u-iconfont icon-arrow-down-3"></em><p>arrow-down-3： .icon-arrow-down-3</p></li><li><em class="u-iconfont icon-arrow-left-1"></em><p>arrow-left-1： .icon-arrow-left-1</p></li><li><em class="u-iconfont icon-arrow-left-2"></em><p>arrow-left-2： .icon-arrow-left-2</p></li><li><em class="u-iconfont icon-arrow-left-3"></em><p>arrow-left-3： .icon-arrow-left-3</p></li><li><em class="u-iconfont icon-arrow-right-1"></em><p>arrow-right-1： .icon-arrow-right-1</p></li><li><em class="u-iconfont icon-arrow-right-2"></em><p>arrow-right-2： .icon-arrow-right-2</p></li><li><em class="u-iconfont icon-arrow-right-3"></em><p>arrow-right-3： .icon-arrow-right-3</p></li><li><em class="u-iconfont icon-arrow-up-1"></em><p>arrow-up-1： .icon-arrow-up-1</p></li><li><em class="u-iconfont icon-arrow-up-2"></em><p>arrow-up-2： .icon-arrow-up-2</p></li><li><em class="u-iconfont icon-arrow-up-3"></em><p>arrow-up-3： .icon-arrow-up-3</p></li><li><em class="u-iconfont icon-backspace"></em><p>backspace： .icon-backspace</p></li><li><em class="u-iconfont icon-battery-charge"></em><p>battery-charge： .icon-battery-charge</p></li><li><em class="u-iconfont icon-battery-discharged"></em><p>battery-discharged： .icon-battery-discharged</p></li><li><em class="u-iconfont icon-battery-full"></em><p>battery-full： .icon-battery-full</p></li><li><em class="u-iconfont icon-battery-half"></em><p>battery-half： .icon-battery-half</p></li><li><em class="u-iconfont icon-battery-low"></em><p>battery-low： .icon-battery-low</p></li><li><em class="u-iconfont icon-bin"></em><p>bin： .icon-bin</p></li><li><em class="u-iconfont icon-board"></em><p>board： .icon-board</p></li><li><em class="u-iconfont icon-boat"></em><p>boat： .icon-boat</p></li><li><em class="u-iconfont icon-book-1"></em><p>book-1： .icon-book-1</p></li><li><em class="u-iconfont icon-book-2"></em><p>book-2： .icon-book-2</p></li><li><em class="u-iconfont icon-bookmark-1"></em><p>bookmark-1： .icon-bookmark-1</p></li><li><em class="u-iconfont icon-bookmark-add"></em><p>bookmark-add： .icon-bookmark-add</p></li><li><em class="u-iconfont icon-bookmark-added"></em><p>bookmark-added： .icon-bookmark-added</p></li><li><em class="u-iconfont icon-bowtie"></em><p>bowtie： .icon-bowtie</p></li><li><em class="u-iconfont icon-box-1"></em><p>box-1： .icon-box-1</p></li><li><em class="u-iconfont icon-box-2"></em><p>box-2： .icon-box-2</p></li><li><em class="u-iconfont icon-box-3"></em><p>box-3： .icon-box-3</p></li><li><em class="u-iconfont icon-box-4"></em><p>box-4： .icon-box-4</p></li><li><em class="u-iconfont icon-brief-bag"></em><p>brief-bag： .icon-brief-bag</p></li><li><em class="u-iconfont icon-browser"></em><p>browser： .icon-browser</p></li><li><em class="u-iconfont icon-bubble-1"></em><p>bubble-1： .icon-bubble-1</p></li><li><em class="u-iconfont icon-bubble-2"></em><p>bubble-2： .icon-bubble-2</p></li><li><em class="u-iconfont icon-bubble-rounded-1"></em><p>bubble-rounded-1： .icon-bubble-rounded-1</p></li><li><em class="u-iconfont icon-bubble-rounded-2"></em><p>bubble-rounded-2： .icon-bubble-rounded-2</p></li><li><em class="u-iconfont icon-bubble-rounded-chat"></em><p>bubble-rounded-chat： .icon-bubble-rounded-chat</p></li><li><em class="u-iconfont icon-bubbles-chat"></em><p>bubbles-chat： .icon-bubbles-chat</p></li><li><em class="u-iconfont icon-bus"></em><p>bus： .icon-bus</p></li><li><em class="u-iconfont icon-calculator-1"></em><p>calculator-1： .icon-calculator-1</p></li><li><em class="u-iconfont icon-calendar-1"></em><p>calendar-1： .icon-calendar-1</p></li><li><em class="u-iconfont icon-calendar-2"></em><p>calendar-2： .icon-calendar-2</p></li><li><em class="u-iconfont icon-car"></em><p>car： .icon-car</p></li><li><em class="u-iconfont icon-card"></em><p>card： .icon-card</p></li><li><em class="u-iconfont icon-cards"></em><p>cards： .icon-cards</p></li><li><em class="u-iconfont icon-chart-1"></em><p>chart-1： .icon-chart-1</p></li><li><em class="u-iconfont icon-chart-2"></em><p>chart-2： .icon-chart-2</p></li><li><em class="u-iconfont icon-chart-3"></em><p>chart-3： .icon-chart-3</p></li><li><em class="u-iconfont icon-chart-4"></em><p>chart-4： .icon-chart-4</p></li><li><em class="u-iconfont icon-chart-5"></em><p>chart-5： .icon-chart-5</p></li><li><em class="u-iconfont icon-chart-diagram-1"></em><p>chart-diagram-1： .icon-chart-diagram-1</p></li><li><em class="u-iconfont icon-chart-diagram-2"></em><p>chart-diagram-2： .icon-chart-diagram-2</p></li><li><em class="u-iconfont icon-chart-down-1"></em><p>chart-down-1： .icon-chart-down-1</p></li><li><em class="u-iconfont icon-chart-down-2"></em><p>chart-down-2： .icon-chart-down-2</p></li><li><em class="u-iconfont icon-chart-up-1"></em><p>chart-up-1： .icon-chart-up-1</p></li><li><em class="u-iconfont icon-chart-up-2"></em><p>chart-up-2： .icon-chart-up-2</p></li><li><em class="u-iconfont icon-check-1"></em><p>check-1： .icon-check-1</p></li><li><em class="u-iconfont icon-check-2"></em><p>check-2： .icon-check-2</p></li><li><em class="u-iconfont icon-check-3"></em><p>check-3： .icon-check-3</p></li><li><em class="u-iconfont icon-clip"></em><p>clip： .icon-clip</p></li><li><em class="u-iconfont icon-clock-1"></em><p>clock-1： .icon-clock-1</p></li><li><em class="u-iconfont icon-clock-2"></em><p>clock-2： .icon-clock-2</p></li><li><em class="u-iconfont icon-cloud-download"></em><p>cloud-download： .icon-cloud-download</p></li><li><em class="u-iconfont icon-cloud-upload"></em><p>cloud-upload： .icon-cloud-upload</p></li><li><em class="u-iconfont icon-cloud"></em><p>cloud： .icon-cloud</p></li><li><em class="u-iconfont icon-coin-1"></em><p>coin-1： .icon-coin-1</p></li><li><em class="u-iconfont icon-coins-1"></em><p>coins-1： .icon-coins-1</p></li><li><em class="u-iconfont icon-coins-2"></em><p>coins-2： .icon-coins-2</p></li><li><em class="u-iconfont icon-color-picker"></em><p>color-picker： .icon-color-picker</p></li><li><em class="u-iconfont icon-colors"></em><p>colors： .icon-colors</p></li><li><em class="u-iconfont icon-compass"></em><p>compass： .icon-compass</p></li><li><em class="u-iconfont icon-coordinate"></em><p>coordinate： .icon-coordinate</p></li><li><em class="u-iconfont icon-crown"></em><p>crown： .icon-crown</p></li><li><em class="u-iconfont icon-cup-1"></em><p>cup-1： .icon-cup-1</p></li><li><em class="u-iconfont icon-dashboard-1"></em><p>dashboard-1： .icon-dashboard-1</p></li><li><em class="u-iconfont icon-delivery-1"></em><p>delivery-1： .icon-delivery-1</p></li><li><em class="u-iconfont icon-diamond-1"></em><p>diamond-1： .icon-diamond-1</p></li><li><em class="u-iconfont icon-dollar-1"></em><p>dollar-1： .icon-dollar-1</p></li>
-  </li>
+  <h1>iconfont(by svgs2fonts)</h1>
 
+  <section class="m-code_ctn">
+  <h3>Main CSS codes: </h3>
+    <pre>
+    
+@font-face {
+  font-family: 'myfont';
+  src: url('myfont.woff2') format('woff2'),
+    url('myfont.woff') format('woff'),
+    url('myfont.eot#IEfix') format('embedded-opentype'), /* IE6-IE8 */  
+    url('myfont.ttf') format('truetype'), /* chrome, firefox, opera, Safari, Android, iOS 4.2+*/
+    url('myfont.svg') format('svg');
+}
+  
+.icon-24:before { content: "\3138"; }
+.icon-ad-1:before { content: "\538c"; }
+.icon-add-pluss-1:before { content: "\465e"; }
+.icon-add-pluss-2:before { content: "\47cd"; }
+.icon-add-pluss-3:before { content: "\493d"; }
+.icon-alarm-1:before { content: "\6cc2"; }
+.icon-alarm-clock:before { content: "\42f7"; }
+.icon-arrow-down-1:before { content: "\5dc6"; }
+.icon-arrow-down-2:before { content: "\5fb0"; }
+.icon-arrow-down-3:before { content: "\619a"; }
+.icon-arrow-left-1:before { content: "\534c"; }
+.icon-arrow-left-2:before { content: "\54ff"; }
+.icon-arrow-left-3:before { content: "\56b2"; }
+.icon-arrow-right-1:before { content: "\5fff"; }
+.icon-arrow-right-2:before { content: "\61f4"; }
+.icon-arrow-right-3:before { content: "\63ea"; }
+.icon-arrow-up-1:before { content: "\5492"; }
+.icon-arrow-up-2:before { content: "\564c"; }
+.icon-arrow-up-3:before { content: "\5806"; }
+.icon-backspace:before { content: "\3123"; }
+.icon-battery-charge:before { content: "\4c2a"; }
+.icon-battery-discharged:before { content: "\2ccd"; }
+.icon-battery-full:before { content: "\2b9a"; }
+.icon-battery-half:before { content: "\49df"; }
+.icon-battery-low:before { content: "\2cb0"; }
+.icon-bin:before { content: "\2c37"; }
+.icon-board:before { content: "\2efc"; }
+.icon-boat:before { content: "\2fcf"; }
+.icon-book-1:before { content: "\6f48"; }
+.icon-book-2:before { content: "\718d"; }
+.icon-bookmark-1:before { content: "\8f85"; }
+.icon-bookmark-add:before { content: "\4379"; }
+.icon-bookmark-added:before { content: "\43c1"; }
+.icon-bowtie:before { content: "\3e34"; }
+.icon-box-1:before { content: "\706f"; }
+.icon-box-2:before { content: "\72ba"; }
+.icon-box-3:before { content: "\7506"; }
+.icon-box-4:before { content: "\7751"; }
+.icon-brief-bag:before { content: "\cffe"; }
+.icon-browser:before { content: "\4c54"; }
+.icon-bubble-1:before { content: "\6776"; }
+.icon-bubble-2:before { content: "\6992"; }
+.icon-bubble-rounded-1:before { content: "\4c94"; }
+.icon-bubble-rounded-2:before { content: "\4e24"; }
+.icon-bubble-rounded-chat:before { content: "\b50f"; }
+.icon-bubbles-chat:before { content: "\4331"; }
+.icon-bus:before { content: "\3381"; }
+.icon-calculator-1:before { content: "\9f1c"; }
+.icon-calendar-1:before { content: "\6dbf"; }
+.icon-calendar-2:before { content: "\6ffc"; }
+.icon-car:before { content: "\2ac3"; }
+.icon-card:before { content: "\2ac3"; }
+.icon-cards:before { content: "\312d"; }
+.icon-chart-1:before { content: "\71c1"; }
+.icon-chart-2:before { content: "\7413"; }
+.icon-chart-3:before { content: "\7665"; }
+.icon-chart-4:before { content: "\78b8"; }
+.icon-chart-5:before { content: "\7b0a"; }
+.icon-chart-diagram-1:before { content: "\40ba"; }
+.icon-chart-diagram-2:before { content: "\420c"; }
+.icon-chart-down-1:before { content: "\4a60"; }
+.icon-chart-down-2:before { content: "\4be5"; }
+.icon-chart-up-1:before { content: "\4314"; }
+.icon-chart-up-2:before { content: "\4472"; }
+.icon-check-1:before { content: "\5ee1"; }
+.icon-check-2:before { content: "\60d1"; }
+.icon-check-3:before { content: "\62c0"; }
+.icon-clip:before { content: "\311d"; }
+.icon-clock-1:before { content: "\6c49"; }
+.icon-clock-2:before { content: "\6e7e"; }
+.icon-cloud-download:before { content: "\293d"; }
+.icon-cloud-upload:before { content: "\4c41"; }
+.icon-cloud:before { content: "\363d"; }
+.icon-coin-1:before { content: "\6d52"; }
+.icon-coins-1:before { content: "\7db8"; }
+.icon-coins-2:before { content: "\8049"; }
+.icon-color-picker:before { content: "\4ced"; }
+.icon-colors:before { content: "\4376"; }
+.icon-compass:before { content: "\4339"; }
+.icon-coordinate:before { content: "\474c"; }
+.icon-crown:before { content: "\400e"; }
+.icon-cup-1:before { content: "\6fbd"; }
+.icon-dashboard-1:before { content: "\7832"; }
+.icon-delivery-1:before { content: "\a22e"; }
+.icon-diamond-1:before { content: "\74c1"; }
+.icon-dollar-1:before { content: "\7b50"; }
+    </pre>
+  </section>
+
+  <ul class="m-demos_ctn">
+  <!-- <em class="u-iconfont">&#xE002;</em> -->
+
+  <li><p class="m-icon_ctn" title="24"><em class="u-iconfont icon-24"></em></p><p>24： .icon-24</p></li><li><p class="m-icon_ctn" title="ad-1"><em class="u-iconfont icon-ad-1"></em></p><p>ad-1： .icon-ad-1</p></li><li><p class="m-icon_ctn" title="add-pluss-1"><em class="u-iconfont icon-add-pluss-1"></em></p><p>add-pluss-1： .icon-add-pluss-1</p></li><li><p class="m-icon_ctn" title="add-pluss-2"><em class="u-iconfont icon-add-pluss-2"></em></p><p>add-pluss-2： .icon-add-pluss-2</p></li><li><p class="m-icon_ctn" title="add-pluss-3"><em class="u-iconfont icon-add-pluss-3"></em></p><p>add-pluss-3： .icon-add-pluss-3</p></li><li><p class="m-icon_ctn" title="alarm-1"><em class="u-iconfont icon-alarm-1"></em></p><p>alarm-1： .icon-alarm-1</p></li><li><p class="m-icon_ctn" title="alarm-clock"><em class="u-iconfont icon-alarm-clock"></em></p><p>alarm-clock： .icon-alarm-clock</p></li><li><p class="m-icon_ctn" title="arrow-down-1"><em class="u-iconfont icon-arrow-down-1"></em></p><p>arrow-down-1： .icon-arrow-down-1</p></li><li><p class="m-icon_ctn" title="arrow-down-2"><em class="u-iconfont icon-arrow-down-2"></em></p><p>arrow-down-2： .icon-arrow-down-2</p></li><li><p class="m-icon_ctn" title="arrow-down-3"><em class="u-iconfont icon-arrow-down-3"></em></p><p>arrow-down-3： .icon-arrow-down-3</p></li><li><p class="m-icon_ctn" title="arrow-left-1"><em class="u-iconfont icon-arrow-left-1"></em></p><p>arrow-left-1： .icon-arrow-left-1</p></li><li><p class="m-icon_ctn" title="arrow-left-2"><em class="u-iconfont icon-arrow-left-2"></em></p><p>arrow-left-2： .icon-arrow-left-2</p></li><li><p class="m-icon_ctn" title="arrow-left-3"><em class="u-iconfont icon-arrow-left-3"></em></p><p>arrow-left-3： .icon-arrow-left-3</p></li><li><p class="m-icon_ctn" title="arrow-right-1"><em class="u-iconfont icon-arrow-right-1"></em></p><p>arrow-right-1： .icon-arrow-right-1</p></li><li><p class="m-icon_ctn" title="arrow-right-2"><em class="u-iconfont icon-arrow-right-2"></em></p><p>arrow-right-2： .icon-arrow-right-2</p></li><li><p class="m-icon_ctn" title="arrow-right-3"><em class="u-iconfont icon-arrow-right-3"></em></p><p>arrow-right-3： .icon-arrow-right-3</p></li><li><p class="m-icon_ctn" title="arrow-up-1"><em class="u-iconfont icon-arrow-up-1"></em></p><p>arrow-up-1： .icon-arrow-up-1</p></li><li><p class="m-icon_ctn" title="arrow-up-2"><em class="u-iconfont icon-arrow-up-2"></em></p><p>arrow-up-2： .icon-arrow-up-2</p></li><li><p class="m-icon_ctn" title="arrow-up-3"><em class="u-iconfont icon-arrow-up-3"></em></p><p>arrow-up-3： .icon-arrow-up-3</p></li><li><p class="m-icon_ctn" title="backspace"><em class="u-iconfont icon-backspace"></em></p><p>backspace： .icon-backspace</p></li><li><p class="m-icon_ctn" title="battery-charge"><em class="u-iconfont icon-battery-charge"></em></p><p>battery-charge： .icon-battery-charge</p></li><li><p class="m-icon_ctn" title="battery-discharged"><em class="u-iconfont icon-battery-discharged"></em></p><p>battery-discharged： .icon-battery-discharged</p></li><li><p class="m-icon_ctn" title="battery-full"><em class="u-iconfont icon-battery-full"></em></p><p>battery-full： .icon-battery-full</p></li><li><p class="m-icon_ctn" title="battery-half"><em class="u-iconfont icon-battery-half"></em></p><p>battery-half： .icon-battery-half</p></li><li><p class="m-icon_ctn" title="battery-low"><em class="u-iconfont icon-battery-low"></em></p><p>battery-low： .icon-battery-low</p></li><li><p class="m-icon_ctn" title="bin"><em class="u-iconfont icon-bin"></em></p><p>bin： .icon-bin</p></li><li><p class="m-icon_ctn" title="board"><em class="u-iconfont icon-board"></em></p><p>board： .icon-board</p></li><li><p class="m-icon_ctn" title="boat"><em class="u-iconfont icon-boat"></em></p><p>boat： .icon-boat</p></li><li><p class="m-icon_ctn" title="book-1"><em class="u-iconfont icon-book-1"></em></p><p>book-1： .icon-book-1</p></li><li><p class="m-icon_ctn" title="book-2"><em class="u-iconfont icon-book-2"></em></p><p>book-2： .icon-book-2</p></li><li><p class="m-icon_ctn" title="bookmark-1"><em class="u-iconfont icon-bookmark-1"></em></p><p>bookmark-1： .icon-bookmark-1</p></li><li><p class="m-icon_ctn" title="bookmark-add"><em class="u-iconfont icon-bookmark-add"></em></p><p>bookmark-add： .icon-bookmark-add</p></li><li><p class="m-icon_ctn" title="bookmark-added"><em class="u-iconfont icon-bookmark-added"></em></p><p>bookmark-added： .icon-bookmark-added</p></li><li><p class="m-icon_ctn" title="bowtie"><em class="u-iconfont icon-bowtie"></em></p><p>bowtie： .icon-bowtie</p></li><li><p class="m-icon_ctn" title="box-1"><em class="u-iconfont icon-box-1"></em></p><p>box-1： .icon-box-1</p></li><li><p class="m-icon_ctn" title="box-2"><em class="u-iconfont icon-box-2"></em></p><p>box-2： .icon-box-2</p></li><li><p class="m-icon_ctn" title="box-3"><em class="u-iconfont icon-box-3"></em></p><p>box-3： .icon-box-3</p></li><li><p class="m-icon_ctn" title="box-4"><em class="u-iconfont icon-box-4"></em></p><p>box-4： .icon-box-4</p></li><li><p class="m-icon_ctn" title="brief-bag"><em class="u-iconfont icon-brief-bag"></em></p><p>brief-bag： .icon-brief-bag</p></li><li><p class="m-icon_ctn" title="browser"><em class="u-iconfont icon-browser"></em></p><p>browser： .icon-browser</p></li><li><p class="m-icon_ctn" title="bubble-1"><em class="u-iconfont icon-bubble-1"></em></p><p>bubble-1： .icon-bubble-1</p></li><li><p class="m-icon_ctn" title="bubble-2"><em class="u-iconfont icon-bubble-2"></em></p><p>bubble-2： .icon-bubble-2</p></li><li><p class="m-icon_ctn" title="bubble-rounded-1"><em class="u-iconfont icon-bubble-rounded-1"></em></p><p>bubble-rounded-1： .icon-bubble-rounded-1</p></li><li><p class="m-icon_ctn" title="bubble-rounded-2"><em class="u-iconfont icon-bubble-rounded-2"></em></p><p>bubble-rounded-2： .icon-bubble-rounded-2</p></li><li><p class="m-icon_ctn" title="bubble-rounded-chat"><em class="u-iconfont icon-bubble-rounded-chat"></em></p><p>bubble-rounded-chat： .icon-bubble-rounded-chat</p></li><li><p class="m-icon_ctn" title="bubbles-chat"><em class="u-iconfont icon-bubbles-chat"></em></p><p>bubbles-chat： .icon-bubbles-chat</p></li><li><p class="m-icon_ctn" title="bus"><em class="u-iconfont icon-bus"></em></p><p>bus： .icon-bus</p></li><li><p class="m-icon_ctn" title="calculator-1"><em class="u-iconfont icon-calculator-1"></em></p><p>calculator-1： .icon-calculator-1</p></li><li><p class="m-icon_ctn" title="calendar-1"><em class="u-iconfont icon-calendar-1"></em></p><p>calendar-1： .icon-calendar-1</p></li><li><p class="m-icon_ctn" title="calendar-2"><em class="u-iconfont icon-calendar-2"></em></p><p>calendar-2： .icon-calendar-2</p></li><li><p class="m-icon_ctn" title="car"><em class="u-iconfont icon-car"></em></p><p>car： .icon-car</p></li><li><p class="m-icon_ctn" title="card"><em class="u-iconfont icon-card"></em></p><p>card： .icon-card</p></li><li><p class="m-icon_ctn" title="cards"><em class="u-iconfont icon-cards"></em></p><p>cards： .icon-cards</p></li><li><p class="m-icon_ctn" title="chart-1"><em class="u-iconfont icon-chart-1"></em></p><p>chart-1： .icon-chart-1</p></li><li><p class="m-icon_ctn" title="chart-2"><em class="u-iconfont icon-chart-2"></em></p><p>chart-2： .icon-chart-2</p></li><li><p class="m-icon_ctn" title="chart-3"><em class="u-iconfont icon-chart-3"></em></p><p>chart-3： .icon-chart-3</p></li><li><p class="m-icon_ctn" title="chart-4"><em class="u-iconfont icon-chart-4"></em></p><p>chart-4： .icon-chart-4</p></li><li><p class="m-icon_ctn" title="chart-5"><em class="u-iconfont icon-chart-5"></em></p><p>chart-5： .icon-chart-5</p></li><li><p class="m-icon_ctn" title="chart-diagram-1"><em class="u-iconfont icon-chart-diagram-1"></em></p><p>chart-diagram-1： .icon-chart-diagram-1</p></li><li><p class="m-icon_ctn" title="chart-diagram-2"><em class="u-iconfont icon-chart-diagram-2"></em></p><p>chart-diagram-2： .icon-chart-diagram-2</p></li><li><p class="m-icon_ctn" title="chart-down-1"><em class="u-iconfont icon-chart-down-1"></em></p><p>chart-down-1： .icon-chart-down-1</p></li><li><p class="m-icon_ctn" title="chart-down-2"><em class="u-iconfont icon-chart-down-2"></em></p><p>chart-down-2： .icon-chart-down-2</p></li><li><p class="m-icon_ctn" title="chart-up-1"><em class="u-iconfont icon-chart-up-1"></em></p><p>chart-up-1： .icon-chart-up-1</p></li><li><p class="m-icon_ctn" title="chart-up-2"><em class="u-iconfont icon-chart-up-2"></em></p><p>chart-up-2： .icon-chart-up-2</p></li><li><p class="m-icon_ctn" title="check-1"><em class="u-iconfont icon-check-1"></em></p><p>check-1： .icon-check-1</p></li><li><p class="m-icon_ctn" title="check-2"><em class="u-iconfont icon-check-2"></em></p><p>check-2： .icon-check-2</p></li><li><p class="m-icon_ctn" title="check-3"><em class="u-iconfont icon-check-3"></em></p><p>check-3： .icon-check-3</p></li><li><p class="m-icon_ctn" title="clip"><em class="u-iconfont icon-clip"></em></p><p>clip： .icon-clip</p></li><li><p class="m-icon_ctn" title="clock-1"><em class="u-iconfont icon-clock-1"></em></p><p>clock-1： .icon-clock-1</p></li><li><p class="m-icon_ctn" title="clock-2"><em class="u-iconfont icon-clock-2"></em></p><p>clock-2： .icon-clock-2</p></li><li><p class="m-icon_ctn" title="cloud-download"><em class="u-iconfont icon-cloud-download"></em></p><p>cloud-download： .icon-cloud-download</p></li><li><p class="m-icon_ctn" title="cloud-upload"><em class="u-iconfont icon-cloud-upload"></em></p><p>cloud-upload： .icon-cloud-upload</p></li><li><p class="m-icon_ctn" title="cloud"><em class="u-iconfont icon-cloud"></em></p><p>cloud： .icon-cloud</p></li><li><p class="m-icon_ctn" title="coin-1"><em class="u-iconfont icon-coin-1"></em></p><p>coin-1： .icon-coin-1</p></li><li><p class="m-icon_ctn" title="coins-1"><em class="u-iconfont icon-coins-1"></em></p><p>coins-1： .icon-coins-1</p></li><li><p class="m-icon_ctn" title="coins-2"><em class="u-iconfont icon-coins-2"></em></p><p>coins-2： .icon-coins-2</p></li><li><p class="m-icon_ctn" title="color-picker"><em class="u-iconfont icon-color-picker"></em></p><p>color-picker： .icon-color-picker</p></li><li><p class="m-icon_ctn" title="colors"><em class="u-iconfont icon-colors"></em></p><p>colors： .icon-colors</p></li><li><p class="m-icon_ctn" title="compass"><em class="u-iconfont icon-compass"></em></p><p>compass： .icon-compass</p></li><li><p class="m-icon_ctn" title="coordinate"><em class="u-iconfont icon-coordinate"></em></p><p>coordinate： .icon-coordinate</p></li><li><p class="m-icon_ctn" title="crown"><em class="u-iconfont icon-crown"></em></p><p>crown： .icon-crown</p></li><li><p class="m-icon_ctn" title="cup-1"><em class="u-iconfont icon-cup-1"></em></p><p>cup-1： .icon-cup-1</p></li><li><p class="m-icon_ctn" title="dashboard-1"><em class="u-iconfont icon-dashboard-1"></em></p><p>dashboard-1： .icon-dashboard-1</p></li><li><p class="m-icon_ctn" title="delivery-1"><em class="u-iconfont icon-delivery-1"></em></p><p>delivery-1： .icon-delivery-1</p></li><li><p class="m-icon_ctn" title="diamond-1"><em class="u-iconfont icon-diamond-1"></em></p><p>diamond-1： .icon-diamond-1</p></li><li><p class="m-icon_ctn" title="dollar-1"><em class="u-iconfont icon-dollar-1"></em></p><p>dollar-1： .icon-dollar-1</p></li>
+  </li>
 </body>
 </html>
   

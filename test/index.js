@@ -1,7 +1,8 @@
 /**
- * @module test
- * @Date: 2021-08-09 10:59:34
- * @LastEditTime: 2021-08-09 14:33:15
+ * @script test
+ * @author Micheal Wayne<michealwayne@163.com>
+ * @buildTime 2018.07.30
+ * @lastModified 2021.09.19
  */
 
 const { join } = require('path');
@@ -18,4 +19,4 @@ svgs2fonts
   .then(flag => {
     console.log('run flag:', flag);
   })
-  .catch(e => console.error(e));
+  .catch(e => console.error('test failed', e));

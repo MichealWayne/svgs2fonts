@@ -1,5 +1,8 @@
 /**
- * config file
+ * @module configFile
+ * @author Micheal Wayne<michealwayne@163.com>
+ * @buildTime 2018.07.30
+ * @lastModified 2021.09.19
  */
 
 const _emptyFunc = () => '';

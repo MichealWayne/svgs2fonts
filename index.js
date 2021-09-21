@@ -1,12 +1,11 @@
 /**
  * svgs2fonts
- * @author: Micheal Wayne
- * @build time: 2018.07.30
- * @version: 1.0.5
- * @email: michealwayne@163.com
+ * @author Micheal Wayne<michealwayne@163.com>
+ * @buildTime 2018.07.30
+ * @lastModified 2021.09.19
+ * @version 1.1.0
  */
 
-const mkdirp = require('mkdirp');
 const Builder = require('./lib/Builder');
 const OPTIONS = require('./options');
 const { timeTag } = require('./constant');
@@ -18,16 +17,18 @@ module.exports = {
    */
   init(options) {
     return new Promise((resolve, reject) => {
+      // init options
       options.dist = options.dist || OPTIONS.dist;
       options.src = options.src || '';
 
-      const { noDemo, dist, debug } = options;
+      const { noDemo, debug } = options;
       if (debug) {
         OPTIONS.logger = console;
         OPTIONS.logger.time(timeTag);
       }
       Builder.init(options);
 
+      // init timer
       const _timer = setTimeout(() => {
         OPTIONS.logger.error('[failed] timeout');
         reject(new Error('timeout'));
@@ -43,12 +44,11 @@ module.exports = {
         reject(e);
       };
 
-      // mkdir output folder
-      mkdirp.sync(dist, err => {
-        OPTIONS.logger.error('mkdirp failed.', err);
-        reject(err);
-      });
-
+      /**
+       * first build icon svgs first,
+       * then use svg -> ttf font,
+       * last use ttf -> eot/woff/woff2 fonts
+       */
       return Builder.svg()
         .then(() => {
           OPTIONS.logger.log('[success] svg builded.');
