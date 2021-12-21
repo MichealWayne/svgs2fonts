@@ -15,6 +15,7 @@ module.exports = {
   DEMO_CSS: `
 @font-face {
   font-family: '{{fontName}}';
+  src: url('{{fontName}}.eot');
   src: url('{{fontName}}.woff2') format('woff2'),
     url('{{fontName}}.woff') format('woff'),
     url('{{fontName}}.eot#IEfix') format('embedded-opentype'), /* IE6-IE8 */  

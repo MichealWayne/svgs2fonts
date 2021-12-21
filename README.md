@@ -136,4 +136,4 @@ svgs2fonts svg dist --debug
 
 ## Last modified
 
-2021.09.19
+2021.12.16: fix IE8 bug;
