@@ -5,7 +5,7 @@ svg 图标转字体图标库（svgs fonts -> svg,ttf,eot,woff,woff2）。
 
 ## Version
 
-1.1.0
+2.0.0(beta-1)
 
 ## Install
 
@@ -32,8 +32,8 @@ npm i --save svgs2fonts
 ### 1. module import
 
 ```js
-const svgs2fonts = require('svgs2fonts');
-svgs2fonts.init(options);
+const Svgs2fonts = require('svgs2fonts');
+Svgs2fonts.init(options);
 ```
 
 `options`:
@@ -44,7 +44,7 @@ svgs2fonts.init(options);
 - startNumber: `{Number}`, unicode start number. Default: `10000`；
 - noDemo: `{Boolean}`, whether to create demo HTML. Default: `false`;
 - debug: `{Boolean}`, whether to open debug model. Default: `false`;
-- timeout: `{Number}`, run timeout. Default: 60s（`60000`）
+- ~~timeout~~（`v2.0 abandoned`）: `{Number}`, run timeout. Default: 60s（`60000`）
 
 ##### demo
 
@@ -133,4 +133,6 @@ svgs2fonts svg dist --debug
 
 ## Last modified
 
+2022.03.30: v2 support for ts;
+2021.12.16: fix IE8 bug;
 2021.09.19

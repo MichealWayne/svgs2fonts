@@ -1,0 +1,6 @@
+baks/*
+dist/*
+/node_modules/*
+/temp/*
+/coverage/*
+lib/*.js
