@@ -3,12 +3,12 @@
 'use strict';
 const argv = require('minimist')(process.argv.slice(2));
 const { join } = require('path');
-const svgs2fonts = require('../index');
+const svgs2fonts = require('../dist/index');
 const dirname = process.cwd();
 
 const Config = {
   version: require('../package.json').version,
-  startTime: '2018.07.30',
+  time: '2018.07.30',
 };
 
 // version
@@ -16,17 +16,22 @@ if (argv.v || argv.version) {
   console.log(`v${Config.version}`);
 } else if (argv._ && argv._.length) {
   // typical init
-  const _src = argv._[0];
-  const _dist = argv._[1] || _src;
-
-  svgs2fonts.init({
-    src: join(dirname, _src),
-    dist: join(dirname, _dist),
+  const _paramMap = {
+    src: join(dirname, argv._[0]),
+    dist: join(dirname, argv._[1] || src),
     fontName: argv.n || argv.name,
-    startNumber: argv.number,
+    unicodeStart: argv.number,
     noDemo: argv.nodemo,
     debug: argv.debug,
-  });
+  };
+  const initOpts = {};
+  for (const key in _paramMap) {
+    if (_paramMap[key] !== undefined) {
+      initOpts[key] = _paramMap[key];
+    }
+  }
+
+  svgs2fonts.init(initOpts);
 } else {
   // help
   console.log(
@@ -38,6 +43,7 @@ if (argv.v || argv.version) {
       '         --number unicode start code number',
       '         --nodemo no demo files',
       '         --debug  output debug log',
+      '    -v   --version  output version',
     ].join('\n')
   );
   process.exit();

@@ -4,7 +4,7 @@ svg 图标转字体图标库（svgs -> svg,ttf,eot,woff,woff2）。[English read
 
 ## 版本
 
-1.1.0
+2.0.0(beta-1)
 
 ## 安装
 
@@ -28,35 +28,37 @@ npm i --save svgs2fonts
 
 ## 使用
 
-### 方式 1——模块引入
+### 方式 1——模块引入（支持 TypeScript）
 
 ```js
-const svgs2fonts = require('svgs2fonts');
-svgs2fonts.init(options);
+const Svgs2fonts = require('svgs2fonts');
+Svgs2fonts.init(options);
 ```
 
 其中 options 参数：
 
 - src：`{String}`，svg 文件目录路径；
-- dir：`{String}`，输出路径；
+- dist：`{String}`，输出路径；
 - fontName：`{String}`，输出图标/字体名称。可选，默认为`"iconfont"`；
-- startNumber：`{Number}`，unicode 起始数字（需要避开正常 unicode 范围）。可选，默认为`10000`；
+- unicodeStart：`{Number}`，unicode 起始数字（需要避开正常 unicode 范围），`v2.0`之前为`startNumber`。可选，默认为`10000`；
 - noDemo：`{Boolean}`，是否需要输出 html Demo 文件。可选，默认为`false`；
 - debug：`{Boolean}`，是否开启 debug 模式以输出更多执行信息。可选，默认为`false`；
-- timeout：`{Number}`，执行超时时间，默认为 60s（`60000`）
+- ~~timeout~~（`v2.0废弃`）：`{Number}`，执行超时时间，默认为 60s（`60000`）
+- demoUnicodeHTML：unicode类型的示例html名称。可选，默认为`demo_unicode.html`；
+- demoFontClassHTML：fontClass类型的示例html名称。可选，默认为`demo_fontclass.html`；
+- ~~logger~~（`v2.0废弃`）：`{Object}`，日志记录。
 
 ##### demo
 
 ```js
-const svgs2fonts = require('svgs2fonts');
+const Svgs2fonts = require('svgs2fonts');
 const join = require('path').join;
 
-svgs2fonts
+Svgs2fonts
   .init({
     src: __dirname, // svg path
     dist: join(__dirname, 'dest'), // output path
     fontName: 'myIconfont', // font name
-    startNumber: 20000, // unicode start number
     noDemo: true, // no demo html files
     debug: true, // open debug
   })
@@ -136,4 +138,5 @@ svgs2fonts svg dist --debug
 
 ## Last modified
 
+2022.03.20: v2 support for ts;
 2021.12.16: fix IE8 bug;

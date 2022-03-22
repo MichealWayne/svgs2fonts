@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "outDir": "./dist/",
+    "sourceMap": false,
+    "strict": true,
+    "noImplicitAny": true,
+    "module": "commonjs",
+    "target": "es6",
+    "allowJs": true,
+    "baseUrl": ".",
+    "lib": [
+      "es2018"
+    ],
+    "paths": {
+      "@/*": ["src/*"]
+    },
+    "types": ["jest", "node"]
+  },
+  "include": ["src/**/*"],
+  "exclude": [
+    "__tests__",
+    "./baks/**/*",
+    "./temp/**/*",
+    "node_modules"
+  ]
+}

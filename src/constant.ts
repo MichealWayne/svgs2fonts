@@ -1,18 +1,22 @@
 /**
  * @module constant
- * @author Micheal Wayne<michealwayne@163.com>
+ * @author Wayne<michealwayne@163.com>
  * @buildTime 2018.07.30
- * @lastModified 2021.09.19
+ * @lastModified 2022.03.20
  */
 
-module.exports = {
-  timeTag: 'svgs2fonts time-consuming',
+export const IS_DEV = process.env.NODE_ENV === 'development';
 
-  // for demo html
-  fontNameReg: /\{\{fontName\}\}/g,
-  demoCssReg: /\{\{demoCss\}\}/g,
-  demoHtmlReg: /\{\{demoHtml\}\}/,
-  DEMO_CSS: `
+export const SUCCESS_FlAG = true;
+export const FAIL_FlAG = false;
+
+export const timeTag = 'svgs2fonts time-consuming';
+
+export const fontNameReg = /\{\{fontName\}\}/g;
+export const demoCssReg = /\{\{demoCss\}\}/g;
+export const demoHtmlReg = /\{\{demoHtml\}\}/;
+
+export const DEMO_CSS = `
 @font-face {
   font-family: '{{fontName}}';
   src: url('{{fontName}}.eot');
@@ -21,9 +25,9 @@ module.exports = {
     url('{{fontName}}.eot#IEfix') format('embedded-opentype'), /* IE6-IE8 */  
     url('{{fontName}}.ttf') format('truetype'), /* chrome, firefox, opera, Safari, Android, iOS 4.2+*/
     url('{{fontName}}.svg') format('svg');
-}
-  `,
-  DEMO_HTML: `
+}`;
+
+export const DEMO_HTML = `
 <!DOCTYPE html>
 <html>
 <head>
@@ -95,5 +99,4 @@ module.exports = {
   </li>
 </body>
 </html>
-  `,
-};
+  `;

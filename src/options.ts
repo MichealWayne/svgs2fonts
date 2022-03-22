@@ -5,22 +5,20 @@
  * @lastModified 2021.09.19
  */
 
-const _emptyFunc = () => '';
+import { IS_DEV } from './constant';
+import { InitOptionsParams } from './types';
 
-module.exports = {
+global.__sf_debug = IS_DEV === true;
+
+const defaultOpts: InitOptionsParams = {
+  debug: false,
+  noDemo: true,
   fontName: 'iconfont',
-  timeout: 60000,
   unicodeStart: 10000,
-  src: 'svg',
+  src: '',
   dist: 'dist',
   demoUnicodeHTML: 'demo_unicode.html',
   demoFontClassHTML: 'demo_fontclass.html',
-  logger: {
-    log: _emptyFunc,
-    error: _emptyFunc,
-    info: _emptyFunc,
-    warn: _emptyFunc,
-    time: _emptyFunc,
-    timeEnd: _emptyFunc,
-  },
 };
+
+export default defaultOpts;
