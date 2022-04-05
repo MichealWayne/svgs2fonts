@@ -4,13 +4,14 @@
  * @buildTime 2022.03.20
  * @lastModified 2022.03.20
  */
+
 import fs from 'fs';
 import { join } from 'path';
 import svg2ttf from 'svg2ttf';
 import ttf2woff from 'ttf2woff';
 import ttf2woff2 from 'ttf2woff2';
 import ttf2eot from 'ttf2eot';
-import { setIconFile } from '../fsfuncs';
+import { setIconFile } from '../fsUtils';
 import { SVGBuilder } from './SVGBuilder';
 
 export default class FontsBuilder {
@@ -30,7 +31,7 @@ export default class FontsBuilder {
   async ttf() {
     const DIST_PATH = `${this.fontsPath}.ttf`; // 输出地址
 
-    let ttf = svg2ttf(
+    const ttf = svg2ttf(
       fs.readFileSync(
         join(this.svgBuilder.options.dist, `${this.svgBuilder.options.fontName}.svg`),
         'utf8'

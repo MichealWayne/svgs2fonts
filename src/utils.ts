@@ -1,6 +1,6 @@
 /**
  * @module utils
- * @author Micheal Wayne<michealwayne@163.com>
+ * @author Wayne<michealwayne@163.com>
  * @buildTime 2018.07.30
  * @lastModified 2022.03.20
  */

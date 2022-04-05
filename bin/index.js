@@ -18,7 +18,7 @@ if (argv.v || argv.version) {
   // typical init
   const _paramMap = {
     src: join(dirname, argv._[0]),
-    dist: join(dirname, argv._[1] || src),
+    dist: join(dirname, argv._[1] || argv._[0]),
     fontName: argv.n || argv.name,
     unicodeStart: argv.number,
     noDemo: argv.nodemo,
@@ -39,7 +39,7 @@ if (argv.v || argv.version) {
       'usage: svgs2fonts [src] [dist] [options]',
       '',
       'options:',
-      '    -n   --name   iconfont name(default: iconfont.*)',
+      '    -n   --name   iconfont name(default: "iconfont")',
       '         --number unicode start code number',
       '         --nodemo no demo files',
       '         --debug  output debug log',

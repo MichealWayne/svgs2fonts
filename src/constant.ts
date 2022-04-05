@@ -10,12 +10,6 @@ export const IS_DEV = process.env.NODE_ENV === 'development';
 export const SUCCESS_FlAG = true;
 export const FAIL_FlAG = false;
 
-export const timeTag = 'svgs2fonts time-consuming';
-
-export const fontNameReg = /\{\{fontName\}\}/g;
-export const demoCssReg = /\{\{demoCss\}\}/g;
-export const demoHtmlReg = /\{\{demoHtml\}\}/;
-
 export const DEMO_CSS = `
 @font-face {
   font-family: '{{fontName}}';
