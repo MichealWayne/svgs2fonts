@@ -1,8 +1,10 @@
 /**
- * @author Micheal Wayne<michealwayne@163.com>
+ * @module FSFunctions
+ * @author Wayne<michealwayne@163.com>
  * @buildTime 2018.07.30
  * @lastModified 2022.03.20
  */
+
 import fs from 'fs';
 import { extname, join, dirname } from 'path';
 import mkdirp from 'mkdirp';
@@ -51,13 +53,14 @@ export function fsExistsSync(folderPath: string) {
 }
 
 /**
- * @function setFile
+ * @function writeFile
  * @description find file, if not exist, build it
  * @param {String} filePath file path
  * @param {String} fileData file data
  * @param {Boolean} replaceBool replace original data or add
  * @return {Promise}
  */
+
 export function writeFile(filePath: string, fileData: string, replaceBool?: boolean) {
   return new Promise<boolean>(resolve => {
     const dirPath = dirname(filePath);

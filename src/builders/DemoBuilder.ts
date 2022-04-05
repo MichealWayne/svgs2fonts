@@ -4,19 +4,16 @@
  * @buildTime 2022.03.20
  * @lastModified 2022.03.20
  */
+
 import { join } from 'path';
-import { writeFile } from '../fsfuncs';
+import { writeFile } from '../fsUtils';
 import { isString } from '../utils';
 import { SVGBuilder } from './SVGBuilder';
-import {
-  SUCCESS_FlAG,
-  FAIL_FlAG,
-  fontNameReg,
-  demoCssReg,
-  demoHtmlReg,
-  DEMO_CSS,
-  DEMO_HTML,
-} from '../constant';
+import { SUCCESS_FlAG, FAIL_FlAG, DEMO_CSS, DEMO_HTML } from '../constant';
+
+export const fontNameReg = /\{\{fontName\}\}/g;
+export const demoCssReg = /\{\{demoCss\}\}/g;
+export const demoHtmlReg = /\{\{demoHtml\}\}/;
 
 export default class DemoBuilder {
   private svgBuilder: SVGBuilder;

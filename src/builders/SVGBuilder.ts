@@ -4,11 +4,12 @@
  * @buildTime 2022.03.20
  * @lastModified 2022.03.20
  */
+
 import fs from 'fs';
 import { basename, join } from 'path';
 import SVGIcons2SVGFont from 'svgicons2svgfont';
 import { InitOptionsParams } from '../types';
-import { filterSvgFiles, mkdirpSync } from '../fsfuncs';
+import { filterSvgFiles, mkdirpSync } from '../fsUtils';
 import { getIconStrUnicode, isSuccessResult } from '../utils';
 import defaultOpts from '../options';
 import { SUCCESS_FlAG, FAIL_FlAG, IS_DEV } from '../constant';

@@ -16,3 +16,6 @@
 # temp
 temp/
 baks/
+
+# test
+coverage/
