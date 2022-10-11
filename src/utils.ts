@@ -12,7 +12,7 @@ import { SUCCESS_FlAG } from './constant';
  * @param {unknown} res
  * @returns {Boolean}
  */
-export function isSuccessResult(res: unknown) {
+export function isSuccessResult(res: unknown): boolean {
   return res === SUCCESS_FlAG;
 }
 
@@ -21,7 +21,7 @@ export function isSuccessResult(res: unknown) {
  * @param {unknown} value
  * @return {Boolean}
  */
-export function isString(value: unknown) {
+export function isString(value: unknown): boolean {
   return typeof value === 'string';
 }
 
@@ -30,7 +30,7 @@ export function isString(value: unknown) {
  * @param {String} iconName
  * @returns {Number}
  */
-export function getIconStrUnicode(iconName: string, unicodeStart: number) {
+export function getIconStrUnicode(iconName: string, unicodeStart: number): number {
   if (!iconName) {
     return 0;
   }

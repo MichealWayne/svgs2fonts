@@ -16,13 +16,13 @@ import { isString } from './utils';
  * @param {String} folderPath
  * @return {Promise}
  */
-export function mkdirpSync(folderPath: string) {
+export function mkdirpSync(folderPath: string): boolean | Error {
   try {
     mkdirp.sync(folderPath);
     return true;
   } catch (err) {
     global.__sf_debug && console.error(err);
-    return err;
+    return err as Error;
   }
 }
 
@@ -31,7 +31,7 @@ export function mkdirpSync(folderPath: string) {
  * @description find folder, if not exist, build it
  * @param {String} folderPath: folder path
  */
-export function setFolderSync(folderPath: string) {
+export function setFolderSync(folderPath: string): void {
   if (!fs.existsSync(folderPath)) {
     mkdirpSync(folderPath);
   }
@@ -43,7 +43,7 @@ export function setFolderSync(folderPath: string) {
  * @param {String} path: folder or file path
  * @return {Boolean} if exist, true | false
  */
-export function fsExistsSync(folderPath: string) {
+export function fsExistsSync(folderPath: string): boolean {
   try {
     fs.accessSync(folderPath, fs.constants.F_OK);
     return true;
@@ -60,8 +60,11 @@ export function fsExistsSync(folderPath: string) {
  * @param {Boolean} replaceBool replace original data or add
  * @return {Promise}
  */
-
-export function writeFile(filePath: string, fileData: string, replaceBool?: boolean) {
+export function writeFile(
+  filePath: string,
+  fileData: string,
+  replaceBool?: boolean
+): Promise<boolean> {
   return new Promise<boolean>(resolve => {
     const dirPath = dirname(filePath);
     setFolderSync(dirPath);
@@ -94,7 +97,11 @@ export function writeFile(filePath: string, fileData: string, replaceBool?: bool
  * @param {Boolean} debug
  * @return {Promise}
  */
-export function setIconFile(filePath: string, iconData: string | Buffer, iconType = '') {
+export function setIconFile(
+  filePath: string,
+  iconData: string | Buffer,
+  iconType = ''
+): Promise<boolean> {
   return new Promise<boolean>(resolve => {
     fs.writeFile(filePath, iconData, err => {
       if (err) {
@@ -114,7 +121,7 @@ export function setIconFile(filePath: string, iconData: string | Buffer, iconTyp
  * @param {String} svgFolderPath svg folder path.
  * @return {Array} svgs paths.
  */
-export function filterSvgFiles(svgFolderPath: string) {
+export function filterSvgFiles(svgFolderPath: string): string[] {
   const svgArr: string[] = [];
   try {
     const files = fs.readdirSync(svgFolderPath, 'utf-8');

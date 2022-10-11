@@ -1,6 +1,6 @@
 {
   "name": "svgs2fonts",
-  "version": "2.0.0-beta.1",
+  "version": "2.0.0",
   "author": "Wayne",
   "description": "svg icons to icons fonts(svg,ttf,eot,woff,woff2)",
   "main": "dist/index.js",
@@ -42,7 +42,6 @@
     "@typescript-eslint/parser": "^4.21.0",
     "cross-env": "^7.0.3",
     "eslint": "^6.8.0",
-    "eslint-config-sonarjs": "^1.0.19",
     "eslint-plugin-typescript": "^0.14.0",
     "husky": "^4.3.0",
     "jest": "^26.6.3",

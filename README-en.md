@@ -5,7 +5,7 @@ svg 图标转字体图标库（svgs fonts -> svg,ttf,eot,woff,woff2）。
 
 ## Version
 
-2.0.0(beta-1)
+2.0.0
 
 ## Install
 
@@ -133,6 +133,7 @@ svgs2fonts svg dist --debug
 
 ## Last modified
 
+2022.10.07: code bug fixed;
 2022.03.30: v2 support for ts;
 2021.12.16: fix IE8 bug;
 2021.09.19

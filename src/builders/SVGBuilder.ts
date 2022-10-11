@@ -2,17 +2,18 @@
  * @module SVGBuilder
  * @author Wayne<michealwayne@163.com>
  * @buildTime 2022.03.20
- * @lastModified 2022.03.20
+ * @lastModified 2022.10.07
  */
 
 import fs from 'fs';
 import { basename, join } from 'path';
 import SVGIcons2SVGFont from 'svgicons2svgfont';
+
+import defaultOpts from '../options';
+import { SUCCESS_FlAG, FAIL_FlAG, IS_DEV } from '../constant';
 import { InitOptionsParams } from '../types';
 import { filterSvgFiles, mkdirpSync } from '../fsUtils';
 import { getIconStrUnicode, isSuccessResult } from '../utils';
-import defaultOpts from '../options';
-import { SUCCESS_FlAG, FAIL_FlAG, IS_DEV } from '../constant';
 
 interface SvgUnicodeObjParams {
   [propName: string]: string;
@@ -50,10 +51,12 @@ export default class ConcreteSVGBuilder extends SVGBuilder {
     super(options);
   }
 
-  async svgs2svgsFont() {
+  async svgs2svgsFont(): Promise<boolean> {
     // Setting the font destination
     const DIST_PATH = join(this.options.dist, `${this.options.fontName}.svg`);
+
     global.__sf_debug && console.log(`[running]start write ${DIST_PATH}`);
+
     const res = await new Promise<boolean>(resolve => {
       // init dist folder
       const mkdirRes = mkdirpSync(this.options.dist);
