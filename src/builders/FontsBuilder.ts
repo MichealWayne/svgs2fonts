@@ -2,7 +2,7 @@
  * @module FontsBuilder
  * @author Wayne<michealwayne@163.com>
  * @buildTime 2022.03.20
- * @lastModified 2022.03.20
+ * @lastModified 2022.10.07
  */
 
 import fs from 'fs';
@@ -11,6 +11,7 @@ import svg2ttf from 'svg2ttf';
 import ttf2woff from 'ttf2woff';
 import ttf2woff2 from 'ttf2woff2';
 import ttf2eot from 'ttf2eot';
+
 import { setIconFile } from '../fsUtils';
 import { SVGBuilder } from './SVGBuilder';
 
@@ -28,7 +29,7 @@ export default class FontsBuilder {
    * build ttf font
    * @returns
    */
-  async ttf() {
+  async ttf(): Promise<boolean> {
     const DIST_PATH = `${this.fontsPath}.ttf`; // 输出地址
 
     const ttf = svg2ttf(
@@ -44,7 +45,7 @@ export default class FontsBuilder {
   /**
    * build eot font
    */
-  async eot() {
+  async eot(): Promise<boolean> {
     const DIST_PATH = `${this.fontsPath}.eot`; // 输出地址
 
     const eot = Buffer.from(ttf2eot(this.ttfBuffer).buffer);
@@ -54,7 +55,7 @@ export default class FontsBuilder {
   /**
    * build woff font
    */
-  async woff() {
+  async woff(): Promise<boolean> {
     const DIST_PATH = `${this.fontsPath}.woff`; // 输出地址
 
     const woff = Buffer.from(ttf2woff(this.ttfBuffer).buffer);
@@ -64,7 +65,7 @@ export default class FontsBuilder {
   /**
    * build woff2 font
    */
-  async woff2() {
+  async woff2(): Promise<boolean> {
     const DIST_PATH = `${this.fontsPath}.woff2`; // 输出地址
 
     const woff2 = Buffer.from(ttf2woff2(this.ttfBuffer).buffer);

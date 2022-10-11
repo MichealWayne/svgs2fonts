@@ -8,6 +8,7 @@
 
 import { isSuccessResult } from './utils';
 import { InitOptionsParams } from './types';
+
 import SVGBuilder from './builders/SVGBuilder';
 import FontsBuilder from './builders/FontsBuilder';
 import DemoBuilder from './builders/DemoBuilder';

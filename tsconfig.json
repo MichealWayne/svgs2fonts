@@ -19,6 +19,7 @@
   },
   "include": ["src/**/*"],
   "exclude": [
+    "__tests__",
     "./baks/**/*",
     "./temp/**/*",
     "node_modules"

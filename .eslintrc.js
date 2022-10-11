@@ -1,3 +1,8 @@
+/*
+ * @author Wayne
+ * @Date 2022-03-22 16:07:26
+ * @LastEditTime 2022-10-11 11:06:57
+ */
 // document: https://eslint.org/docs/user-guide/configuring
 
 module.exports = {
@@ -38,7 +43,5 @@ module.exports = {
     'no-shadow': 'off',
     'line-comment-position': [0],
     'no-unused-vars': 'off',
-    '@typescript-eslint/no-var-requires': 0,
-    '@typescript-eslint/explicit-module-boundary-types': 0,
   },
 };

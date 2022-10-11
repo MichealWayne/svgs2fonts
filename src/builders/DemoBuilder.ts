@@ -2,10 +2,11 @@
  * @module DemoBuilder
  * @author Wayne<michealwayne@163.com>
  * @buildTime 2022.03.20
- * @lastModified 2022.03.20
+ * @lastModified 2022.10.07
  */
 
 import { join } from 'path';
+
 import { writeFile } from '../fsUtils';
 import { isString } from '../utils';
 import { SVGBuilder } from './SVGBuilder';
@@ -22,7 +23,7 @@ export default class DemoBuilder {
     this.svgBuilder = svgBuilder;
   }
 
-  async html() {
+  async html(): Promise<boolean> {
     let _codeHtml = '';
     let _classHtml = '';
     let _classCss = '';

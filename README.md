@@ -4,7 +4,7 @@ svg 图标转字体图标库（svgs -> svg,ttf,eot,woff,woff2）。[English read
 
 ## 版本
 
-2.0.0(beta-1)
+2.0.0
 
 ## 安装
 
@@ -44,8 +44,8 @@ Svgs2fonts.init(options);
 - noDemo：`{Boolean}`，是否需要输出 html Demo 文件。可选，默认为`false`；
 - debug：`{Boolean}`，是否开启 debug 模式以输出更多执行信息。可选，默认为`false`；
 - ~~timeout~~（`v2.0废弃`）：`{Number}`，执行超时时间，默认为 60s（`60000`）
-- demoUnicodeHTML：unicode类型的示例html名称。可选，默认为`demo_unicode.html`；
-- demoFontClassHTML：fontClass类型的示例html名称。可选，默认为`demo_fontclass.html`；
+- demoUnicodeHTML：unicode 类型的示例 html 名称。可选，默认为`demo_unicode.html`；
+- demoFontClassHTML：fontClass 类型的示例 html 名称。可选，默认为`demo_fontclass.html`；
 - ~~logger~~（`v2.0废弃`）：`{Object}`，日志记录。
 
 ##### demo
@@ -54,14 +54,13 @@ Svgs2fonts.init(options);
 const Svgs2fonts = require('svgs2fonts');
 const join = require('path').join;
 
-Svgs2fonts
-  .init({
-    src: __dirname, // svg path
-    dist: join(__dirname, 'dest'), // output path
-    fontName: 'myIconfont', // font name
-    noDemo: true, // no demo html files
-    debug: true, // open debug
-  })
+Svgs2fonts.init({
+  src: __dirname, // svg path
+  dist: join(__dirname, 'dest'), // output path
+  fontName: 'myIconfont', // font name
+  noDemo: true, // no demo html files
+  debug: true, // open debug
+})
   .then(() => console.log('task success!'))
   .catch(err => console.log(`task failed(${err})`));
 ```
@@ -138,5 +137,6 @@ svgs2fonts svg dist --debug
 
 ## Last modified
 
+2022.10.07: code bug fixed;
 2022.03.20: v2 support for ts;
 2021.12.16: fix IE8 bug;
