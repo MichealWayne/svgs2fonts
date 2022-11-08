@@ -1,0 +1,9 @@
+@font-face {
+  font-family: 'myfont';
+  src: url('myfont.eot');
+  src: url('myfont.woff2') format('woff2'),
+    url('myfont.woff') format('woff'),
+    url('myfont.eot#IEfix') format('embedded-opentype'), /* IE6-IE8 */  
+    url('myfont.ttf') format('truetype'), /* chrome, firefox, opera, Safari, Android, iOS 4.2+*/
+    url('myfont.svg') format('svg');
+}

@@ -5,7 +5,7 @@
  * @lastModified 2022.03.20
  */
 
-import { SUCCESS_FlAG } from './constant';
+import { SUCCESS_FlAG } from '../constant';
 
 /**
  * @function isSuccessResult

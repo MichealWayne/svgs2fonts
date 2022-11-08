@@ -12,7 +12,7 @@ import ttf2woff from 'ttf2woff';
 import ttf2woff2 from 'ttf2woff2';
 import ttf2eot from 'ttf2eot';
 
-import { setIconFile } from '../fsUtils';
+import { setIconFile } from '../lib/fsUtils';
 import { SVGBuilder } from './SVGBuilder';
 
 export default class FontsBuilder {

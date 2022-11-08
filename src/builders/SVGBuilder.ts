@@ -9,11 +9,12 @@ import fs from 'fs';
 import { basename, join } from 'path';
 import SVGIcons2SVGFont from 'svgicons2svgfont';
 
-import defaultOpts from '../options';
+import { InitOptionsParams } from '../types/OptionType';
+import DEFAULT_OPTIONS from '../options';
 import { SUCCESS_FlAG, FAIL_FlAG, IS_DEV } from '../constant';
-import { InitOptionsParams } from '../types';
-import { filterSvgFiles, mkdirpSync } from '../fsUtils';
-import { getIconStrUnicode, isSuccessResult } from '../utils';
+
+import { filterSvgFiles, mkdirpSync } from '../lib/fsUtils';
+import { getIconStrUnicode, isSuccessResult } from '../lib/utils';
 
 interface SvgUnicodeObjParams {
   [propName: string]: string;
@@ -34,7 +35,7 @@ export abstract class SVGBuilder {
   public svgUnicodeObj: SvgUnicodeObjParams;
 
   constructor(options: Partial<InitOptionsParams>) {
-    this.options = Object.assign(defaultOpts, options);
+    this.options = Object.assign(DEFAULT_OPTIONS, options);
     this.svgsPathList = filterSvgFiles(this.options.src);
     this.unicodeStart = this.options.unicodeStart;
     this.svgUnicodeObj = {};
@@ -92,7 +93,8 @@ export default class ConcreteSVGBuilder extends SVGBuilder {
 
       // https://www.npmjs.com/package/svgicons2svgfont
       const fontStream = new SVGIcons2SVGFont({
-        fontName: this.options.fontName,
+        // before v2: fontName: this.options.fontName,
+        ...this.options,
       });
       fontStream
         .pipe(fs.createWriteStream(DIST_PATH))

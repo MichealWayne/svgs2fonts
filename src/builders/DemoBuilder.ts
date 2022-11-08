@@ -5,16 +5,17 @@
  * @lastModified 2022.10.07
  */
 
-import { join } from 'path';
+import { join, extname } from 'path';
 
-import { writeFile } from '../fsUtils';
-import { isString } from '../utils';
+import { writeFile } from '../lib/fsUtils';
+import { isString } from '../lib/utils';
 import { SVGBuilder } from './SVGBuilder';
 import { SUCCESS_FlAG, FAIL_FlAG, DEMO_CSS, DEMO_HTML } from '../constant';
 
 export const fontNameReg = /\{\{fontName\}\}/g;
 export const demoCssReg = /\{\{demoCss\}\}/g;
 export const demoHtmlReg = /\{\{demoHtml\}\}/;
+export const demoCssFileReg = /\{\{demoCssFile\}\}/;
 
 export default class DemoBuilder {
   private svgBuilder: SVGBuilder;
@@ -43,14 +44,26 @@ export default class DemoBuilder {
       _classCss += `\r\n.icon-${i}:before { content: "\\${_num}"; }`;
     }
 
+    const _DEMO_UNICODE_CSS = demoUnicodeHTML.replace(extname(demoUnicodeHTML), '.css');
+    const _DEMO_FONT_CLASS_CSS = demoFontClassHTML.replace(extname(demoFontClassHTML), '.css');
+
     const _CSS = DEMO_CSS.replace(fontNameReg, fontName);
     const _HTML = DEMO_HTML.replace(fontNameReg, fontName);
-    const CODE_HTML = _HTML.replace(demoCssReg, _CSS).replace(demoHtmlReg, _codeHtml);
-    const CLASS_HTML = _HTML.replace(demoCssReg, _CSS + _classCss).replace(demoHtmlReg, _classHtml);
+    const CODE_HTML = _HTML
+      .replace(demoCssReg, _CSS)
+      .replace(demoHtmlReg, _codeHtml)
+      .replace(demoCssFileReg, _DEMO_UNICODE_CSS);
+    const CLASS_HTML = _HTML
+      .replace(demoCssReg, _CSS + _classCss)
+      .replace(demoHtmlReg, _classHtml)
+      .replace(demoCssFileReg, _DEMO_FONT_CLASS_CSS);
 
     const [writeUnicodeHTMLRes, writeFontClassHTMLRes] = await Promise.all([
       writeFile(join(dist, demoUnicodeHTML), CODE_HTML, true),
+      writeFile(join(dist, _DEMO_UNICODE_CSS), _CSS, true),
+
       writeFile(join(dist, demoFontClassHTML), CLASS_HTML, true),
+      writeFile(join(dist, _DEMO_FONT_CLASS_CSS), _CSS + _classCss, true),
     ]);
     if (writeUnicodeHTMLRes && writeFontClassHTMLRes) {
       global.__sf_debug &&

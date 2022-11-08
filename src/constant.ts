@@ -1,8 +1,8 @@
 /**
  * @module constant
  * @author Wayne<michealwayne@163.com>
- * @buildTime 2018.07.30
- * @lastModified 2022.03.20
+ * @Date 2022-10-11 13:15:40
+ * @LastEditTime 2022-11-02 17:00:44
  */
 
 export const IS_DEV = process.env.NODE_ENV === 'development';
@@ -10,8 +10,7 @@ export const IS_DEV = process.env.NODE_ENV === 'development';
 export const SUCCESS_FlAG = true;
 export const FAIL_FlAG = false;
 
-export const DEMO_CSS = `
-@font-face {
+export const DEMO_CSS = `@font-face {
   font-family: '{{fontName}}';
   src: url('{{fontName}}.eot');
   src: url('{{fontName}}.woff2') format('woff2'),
@@ -56,9 +55,10 @@ export const DEMO_HTML = `
     to {font-size: 26px;color: red;}
   }
   </style>
-  <style type="text/css">
-  {{demoCss}}
-  </style>
+
+  <!-- font css -->
+  <link rel="stylesheet" rel="stylesheet" href="./{{demoCssFile}}" />
+
   <title>svg2fonts demo</title>
 </head>
 <body>
