@@ -8,7 +8,7 @@
 import fs from 'fs';
 import { extname, join, dirname } from 'path';
 import mkdirp from 'mkdirp';
-import { FAIL_FlAG, SUCCESS_FlAG } from './constant';
+import { FAIL_FlAG, SUCCESS_FlAG } from '../constant';
 import { isString } from './utils';
 
 /**

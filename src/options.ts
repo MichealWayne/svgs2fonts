@@ -1,16 +1,16 @@
 /**
  * @module configFile
  * @author Micheal Wayne<michealwayne@163.com>
- * @buildTime 2018.07.30
- * @lastModified 2021.09.19
+ * @Date 2022-03-22 14:53:16
+ * @LastEditTime 2022-11-03 15:22:15
  */
 
 import { IS_DEV } from './constant';
-import { InitOptionsParams } from './types';
+import { InitOptionsParams } from './types/OptionType';
 
 global.__sf_debug = IS_DEV === true;
 
-const defaultOpts: InitOptionsParams = {
+const DEFAULT_OPTIONS: InitOptionsParams = {
   debug: false,
   noDemo: true,
   fontName: 'iconfont',
@@ -21,4 +21,4 @@ const defaultOpts: InitOptionsParams = {
   demoFontClassHTML: 'demo_fontclass.html',
 };
 
-export default defaultOpts;
+export default DEFAULT_OPTIONS;

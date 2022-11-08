@@ -1,0 +1,95 @@
+@font-face {
+  font-family: 'myfont';
+  src: url('myfont.eot');
+  src: url('myfont.woff2') format('woff2'),
+    url('myfont.woff') format('woff'),
+    url('myfont.eot#IEfix') format('embedded-opentype'), /* IE6-IE8 */  
+    url('myfont.ttf') format('truetype'), /* chrome, firefox, opera, Safari, Android, iOS 4.2+*/
+    url('myfont.svg') format('svg');
+}
+.icon-24:before { content: "\3138"; }
+.icon-ad-1:before { content: "\538c"; }
+.icon-add-pluss-1:before { content: "\465e"; }
+.icon-add-pluss-2:before { content: "\47cd"; }
+.icon-add-pluss-3:before { content: "\493d"; }
+.icon-alarm-1:before { content: "\6cc2"; }
+.icon-alarm-clock:before { content: "\42f7"; }
+.icon-arrow-down-1:before { content: "\5dc6"; }
+.icon-arrow-down-2:before { content: "\5fb0"; }
+.icon-arrow-down-3:before { content: "\619a"; }
+.icon-arrow-left-1:before { content: "\534c"; }
+.icon-arrow-left-2:before { content: "\54ff"; }
+.icon-arrow-left-3:before { content: "\56b2"; }
+.icon-arrow-right-1:before { content: "\5fff"; }
+.icon-arrow-right-2:before { content: "\61f4"; }
+.icon-arrow-right-3:before { content: "\63ea"; }
+.icon-arrow-up-1:before { content: "\5492"; }
+.icon-arrow-up-2:before { content: "\564c"; }
+.icon-arrow-up-3:before { content: "\5806"; }
+.icon-backspace:before { content: "\3123"; }
+.icon-battery-charge:before { content: "\4c2a"; }
+.icon-battery-discharged:before { content: "\2ccd"; }
+.icon-battery-full:before { content: "\2b9a"; }
+.icon-battery-half:before { content: "\49df"; }
+.icon-battery-low:before { content: "\2cb0"; }
+.icon-bin:before { content: "\2c37"; }
+.icon-board:before { content: "\2efc"; }
+.icon-boat:before { content: "\2fcf"; }
+.icon-book-1:before { content: "\6f48"; }
+.icon-book-2:before { content: "\718d"; }
+.icon-bookmark-1:before { content: "\8f85"; }
+.icon-bookmark-add:before { content: "\4379"; }
+.icon-bookmark-added:before { content: "\43c1"; }
+.icon-bowtie:before { content: "\3e34"; }
+.icon-box-1:before { content: "\706f"; }
+.icon-box-2:before { content: "\72ba"; }
+.icon-box-3:before { content: "\7506"; }
+.icon-box-4:before { content: "\7751"; }
+.icon-brief-bag:before { content: "\cffe"; }
+.icon-browser:before { content: "\4c54"; }
+.icon-bubble-1:before { content: "\6776"; }
+.icon-bubble-2:before { content: "\6992"; }
+.icon-bubble-rounded-1:before { content: "\4c94"; }
+.icon-bubble-rounded-2:before { content: "\4e24"; }
+.icon-bubble-rounded-chat:before { content: "\b50f"; }
+.icon-bubbles-chat:before { content: "\4331"; }
+.icon-bus:before { content: "\3381"; }
+.icon-calculator-1:before { content: "\9f1c"; }
+.icon-calendar-1:before { content: "\6dbf"; }
+.icon-calendar-2:before { content: "\6ffc"; }
+.icon-car:before { content: "\2ac3"; }
+.icon-card:before { content: "\2ac3"; }
+.icon-cards:before { content: "\312d"; }
+.icon-chart-1:before { content: "\71c1"; }
+.icon-chart-2:before { content: "\7413"; }
+.icon-chart-3:before { content: "\7665"; }
+.icon-chart-4:before { content: "\78b8"; }
+.icon-chart-5:before { content: "\7b0a"; }
+.icon-chart-diagram-1:before { content: "\40ba"; }
+.icon-chart-diagram-2:before { content: "\420c"; }
+.icon-chart-down-1:before { content: "\4a60"; }
+.icon-chart-down-2:before { content: "\4be5"; }
+.icon-chart-up-1:before { content: "\4314"; }
+.icon-chart-up-2:before { content: "\4472"; }
+.icon-check-1:before { content: "\5ee1"; }
+.icon-check-2:before { content: "\60d1"; }
+.icon-check-3:before { content: "\62c0"; }
+.icon-clip:before { content: "\311d"; }
+.icon-clock-1:before { content: "\6c49"; }
+.icon-clock-2:before { content: "\6e7e"; }
+.icon-cloud-download:before { content: "\293d"; }
+.icon-cloud-upload:before { content: "\4c41"; }
+.icon-cloud:before { content: "\363d"; }
+.icon-coin-1:before { content: "\6d52"; }
+.icon-coins-1:before { content: "\7db8"; }
+.icon-coins-2:before { content: "\8049"; }
+.icon-color-picker:before { content: "\4ced"; }
+.icon-colors:before { content: "\4376"; }
+.icon-compass:before { content: "\4339"; }
+.icon-coordinate:before { content: "\474c"; }
+.icon-crown:before { content: "\400e"; }
+.icon-cup-1:before { content: "\6fbd"; }
+.icon-dashboard-1:before { content: "\7832"; }
+.icon-delivery-1:before { content: "\a22e"; }
+.icon-diamond-1:before { content: "\74c1"; }
+.icon-dollar-1:before { content: "\7b50"; }

@@ -1,11 +1,13 @@
 /**
  * @module types
  * @author Wayne<michealwayne@163.com>
- * @buildTime 2022.03.20
- * @lastModified 2022.03.20
+ * @Date 2022-03-22 14:53:04
+ * @LastEditTime 2022-11-02 10:12:18
  */
 
-export interface InitOptionsParams {
+import SVGIcons2SVGFontStream from 'svgicons2svgfont';
+
+export interface InitOptionsParams extends SVGIcons2SVGFontStream.SvgIcons2FontOptions {
   // 字体名称
   fontName: string;
 

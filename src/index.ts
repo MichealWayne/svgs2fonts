@@ -6,8 +6,8 @@
  * @version 2.0.0
  */
 
-import { isSuccessResult } from './utils';
-import { InitOptionsParams } from './types';
+import { isSuccessResult } from './lib/utils';
+import { InitOptionsParams } from './types/OptionType';
 
 import SVGBuilder from './builders/SVGBuilder';
 import FontsBuilder from './builders/FontsBuilder';
