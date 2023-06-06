@@ -2,7 +2,7 @@
  * @module DemoBuilder
  * @author Wayne<michealwayne@163.com>
  * @buildTime 2022.03.20
- * @lastModified 2022.10.07
+ * @lastModified 2023.06.03
  */
 
 import { join, extname } from 'path';
@@ -12,12 +12,18 @@ import { isString } from '../lib/utils';
 import { SVGBuilder } from './SVGBuilder';
 import { SUCCESS_FlAG, FAIL_FlAG, DEMO_CSS, DEMO_HTML } from '../constant';
 
-export const fontNameReg = /\{\{fontName\}\}/g;
-export const demoCssReg = /\{\{demoCss\}\}/g;
-export const demoHtmlReg = /\{\{demoHtml\}\}/;
-export const demoCssFileReg = /\{\{demoCssFile\}\}/;
+const DEMO_REGEXS = {
+  fontName: /\{\{fontName\}\}/g,
+  CSS: /\{\{demoCss\}\}/g,
+  CSSFile: /\{\{demoCssFile\}\}/,
+  HTML: /\{\{demoHtml\}\}/,
+};
 
+/**
+ * @class DemoBuilder
+ */
 export default class DemoBuilder {
+  // use SvgBuilder instance's options and UnicodeObj
   private svgBuilder: SVGBuilder;
 
   constructor(svgBuilder: SVGBuilder) {
@@ -47,16 +53,16 @@ export default class DemoBuilder {
     const _DEMO_UNICODE_CSS = demoUnicodeHTML.replace(extname(demoUnicodeHTML), '.css');
     const _DEMO_FONT_CLASS_CSS = demoFontClassHTML.replace(extname(demoFontClassHTML), '.css');
 
-    const _CSS = DEMO_CSS.replace(fontNameReg, fontName);
-    const _HTML = DEMO_HTML.replace(fontNameReg, fontName);
+    const _CSS = DEMO_CSS.replace(DEMO_REGEXS.fontName, fontName);
+    const _HTML = DEMO_HTML.replace(DEMO_REGEXS.fontName, fontName);
     const CODE_HTML = _HTML
-      .replace(demoCssReg, _CSS)
-      .replace(demoHtmlReg, _codeHtml)
-      .replace(demoCssFileReg, _DEMO_UNICODE_CSS);
+      .replace(DEMO_REGEXS.CSS, _CSS)
+      .replace(DEMO_REGEXS.HTML, _codeHtml)
+      .replace(DEMO_REGEXS.CSSFile, _DEMO_UNICODE_CSS);
     const CLASS_HTML = _HTML
-      .replace(demoCssReg, _CSS + _classCss)
-      .replace(demoHtmlReg, _classHtml)
-      .replace(demoCssFileReg, _DEMO_FONT_CLASS_CSS);
+      .replace(DEMO_REGEXS.CSS, _CSS + _classCss)
+      .replace(DEMO_REGEXS.HTML, _classHtml)
+      .replace(DEMO_REGEXS.CSSFile, _DEMO_FONT_CLASS_CSS);
 
     const [writeUnicodeHTMLRes, writeFontClassHTMLRes] = await Promise.all([
       writeFile(join(dist, demoUnicodeHTML), CODE_HTML, true),
@@ -69,8 +75,8 @@ export default class DemoBuilder {
       global.__sf_debug &&
         console.log(`[success] ${demoUnicodeHTML}, ${demoFontClassHTML} successfully created!`);
       return SUCCESS_FlAG;
-    } else {
-      return FAIL_FlAG;
     }
+
+    return FAIL_FlAG;
   }
 }

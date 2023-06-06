@@ -1,15 +1,15 @@
-import { getIconStrUnicode } from '../src/utils';
+import { getIconStrUnicode } from '../src/lib/utils';
 import {
   mkdirpSync,
   setFolderSync,
   fsExistsSync,
   writeFile,
-  setIconFile,
+  createIconFile,
   filterSvgFiles,
-} from '../src/fsUtils';
+} from '../src/lib/fsUtils';
 
 interface MapObject {
-  [propsName: string]: any;
+  [propsName: string]: unknown;
 }
 
 jest.mock('mkdirp', () => {
@@ -98,10 +98,10 @@ describe('fs functions test', () => {
   });
 
   test('setIconFile() write fail', async () => {
-    return expect(setIconFile('folder/uotdefinedFile', '123')).resolves.toBe(false);
+    return expect(createIconFile('folder/uotdefinedFile', '123')).resolves.toBe(false);
   });
 
   test('filterSvgFiles()', async () => {
-    expect(filterSvgFiles('')).toMatchObject([]);
+    expect(filterSvgFiles('')?.size).toBe(0);
   });
 });

@@ -2,7 +2,7 @@
  * @module SVGBuilder
  * @author Wayne<michealwayne@163.com>
  * @buildTime 2022.03.20
- * @lastModified 2022.10.07
+ * @lastModified 2023.06.03
  */
 
 import fs from 'fs';
@@ -11,7 +11,7 @@ import SVGIcons2SVGFont from 'svgicons2svgfont';
 
 import { InitOptionsParams } from '../types/OptionType';
 import DEFAULT_OPTIONS from '../options';
-import { SUCCESS_FlAG, FAIL_FlAG, IS_DEV } from '../constant';
+import { SUCCESS_FlAG, FAIL_FlAG } from '../constant';
 
 import { filterSvgFiles, mkdirpSync } from '../lib/fsUtils';
 import { getIconStrUnicode, isSuccessResult } from '../lib/utils';
@@ -28,43 +28,74 @@ interface SvgFontStream extends fs.ReadStream {
   metadata: SvgFontStreamMetaData;
 }
 
+/**
+ * @class SVGBuilder
+ * @description 通过svg图标文件组合构建出svg字体
+ */
 export abstract class SVGBuilder {
-  public unicodeStart: number;
-  public svgsPathList: string[];
+  // build options
   public options: InitOptionsParams;
+
+  // icon start unicode
+  public unicodeStart: number;
+
+  // origin svg files Path
+  public svgsPaths: Set<string>;
+
+  // icon unicode map
   public svgUnicodeObj: SvgUnicodeObjParams;
 
   constructor(options: Partial<InitOptionsParams>) {
     this.options = Object.assign(DEFAULT_OPTIONS, options);
-    this.svgsPathList = filterSvgFiles(this.options.src);
+    this.svgsPaths = filterSvgFiles(this.options.src);
     this.unicodeStart = this.options.unicodeStart;
     this.svgUnicodeObj = {};
+
     if (this.options.debug === false) {
+      // Forced to close the debug flag
       global.__sf_debug = false;
     }
   }
 
-  public abstract svgs2svgsFont(): Promise<boolean>;
+  /**
+   * @description create svgfont from svg icons
+   * @return Promise<boolean>
+   */
+  public abstract createSvgsFont(): Promise<boolean>;
+
+  /**
+   * @description clear options and params(for GC)
+   */
+  public abstract clearCache(): void;
 }
 
+/**
+ * @class ConcreteSVGBuilder
+ */
 export default class ConcreteSVGBuilder extends SVGBuilder {
   constructor(options: Partial<InitOptionsParams>) {
     super(options);
   }
 
-  async svgs2svgsFont(): Promise<boolean> {
+  clearCache(): void {
+    this.svgUnicodeObj = {};
+    this.options = DEFAULT_OPTIONS;
+    this.svgsPaths.clear();
+  }
+
+  async createSvgsFont(): Promise<boolean> {
     // Setting the font destination
     const DIST_PATH = join(this.options.dist, `${this.options.fontName}.svg`);
 
-    global.__sf_debug && console.log(`[running]start write ${DIST_PATH}`);
+    global.__sf_debug && console.log(`[running][SVGBuilder]Start write ${DIST_PATH}`);
 
-    const res = await new Promise<boolean>(resolve => {
+    return await new Promise<boolean>(resolve => {
       // init dist folder
       const mkdirRes = mkdirpSync(this.options.dist);
       if (!isSuccessResult(mkdirRes)) {
         global.__sf_debug &&
           console.error(
-            `Error!create director fail! path=${this.options.dist} errorMsg:${mkdirRes}`
+            `[SVGBuilder]Error! Create output director fail! (path=${this.options.dist} errorMsg:${mkdirRes})`
           );
         resolve(FAIL_FlAG);
       }
@@ -91,7 +122,7 @@ export default class ConcreteSVGBuilder extends SVGBuilder {
         fontStreamInstance.write(glyph);
       }
 
-      // https://www.npmjs.com/package/svgicons2svgfont
+      // @document https://www.npmjs.com/package/svgicons2svgfont
       const fontStream = new SVGIcons2SVGFont({
         // before v2: fontName: this.options.fontName,
         ...this.options,
@@ -99,7 +130,8 @@ export default class ConcreteSVGBuilder extends SVGBuilder {
       fontStream
         .pipe(fs.createWriteStream(DIST_PATH))
         .on('finish', () => {
-          global.__sf_debug && console.log(`[success]SvgFont successfully created!(${DIST_PATH})`);
+          global.__sf_debug &&
+            console.log(`[success][SVGBuilder] SvgFont successfully created!(${DIST_PATH})`);
 
           this.svgUnicodeObj = UnicodeObj;
           resolve(SUCCESS_FlAG);
@@ -110,14 +142,10 @@ export default class ConcreteSVGBuilder extends SVGBuilder {
         });
 
       // append svg info to svg font stream
-      this.svgsPathList.forEach(svgPath => writeFontStream(fontStream, svgPath));
+      this.svgsPaths.forEach(svgPath => writeFontStream(fontStream, svgPath));
 
       // Do not forget to end the stream
       fontStream.end();
     });
-    if (IS_DEV) {
-      console.log(res);
-    }
-    return res;
   }
 }

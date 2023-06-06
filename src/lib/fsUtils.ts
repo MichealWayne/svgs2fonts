@@ -2,12 +2,13 @@
  * @module FSFunctions
  * @author Wayne<michealwayne@163.com>
  * @buildTime 2018.07.30
- * @lastModified 2022.03.20
+ * @lastModified 2022.06.03
  */
 
 import fs from 'fs';
 import { extname, join, dirname } from 'path';
 import mkdirp from 'mkdirp';
+
 import { FAIL_FlAG, SUCCESS_FlAG } from '../constant';
 import { isString } from './utils';
 
@@ -19,7 +20,7 @@ import { isString } from './utils';
 export function mkdirpSync(folderPath: string): boolean | Error {
   try {
     mkdirp.sync(folderPath);
-    return true;
+    return SUCCESS_FlAG;
   } catch (err) {
     global.__sf_debug && console.error(err);
     return err as Error;
@@ -31,10 +32,11 @@ export function mkdirpSync(folderPath: string): boolean | Error {
  * @description find folder, if not exist, build it
  * @param {String} folderPath: folder path
  */
-export function setFolderSync(folderPath: string): void {
+export function setFolderSync(folderPath: string): boolean | Error {
   if (!fs.existsSync(folderPath)) {
-    mkdirpSync(folderPath);
+    return mkdirpSync(folderPath);
   }
+  return SUCCESS_FlAG;
 }
 
 /**
@@ -46,9 +48,9 @@ export function setFolderSync(folderPath: string): void {
 export function fsExistsSync(folderPath: string): boolean {
   try {
     fs.accessSync(folderPath, fs.constants.F_OK);
-    return true;
+    return SUCCESS_FlAG;
   } catch (err) {
-    return false;
+    return FAIL_FlAG;
   }
 }
 
@@ -89,7 +91,7 @@ export function writeFile(
 }
 
 /**
- * @function setIconFile
+ * @function createIconFile
  * @description set font icon file
  * @param {String} filePath
  * @param {String | Buffer} iconData
@@ -97,7 +99,7 @@ export function writeFile(
  * @param {Boolean} debug
  * @return {Promise}
  */
-export function setIconFile(
+export function createIconFile(
   filePath: string,
   iconData: string | Buffer,
   iconType = ''
@@ -121,20 +123,18 @@ export function setIconFile(
  * @param {String} svgFolderPath svg folder path.
  * @return {Array} svgs paths.
  */
-export function filterSvgFiles(svgFolderPath: string): string[] {
-  const svgArr: string[] = [];
+export function filterSvgFiles(svgFolderPath: string): Set<string> {
+  const svgSet: Set<string> = new Set();
   try {
     const files = fs.readdirSync(svgFolderPath, 'utf-8');
 
     files.forEach(file => {
-      if (isString(file) && extname(file) === '.svg' && !svgArr.includes(file)) {
-        svgArr.push(join(svgFolderPath, file));
+      if (isString(file) && extname(file) === '.svg') {
+        svgSet.add(join(svgFolderPath, file));
       }
     });
   } catch (err) {
-    if (global.__sf_debug) {
-      console.error(err);
-    }
+    global.__sf_debug && console.error(err);
   }
-  return svgArr;
+  return svgSet;
 }

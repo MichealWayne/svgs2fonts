@@ -7,6 +7,7 @@
 
 declare namespace NodeJS {
   interface Global {
+    // Svgs2fonts执行日志开关
     __sf_debug: boolean;
   }
 }
