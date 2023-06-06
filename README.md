@@ -125,6 +125,32 @@ svgs2fonts svg dist --nodemo
 svgs2fonts svg dist --debug
 ```
 
+## Project build
+
+安装依赖：
+
+```
+npm i
+```
+
+构建：
+
+```
+npm run build
+```
+
+单测：
+
+```
+npm run test
+```
+
+demo 测试：
+
+```
+npm run test:example
+```
+
 ## Author
 
 [Micheal Wayne](mailto:michealwayne@163.com)
@@ -137,7 +163,8 @@ svgs2fonts svg dist --debug
 
 ## Last modified
 
-2022.11.03: v2.0.1 split css & support svg size options;
-2022.10.07: code bug fixed;
-2022.03.20: v2 support for ts;
-2021.12.16: fix IE8 bug;
+- 2023.06.03: `v2.0.2` optimal variable control;
+- 2022.11.03: `v2.0.1` split css & support svg size options;
+- 2022.10.07: code bug fixed;
+- 2022.03.20: v2 support for ts;
+- 2021.12.16: fix IE8 bug;

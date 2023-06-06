@@ -2,7 +2,7 @@
  * @module FontsBuilder
  * @author Wayne<michealwayne@163.com>
  * @buildTime 2022.03.20
- * @lastModified 2022.10.07
+ * @lastModified 2022.06.03
  */
 
 import fs from 'fs';
@@ -12,11 +12,17 @@ import ttf2woff from 'ttf2woff';
 import ttf2woff2 from 'ttf2woff2';
 import ttf2eot from 'ttf2eot';
 
-import { setIconFile } from '../lib/fsUtils';
+import { createIconFile } from '../lib/fsUtils';
 import { SVGBuilder } from './SVGBuilder';
 
+/**
+ * @class FontsBuilder
+ * @description build ttf/eot/woff/woff2 font files from svgfont
+ */
 export default class FontsBuilder {
+  // use SvgBuilder instance's options
   private svgBuilder: SVGBuilder;
+
   public ttfBuffer!: Buffer;
   public fontsPath: string;
 
@@ -26,11 +32,11 @@ export default class FontsBuilder {
   }
 
   /**
-   * build ttf font
-   * @returns
+   * @description build ttf font
+   * @return {Promise<boolean>}
    */
   async ttf(): Promise<boolean> {
-    const DIST_PATH = `${this.fontsPath}.ttf`; // 输出地址
+    const DIST_PATH = `${this.fontsPath}.ttf`;
 
     const ttf = svg2ttf(
       fs.readFileSync(
@@ -39,36 +45,39 @@ export default class FontsBuilder {
       )
     );
     const ttfBuffer = (this.ttfBuffer = Buffer.from(ttf.buffer));
-    return setIconFile(DIST_PATH, ttfBuffer, 'ttf');
+    return createIconFile(DIST_PATH, ttfBuffer, 'ttf');
   }
 
   /**
-   * build eot font
+   * @description build eot font
+   * @return {Promise<boolean>}
    */
   async eot(): Promise<boolean> {
-    const DIST_PATH = `${this.fontsPath}.eot`; // 输出地址
+    const DIST_PATH = `${this.fontsPath}.eot`;
 
     const eot = Buffer.from(ttf2eot(this.ttfBuffer).buffer);
-    return setIconFile(DIST_PATH, eot, 'eot');
+    return createIconFile(DIST_PATH, eot, 'eot');
   }
 
   /**
-   * build woff font
+   * @description build woff font
+   * @return {Promise<boolean>}
    */
   async woff(): Promise<boolean> {
-    const DIST_PATH = `${this.fontsPath}.woff`; // 输出地址
+    const DIST_PATH = `${this.fontsPath}.woff`;
 
     const woff = Buffer.from(ttf2woff(this.ttfBuffer).buffer);
-    return setIconFile(DIST_PATH, woff, 'woff');
+    return createIconFile(DIST_PATH, woff, 'woff');
   }
 
   /**
-   * build woff2 font
+   * @description build woff2 font
+   * @return {Promise<boolean>}
    */
   async woff2(): Promise<boolean> {
-    const DIST_PATH = `${this.fontsPath}.woff2`; // 输出地址
+    const DIST_PATH = `${this.fontsPath}.woff2`;
 
     const woff2 = Buffer.from(ttf2woff2(this.ttfBuffer).buffer);
-    return setIconFile(DIST_PATH, woff2, 'woff2');
+    return createIconFile(DIST_PATH, woff2, 'woff2');
   }
 }

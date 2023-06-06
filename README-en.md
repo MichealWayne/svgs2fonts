@@ -123,6 +123,32 @@ whether to open debug model(default: `false`).
 svgs2fonts svg dist --debug
 ```
 
+## Project build
+
+install dependencies：
+
+```
+npm i
+```
+
+build：
+
+```
+npm run build
+```
+
+unit test：
+
+```
+npm run test
+```
+
+demo test：
+
+```
+npm run test:example
+```
+
 ## Author
 
 [Micheal Wayne](mailto:michealwayne@163.com)
@@ -133,8 +159,8 @@ svgs2fonts svg dist --debug
 
 ## Last modified
 
-2022.11.03: v2.0.1 split css & support svg size options;
-2022.10.07: code bug fixed;
-2022.03.30: v2 support for ts;
-2021.12.16: fix IE8 bug;
-2021.09.19
+- 2023.06.03: `v2.0.2` optimal variable control;
+- 2022.11.03: `v2.0.1` split css & support svg size options;
+- 2022.10.07: code bug fixed;
+- 2022.03.30: v2 support for ts;
+- 2021.12.16: fix IE8 bug;
