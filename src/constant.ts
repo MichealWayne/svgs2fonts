@@ -2,14 +2,17 @@
  * @module constant
  * @author Wayne<michealwayne@163.com>
  * @Date 2022-10-11 13:15:40
- * @LastEditTime 2022-11-02 17:00:44
+ * @LastEditTime 2023-12-16 10:00:11
  */
 
 export const IS_DEV = process.env.NODE_ENV === 'development';
 
+// 成功标识
 export const SUCCESS_FlAG = true;
+// 失败标识
 export const FAIL_FlAG = false;
 
+// demo中css产物
 export const DEMO_CSS = `@font-face {
   font-family: '{{fontName}}';
   src: url('{{fontName}}.eot');
@@ -20,6 +23,7 @@ export const DEMO_CSS = `@font-face {
     url('{{fontName}}.svg') format('svg');
 }`;
 
+// demo中HTML产物
 export const DEMO_HTML = `
 <!DOCTYPE html>
 <html>
@@ -58,7 +62,6 @@ export const DEMO_HTML = `
 
   <!-- font css -->
   <link rel="stylesheet" rel="stylesheet" href="./{{demoCssFile}}" />
-
   <title>svg2fonts demo</title>
 </head>
 <body>

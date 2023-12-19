@@ -30,6 +30,10 @@ export default class DemoBuilder {
     this.svgBuilder = svgBuilder;
   }
 
+  /**
+   * @description build html demo files(.html, .css)
+   * @returns {Promise<boolean>}
+   */
   async html(): Promise<boolean> {
     let _codeHtml = '';
     let _classHtml = '';

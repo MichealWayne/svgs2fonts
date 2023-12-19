@@ -2,7 +2,7 @@
  * @module SVGBuilder
  * @author Wayne<michealwayne@163.com>
  * @buildTime 2022.03.20
- * @lastModified 2023.06.03
+ * @lastModified 2023.12.16
  */
 
 import fs from 'fs';
@@ -77,12 +77,19 @@ export default class ConcreteSVGBuilder extends SVGBuilder {
     super(options);
   }
 
+  /**
+   * @description clear js memory cache
+   */
   clearCache(): void {
     this.svgUnicodeObj = {};
     this.options = DEFAULT_OPTIONS;
     this.svgsPaths.clear();
   }
 
+  /**
+   * @description build svg fonts by file stream
+   * @returns {Promise<boolean>}
+   */
   async createSvgsFont(): Promise<boolean> {
     // Setting the font destination
     const DIST_PATH = join(this.options.dist, `${this.options.fontName}.svg`);
@@ -108,15 +115,15 @@ export default class ConcreteSVGBuilder extends SVGBuilder {
        * @param {String} svgPath svg path.
        */
       function writeFontStream(fontStreamInstance: SVGIcons2SVGFont, svgPath: string) {
-        const _svgName = basename(svgPath).split('.')[0];
-        const unicode = getIconStrUnicode(_svgName, unicodeStart);
-        UnicodeObj[_svgName] = `&#${unicode};`;
+        const svgName = basename(svgPath)?.split('.')?.[0];
+        const unicode = getIconStrUnicode(svgName, unicodeStart);
+        UnicodeObj[svgName] = `&#${unicode};`;
 
         const glyph = fs.createReadStream(svgPath) as SvgFontStream;
         // attr metadata for 'SVGIcons2SVGFont' stream
         glyph.metadata = {
           unicode: [String.fromCharCode(unicode)],
-          name: _svgName,
+          name: svgName,
         };
 
         fontStreamInstance.write(glyph);

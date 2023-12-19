@@ -10,25 +10,26 @@ import { SUCCESS_FlAG } from '../constant';
 /**
  * @function isSuccessResult
  * @param {unknown} res
- * @returns {Boolean}
+ * @returns {boolean}
  */
-export function isSuccessResult(res: unknown): boolean {
+export function isSuccessResult(res?: unknown): boolean {
   return res === SUCCESS_FlAG;
 }
 
 /**
  * @function isString
  * @param {unknown} value
- * @return {Boolean}
+ * @return {boolean}
  */
-export function isString(value: unknown): boolean {
+export function isString(value?: unknown): boolean {
   return typeof value === 'string';
 }
 
 /**
  * @function getIconStrUnicode
- * @param {String} iconName
- * @returns {Number}
+ * @param {string} iconName
+ * @param {number} unicodeStart
+ * @returns {number}
  */
 export function getIconStrUnicode(iconName: string, unicodeStart: number): number {
   if (!iconName) {

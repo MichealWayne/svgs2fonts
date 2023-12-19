@@ -4,11 +4,11 @@ svg 图标转字体图标库（svgs -> svg,ttf,eot,woff,woff2）。[English read
 
 ## 版本
 
-2.0.1
+2.0.3
 
 ## 安装
 
-### 1.全局安装
+### 1.全局安装(脚手架工具)
 
 ```sh
 npm i -g svgs2fonts
@@ -20,7 +20,7 @@ npm i -g svgs2fonts
 svgs2fonts -v
 ```
 
-### 2.模块安装
+### 2.模块依赖安装
 
 ```sh
 npm i --save svgs2fonts
@@ -31,28 +31,36 @@ npm i --save svgs2fonts
 ### 方式 1——模块引入（支持 TypeScript）
 
 ```js
-const Svgs2fonts = require('svgs2fonts');
+import Svgs2fonts from 'svgs2fonts';
+// or
+// const Svgs2fonts = require('svgs2fonts');
+
 Svgs2fonts.init(options);
 ```
 
 其中 options 参数：
 
-- src：`{String}`，svg 文件目录路径；
-- dist：`{String}`，输出路径；
-- fontName：`{String}`，输出图标/字体名称。可选，默认为`"iconfont"`；
-- unicodeStart：`{Number}`，unicode 起始数字（需要避开正常 unicode 范围），`v2.0`之前为`startNumber`。可选，默认为`10000`；
-- noDemo：`{Boolean}`，是否需要输出 html Demo 文件。可选，默认为`false`；
-- debug：`{Boolean}`，是否开启 debug 模式以输出更多执行信息。可选，默认为`false`；
+| 字段              | 类型      | 默认值                | 描述                                                                                           |
+| ----------------- | --------- | --------------------- | ---------------------------------------------------------------------------------------------- |
+| src               | `string`  | `-`                   | svg 图标文件的目录路径                                                                         |
+| dist              | `string`  | `./dist`              | 字体图标输出路径                                                                               |
+| fontName          | `string`  | `iconfont`            | 输出图标/字体名称                                                                              |
+| unicodeStart      | `number`  | `10000`               | unicode 起始数字（设置此指是需要避开正常 unicode 范围），（`v2.0`之前对应字段为`startNumber`） |
+| noDemo            | `boolean` | `true`                | 是否需要输出 html Demo 文件                                                                    |
+| debug             | `boolean` | `false`               | 是否开启 debug 模式以输出更多执行信息                                                          |
+| demoUnicodeHTML   | `string`  | `demo_unicode.html`   | unicode 类型的示例 html 名称                                                                   |
+| demoFontClassHTML | `string`  | `demo_fontclass.html` | fontClass 类型的示例 html 名称                                                                 |
+
+\*V2 废弃字段：
+
 - ~~timeout~~（`v2.0废弃`）：`{Number}`，执行超时时间，默认为 60s（`60000`）
-- demoUnicodeHTML：unicode 类型的示例 html 名称。可选，默认为`demo_unicode.html`；
-- demoFontClassHTML：fontClass 类型的示例 html 名称。可选，默认为`demo_fontclass.html`；
 - ~~logger~~（`v2.0废弃`）：`{Object}`，日志记录。
 
 ##### demo
 
 ```js
-const Svgs2fonts = require('svgs2fonts');
-const join = require('path').join;
+import Svgs2fonts from 'svgs2fonts';
+import { join } from 'path';
 
 Svgs2fonts.init({
   src: __dirname, // svg path
@@ -68,7 +76,7 @@ Svgs2fonts.init({
 ### 方式 2——控制台
 
 ```sh
-svgs2fonts {{srcpath}} {{distpath}} {{options}}
+svgs2fonts {srcpath} {distpath} {options}
 ```
 
 其中参数：
@@ -163,6 +171,7 @@ npm run test:example
 
 ## Last modified
 
+- 2023.12.16: `v2.0.3` add some defensive handing;
 - 2023.06.03: `v2.0.2` optimal variable control;
 - 2022.11.03: `v2.0.1` split css & support svg size options;
 - 2022.10.07: code bug fixed;
