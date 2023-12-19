@@ -1,13 +1,8 @@
 /**
- * @author Wayne
- * @Date 2022-03-22 13:48:00
- * @LastEditTime 2023-06-06 10:52:44
- */
-/**
  * @export svgs2fonts
  * @author Wayne<michealwayne@163.com>
  * @buildTime 2018.07.30
- * @lastModified 2023.06.03
+ * @lastModified 2023.12.16
  * @version 2.0.2
  */
 
@@ -18,19 +13,25 @@ import SVGBuilder from './builders/SVGBuilder';
 import FontsBuilder from './builders/FontsBuilder';
 import DemoBuilder from './builders/DemoBuilder';
 
+/**
+ * @function init
+ * @description 初始化及执行svg转字体图标
+ * @param {Partial<InitOptionsParams>} options
+ * @returns {Promise<true | Error>}
+ */
 export async function init(options: Partial<InitOptionsParams>): Promise<true | Error> {
   // step1: build svg fonts
   const svgBuilder = new SVGBuilder(options);
   const svgBuildRes = await svgBuilder.createSvgsFont();
   if (!isSuccessResult(svgBuildRes)) {
-    throw Error('svgs 2 svgsFont failed');
+    throw Error('Error! svgs 2 svgsFont failed(svgs2fonts).');
   }
 
   // step2: build ttf
   const fontBuilder = new FontsBuilder(svgBuilder);
   const ttfBuildRes = await fontBuilder.ttf();
   if (!isSuccessResult(ttfBuildRes)) {
-    throw Error('svgsfont 2 ttf failed');
+    throw Error('Error! svgsfont 2 ttf failed(svgs2fonts)');
   }
 
   // step3: build eot | woff | woff2
@@ -45,7 +46,7 @@ export async function init(options: Partial<InitOptionsParams>): Promise<true | 
     !isSuccessResult(woff2BuildRes)
   ) {
     throw Error(
-      `ttf 2 fonts failed.(woff2 Build Res: ${woff2BuildRes}, woffBuildRes: ${woffBuildRes}, woff2BuildRes: ${woff2BuildRes})`
+      `Error! ttf 2 fonts failed.(woff2 Build Res: ${woff2BuildRes}, woffBuildRes: ${woffBuildRes}, woff2BuildRes: ${woff2BuildRes})`
     );
   }
 
@@ -53,7 +54,7 @@ export async function init(options: Partial<InitOptionsParams>): Promise<true | 
   const demoBuilder = new DemoBuilder(svgBuilder);
   const htmlBuildRes = await demoBuilder.html();
   if (!isSuccessResult(htmlBuildRes)) {
-    throw Error('demo html failed');
+    throw Error('Error! demo html failed(svgs2fonts).');
   }
 
   // finish
