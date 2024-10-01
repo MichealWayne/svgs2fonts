@@ -2,8 +2,8 @@
  * @export svgs2fonts
  * @author Wayne<michealwayne@163.com>
  * @buildTime 2018.07.30
- * @lastModified 2023.12.16
- * @version 2.0.2
+ * @lastModified 2024.09.28
+ * @version 2.1.0
  */
 
 import { isSuccessResult } from './lib/utils';
@@ -24,14 +24,14 @@ export async function init(options: Partial<InitOptionsParams>): Promise<true | 
   const svgBuilder = new SVGBuilder(options);
   const svgBuildRes = await svgBuilder.createSvgsFont();
   if (!isSuccessResult(svgBuildRes)) {
-    throw Error('Error! svgs 2 svgsFont failed(svgs2fonts).');
+    throw new Error('Error! svgs 2 svgsFont failed(svgs2fonts).');
   }
 
   // step2: build ttf
   const fontBuilder = new FontsBuilder(svgBuilder);
   const ttfBuildRes = await fontBuilder.ttf();
   if (!isSuccessResult(ttfBuildRes)) {
-    throw Error('Error! svgsfont 2 ttf failed(svgs2fonts)');
+    throw new Error('Error! svgsfont 2 ttf failed(svgs2fonts)');
   }
 
   // step3: build eot | woff | woff2
@@ -45,7 +45,7 @@ export async function init(options: Partial<InitOptionsParams>): Promise<true | 
     !isSuccessResult(woffBuildRes) ||
     !isSuccessResult(woff2BuildRes)
   ) {
-    throw Error(
+    throw new Error(
       `Error! ttf 2 fonts failed.(woff2 Build Res: ${woff2BuildRes}, woffBuildRes: ${woffBuildRes}, woff2BuildRes: ${woff2BuildRes})`
     );
   }
@@ -54,7 +54,7 @@ export async function init(options: Partial<InitOptionsParams>): Promise<true | 
   const demoBuilder = new DemoBuilder(svgBuilder);
   const htmlBuildRes = await demoBuilder.html();
   if (!isSuccessResult(htmlBuildRes)) {
-    throw Error('Error! demo html failed(svgs2fonts).');
+    throw new Error('Error! demo html failed(svgs2fonts).');
   }
 
   // finish

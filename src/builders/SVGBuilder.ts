@@ -11,10 +11,10 @@ import SVGIcons2SVGFont from 'svgicons2svgfont';
 
 import { InitOptionsParams } from '../types/OptionType';
 import DEFAULT_OPTIONS from '../options';
-import { SUCCESS_FlAG, FAIL_FlAG } from '../constant';
+import { SUCCESS_FLAG, FAIL_FLAG } from '../constant';
 
 import { filterSvgFiles, mkdirpSync } from '../lib/fsUtils';
-import { getIconStrUnicode, isSuccessResult } from '../lib/utils';
+import { getIconStrUnicode, isSuccessResult, log, errorLog } from '../lib/utils';
 
 interface SvgUnicodeObjParams {
   [propName: string]: string;
@@ -50,11 +50,6 @@ export abstract class SVGBuilder {
     this.svgsPaths = filterSvgFiles(this.options.src);
     this.unicodeStart = this.options.unicodeStart;
     this.svgUnicodeObj = {};
-
-    if (this.options.debug === false) {
-      // Forced to close the debug flag
-      global.__sf_debug = false;
-    }
   }
 
   /**
@@ -71,6 +66,7 @@ export abstract class SVGBuilder {
 
 /**
  * @class ConcreteSVGBuilder
+ * @description concrete class for SVGBuilder, implement createSvgsFont method
  */
 export default class ConcreteSVGBuilder extends SVGBuilder {
   constructor(options: Partial<InitOptionsParams>) {
@@ -94,17 +90,16 @@ export default class ConcreteSVGBuilder extends SVGBuilder {
     // Setting the font destination
     const DIST_PATH = join(this.options.dist, `${this.options.fontName}.svg`);
 
-    global.__sf_debug && console.log(`[running][SVGBuilder]Start write ${DIST_PATH}`);
+    log(`[running][SVGBuilder]Start write ${DIST_PATH}`);
 
     return await new Promise<boolean>(resolve => {
       // init dist folder
       const mkdirRes = mkdirpSync(this.options.dist);
       if (!isSuccessResult(mkdirRes)) {
-        global.__sf_debug &&
-          console.error(
-            `[SVGBuilder]Error! Create output director fail! (path=${this.options.dist} errorMsg:${mkdirRes})`
-          );
-        resolve(FAIL_FlAG);
+        errorLog(
+          `[SVGBuilder]Error! Create output director fail! (path=${this.options.dist} errorMsg:${mkdirRes})`
+        );
+        resolve(FAIL_FLAG);
       }
 
       const unicodeStart = this.options.unicodeStart;
@@ -137,15 +132,14 @@ export default class ConcreteSVGBuilder extends SVGBuilder {
       fontStream
         .pipe(fs.createWriteStream(DIST_PATH))
         .on('finish', () => {
-          global.__sf_debug &&
-            console.log(`[success][SVGBuilder] SvgFont successfully created!(${DIST_PATH})`);
+          log(`[success][SVGBuilder] SvgFont successfully created!(${DIST_PATH})`);
 
           this.svgUnicodeObj = UnicodeObj;
-          resolve(SUCCESS_FlAG);
+          resolve(SUCCESS_FLAG);
         })
         .on('error', err => {
-          global.__sf_debug && console.error(err);
-          resolve(FAIL_FlAG);
+          errorLog(err);
+          resolve(FAIL_FLAG);
         });
 
       // append svg info to svg font stream

@@ -43,7 +43,7 @@ Svgs2fonts.init(options);
 - fontName: `{String}`, output icon/font name. Default:`"iconfont"`;
 - startNumber: `{Number}`, unicode start number. Default: `10000`；
 - noDemo: `{Boolean}`, whether to create demo HTML. Default: `false`;
-- debug: `{Boolean}`, whether to open debug model. Default: `false`;
+- ~~debug~~(`v2.1 abandoned`): `{Boolean}`, whether to open debug model. Default: `false`;
 - ~~timeout~~（`v2.0 abandoned`）: `{Number}`, run timeout. Default: 60s（`60000`）
 
 ##### demo
@@ -59,7 +59,6 @@ svgs2fonts
     fontName: 'myIconfont', // font name
     startNumber: 20000, // unicode start number
     noDemo: true, // no demo html files
-    debug: true, // open debug
   })
   .then(() => console.log('task success!'))
   .catch(err => console.log(`task failed(${err})`));
@@ -113,14 +112,10 @@ no demo html.
 svgs2fonts svg dist --nodemo
 ```
 
-#### `--debug`
-
-whether to open debug model(default: `false`).
-
 ##### example
 
 ```sh
-svgs2fonts svg dist --debug
+svgs2fonts svg dist
 ```
 
 ## Project build
@@ -159,6 +154,7 @@ npm run test:example
 
 ## Last modified
 
+- 2024.09.28: `v2.1.0` change log and remove debug;
 - 2023.06.03: `v2.0.2` optimal variable control;
 - 2022.11.03: `v2.0.1` split css & support svg size options;
 - 2022.10.07: code bug fixed;

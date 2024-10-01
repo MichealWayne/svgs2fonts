@@ -12,7 +12,6 @@ Svgs2fonts.init({
   src: join(__dirname, 'svg'),
   dist: join(__dirname, 'dest'),
   fontName: 'myfont',
-  debug: true,
 })
   .then(flag => {
     if (flag === true) {

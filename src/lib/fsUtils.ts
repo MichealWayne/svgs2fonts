@@ -2,27 +2,27 @@
  * @module FSFunctions
  * @author Wayne<michealwayne@163.com>
  * @buildTime 2018.07.30
- * @lastModified 2022.06.03
+ * @lastModified 2024.09.28
  */
 
 import fs from 'fs';
 import { extname, join, dirname } from 'path';
 import mkdirp from 'mkdirp';
 
-import { FAIL_FlAG, SUCCESS_FlAG } from '../constant';
-import { isString } from './utils';
+import { FAIL_FLAG, SUCCESS_FLAG } from '../constant';
+import { isString, errorLog, log } from './utils';
 
 /**
  * @function mkdirpSync
  * @param {String} folderPath
- * @return {Promise}
+ * @return {true | Error} if success, return true
  */
-export function mkdirpSync(folderPath: string): boolean | Error {
+export function mkdirpSync(folderPath: string): true | Error {
   try {
     mkdirp.sync(folderPath);
-    return SUCCESS_FlAG;
+    return SUCCESS_FLAG;
   } catch (err) {
-    global.__sf_debug && console.error(err);
+    errorLog(err);
     return err as Error;
   }
 }
@@ -36,7 +36,7 @@ export function setFolderSync(folderPath: string): boolean | Error {
   if (!fs.existsSync(folderPath)) {
     return mkdirpSync(folderPath);
   }
-  return SUCCESS_FlAG;
+  return SUCCESS_FLAG;
 }
 
 /**
@@ -48,9 +48,9 @@ export function setFolderSync(folderPath: string): boolean | Error {
 export function fsExistsSync(folderPath: string): boolean {
   try {
     fs.accessSync(folderPath, fs.constants.F_OK);
-    return SUCCESS_FlAG;
+    return SUCCESS_FLAG;
   } catch (err) {
-    return FAIL_FlAG;
+    return FAIL_FLAG;
   }
 }
 
@@ -59,34 +59,34 @@ export function fsExistsSync(folderPath: string): boolean {
  * @description find file, if not exist, build it
  * @param {String} filePath file path
  * @param {String} fileData file data
- * @param {Boolean} replaceBool replace original data or add
+ * @param {Boolean} replaceExisting replace original data or add
  * @return {Promise}
  */
 export function writeFile(
   filePath: string,
   fileData: string,
-  replaceBool?: boolean
+  replaceExisting?: boolean
 ): Promise<boolean> {
   return new Promise<boolean>(resolve => {
     const dirPath = dirname(filePath);
     setFolderSync(dirPath);
 
     if (!fileData) {
-      resolve(FAIL_FlAG);
+      resolve(FAIL_FLAG);
     }
     try {
       if (fsExistsSync(filePath)) {
         const nowData = fs.readFileSync(filePath);
 
-        fs.writeFileSync(filePath, replaceBool ? fileData : nowData + fileData);
+        fs.writeFileSync(filePath, replaceExisting ? fileData : nowData + fileData);
       } else {
         fs.appendFileSync(filePath, fileData);
       }
     } catch (err) {
-      global.__sf_debug && console.error(err);
-      resolve(FAIL_FlAG);
+      errorLog(err);
+      resolve(FAIL_FLAG);
     }
-    resolve(SUCCESS_FlAG);
+    resolve(SUCCESS_FLAG);
   });
 }
 
@@ -99,29 +99,25 @@ export function writeFile(
  * @param {Boolean} debug
  * @return {Promise}
  */
-export function createIconFile(
+export async function createIconFile(
   filePath: string,
   iconData: string | Buffer,
   iconType = ''
 ): Promise<boolean> {
-  return new Promise<boolean>(resolve => {
-    fs.writeFile(filePath, iconData, err => {
-      if (err) {
-        global.__sf_debug && console.error(err);
-        resolve(FAIL_FlAG);
-      } else {
-        global.__sf_debug &&
-          console.log(`[success]${iconType} icon successfully created!(setIconFile, ${filePath})`);
-        resolve(SUCCESS_FlAG);
-      }
-    });
-  });
+  try {
+    await fs.writeFileSync(filePath, iconData);
+    log(`[success] ${iconType} icon successfully created! (setIconFile, ${filePath})`);
+    return SUCCESS_FLAG;
+  } catch (err) {
+    errorLog(err);
+    return FAIL_FLAG;
+  }
 }
 
 /**
  * @function filterSvgFiles
  * @param {String} svgFolderPath svg folder path.
- * @return {Array} svgs paths.
+ * @return {Set<string>} svgs paths.
  */
 export function filterSvgFiles(svgFolderPath: string): Set<string> {
   const svgSet: Set<string> = new Set();
@@ -134,7 +130,7 @@ export function filterSvgFiles(svgFolderPath: string): Set<string> {
       }
     });
   } catch (err) {
-    global.__sf_debug && console.error(err);
+    errorLog(err);
   }
   return svgSet;
 }

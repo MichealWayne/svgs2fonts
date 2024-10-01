@@ -2,15 +2,16 @@
  * @module constant
  * @author Wayne<michealwayne@163.com>
  * @Date 2022-10-11 13:15:40
- * @LastEditTime 2023-12-16 10:00:11
+ * @LastEditTime 2024-09-29 20:23:54
  */
 
+// 是否为开发环境，开发环境会开启一些调试日志
 export const IS_DEV = process.env.NODE_ENV === 'development';
 
 // 成功标识
-export const SUCCESS_FlAG = true;
+export const SUCCESS_FLAG = true;
 // 失败标识
-export const FAIL_FlAG = false;
+export const FAIL_FLAG = false;
 
 // demo中css产物
 export const DEMO_CSS = `@font-face {

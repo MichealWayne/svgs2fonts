@@ -47,12 +47,12 @@ Svgs2fonts.init(options);
 | fontName          | `string`  | `iconfont`            | 输出图标/字体名称                                                                              |
 | unicodeStart      | `number`  | `10000`               | unicode 起始数字（设置此指是需要避开正常 unicode 范围），（`v2.0`之前对应字段为`startNumber`） |
 | noDemo            | `boolean` | `true`                | 是否需要输出 html Demo 文件                                                                    |
-| debug             | `boolean` | `false`               | 是否开启 debug 模式以输出更多执行信息                                                          |
 | demoUnicodeHTML   | `string`  | `demo_unicode.html`   | unicode 类型的示例 html 名称                                                                   |
 | demoFontClassHTML | `string`  | `demo_fontclass.html` | fontClass 类型的示例 html 名称                                                                 |
 
 \*V2 废弃字段：
 
+- ~~debug~~(`v2.1.0废弃`)：`${Boolean}`，是否开启 debug 模式以输出更多执行信息，默认`false`
 - ~~timeout~~（`v2.0废弃`）：`{Number}`，执行超时时间，默认为 60s（`60000`）
 - ~~logger~~（`v2.0废弃`）：`{Object}`，日志记录。
 
@@ -67,7 +67,6 @@ Svgs2fonts.init({
   dist: join(__dirname, 'dest'), // output path
   fontName: 'myIconfont', // font name
   noDemo: true, // no demo html files
-  debug: true, // open debug
 })
   .then(() => console.log('task success!'))
   .catch(err => console.log(`task failed(${err})`));
@@ -123,14 +122,10 @@ svgs2fonts svg dist --number 50000
 svgs2fonts svg dist --nodemo
 ```
 
-#### `--debug`
-
-是否开启 debug 模式(default: `false`).
-
 ##### example
 
 ```
-svgs2fonts svg dist --debug
+svgs2fonts svg dist
 ```
 
 ## Project build
@@ -171,6 +166,7 @@ npm run test:example
 
 ## Last modified
 
+- 2024.09.28: `v2.1.0` change log and remove debug;
 - 2023.12.16: `v2.0.3` add some defensive handing;
 - 2023.06.03: `v2.0.2` optimal variable control;
 - 2022.11.03: `v2.0.1` split css & support svg size options;
