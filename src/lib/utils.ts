@@ -2,18 +2,45 @@
  * @module utils
  * @author Wayne<michealwayne@163.com>
  * @buildTime 2018.07.30
- * @lastModified 2022.03.20
+ * @lastModified 2024.09.28
  */
 
-import { SUCCESS_FlAG } from '../constant';
+import { IS_DEV, SUCCESS_FLAG } from '../constant';
+
+/**
+ * @function log
+ * @description 开发环境下，打印日志
+ * @param args
+ */
+export function log(...args: unknown[]): void {
+  IS_DEV && console.log(...args);
+}
+
+/**
+ * @function errorLog
+ * @description 开发环境下，打印异常日志
+ * @param args
+ */
+export function errorLog(...args: unknown[]): void {
+  IS_DEV && console.error(...args);
+}
+
+/**
+ * @function warnLog
+ * @description 开发环境下，打印提示日志
+ * @param args
+ */
+export function warnLog(...args: unknown[]): void {
+  IS_DEV && console.warn(...args);
+}
 
 /**
  * @function isSuccessResult
  * @param {unknown} res
  * @returns {boolean}
  */
-export function isSuccessResult(res?: unknown): boolean {
-  return res === SUCCESS_FlAG;
+export function isSuccessResult(res?: unknown): res is true {
+  return res === SUCCESS_FLAG;
 }
 
 /**
@@ -21,12 +48,13 @@ export function isSuccessResult(res?: unknown): boolean {
  * @param {unknown} value
  * @return {boolean}
  */
-export function isString(value?: unknown): boolean {
+export function isString(value?: unknown): value is string {
   return typeof value === 'string';
 }
 
 /**
  * @function getIconStrUnicode
+ * @description 用于动态生成图标的Unicode编码，确保每个图标都有一个唯一的标识符。
  * @param {string} iconName
  * @param {number} unicodeStart
  * @returns {number}

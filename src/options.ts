@@ -2,13 +2,10 @@
  * @module configFile
  * @author Micheal Wayne<michealwayne@163.com>
  * @Date 2022-03-22 14:53:16
- * @LastEditTime 2022-11-03 15:22:15
+ * @LastEditTime 2024-09-29 20:24:53
  */
 
-import { IS_DEV } from './constant';
 import { InitOptionsParams } from './types/OptionType';
-
-global.__sf_debug = IS_DEV === true;
 
 const DEFAULT_OPTIONS: InitOptionsParams = {
   debug: false,

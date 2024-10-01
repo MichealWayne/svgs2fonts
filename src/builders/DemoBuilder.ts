@@ -8,9 +8,9 @@
 import { join, extname } from 'path';
 
 import { writeFile } from '../lib/fsUtils';
-import { isString } from '../lib/utils';
+import { isString, log } from '../lib/utils';
 import { SVGBuilder } from './SVGBuilder';
-import { SUCCESS_FlAG, FAIL_FlAG, DEMO_CSS, DEMO_HTML } from '../constant';
+import { SUCCESS_FLAG, FAIL_FLAG, DEMO_CSS, DEMO_HTML } from '../constant';
 
 const DEMO_REGEXS = {
   fontName: /\{\{fontName\}\}/g,
@@ -43,7 +43,7 @@ export default class DemoBuilder {
     const { fontName, dist, demoUnicodeHTML, demoFontClassHTML } = this.svgBuilder.options;
     for (const i in UnicodeObj) {
       const _code = UnicodeObj[i];
-      const _num = Number(_code.replace('&#', '').replace(';', '')).toString(16);
+      const _num = Number(_code.replace(/&#|;/g, '')).toString(16);
 
       if (!isString(_code)) continue;
       _codeHtml += `<li><p class="m-icon_ctn" title="${i}"><em class="u-iconfont">${_code}</em></p><p>${i}： ${_code.replace(
@@ -76,11 +76,10 @@ export default class DemoBuilder {
       writeFile(join(dist, _DEMO_FONT_CLASS_CSS), _CSS + _classCss, true),
     ]);
     if (writeUnicodeHTMLRes && writeFontClassHTMLRes) {
-      global.__sf_debug &&
-        console.log(`[success] ${demoUnicodeHTML}, ${demoFontClassHTML} successfully created!`);
-      return SUCCESS_FlAG;
+      log(`[success] ${demoUnicodeHTML}, ${demoFontClassHTML} successfully created!`);
+      return SUCCESS_FLAG;
     }
 
-    return FAIL_FlAG;
+    return FAIL_FLAG;
   }
 }
