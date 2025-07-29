@@ -1,0 +1,80 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <!-- include header -->
+  <meta charset="UTF-8">
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0" />
+  <meta name="format-detection" content="telephone=no" />
+  <meta name="apple-touch-fullscreen" content="YES" />
+  <style type="text/css">
+  * {margin: 0;padding: 0;}
+  html, body {width: 100%;}
+  h3 {font-weight: normal;}
+  .m-demos_ctn {margin-top: 50px;padding-right: 320px;display: flex;flex-wrap: wrap;justify-content: space-around;}
+  .m-demos_ctn li {list-style: none;text-align: center;width: 150px;min-height: 150px;}
+  .m-icon_ctn {width: 150px;height: 60px;}
+  .m-code_ctn {position: fixed;right: 0;top: 0;z-index: 2;padding: 5px 10px;width: 300px;max-height: 100%;overflow-y: auto;background-color: #fff;box-shadow: 0 0 20px #999;}
+  .m-code_ctn pre {white-space: pre-wrap;padding: 5px;color: #fff;background-color: #222;}
+  
+  @-webkit-keyframes colors {
+    from {font-size: 26px;color: red;}
+    25% {color: yellow;}
+    50% {font-size: 66px;color: green;} 
+    75% {color: blue;}
+    to {font-size: 26px;color: red;}
+  }
+  @keyframes colors {
+    from {font-size: 26px;color: red;}
+    25% {color: yellow;}
+    50% {font-size: 66px;color: green;} 
+    75% {color: blue;}
+    to {font-size: 26px;color: red;}
+  }
+  </style>
+
+  <!-- font css -->
+  <link rel="stylesheet" rel="stylesheet" href="./demo_unicode.css" />
+  <title>svg2fonts demo</title>
+</head>
+<body>
+  <style type="text/css">
+  .u-iconfont{
+    font-family: "iconfont" !important;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  .u-iconfont{
+    display: inline-block;
+    font-size: 26px;
+    font-style: normal;
+    -webkit-animation: colors 3s infinite linear;
+            animation: colors 3s infinite linear;
+  }
+  </style>
+
+  <h1>iconfont(by svgs2fonts)</h1>
+
+  <section class="m-code_ctn">
+  <h3>Main CSS codes: </h3>
+    <pre>
+    @font-face {
+  font-family: 'iconfont';
+  src: url('iconfont.eot');
+  src: url('iconfont.woff2') format('woff2'),
+    url('iconfont.woff') format('woff'),
+    url('iconfont.eot#IEfix') format('embedded-opentype'), /* IE6-IE8 */  
+    url('iconfont.ttf') format('truetype'), /* chrome, firefox, opera, Safari, Android, iOS 4.2+*/
+    url('iconfont.svg') format('svg');
+}
+    </pre>
+  </section>
+
+  <ul class="m-demos_ctn">
+  <!-- <em class="u-iconfont">&#xE002;</em> -->
+
+  <li><p class="m-icon_ctn" title="24"><em class="u-iconfont">&#21728;</em></p><p>24： &amp;#21728;</p></li><li><p class="m-icon_ctn" title="ad-1"><em class="u-iconfont">&#21730;</em></p><p>ad-1： &amp;#21730;</p></li><li><p class="m-icon_ctn" title="add-pluss-1"><em class="u-iconfont">&#33848;</em></p><p>add-pluss-1： &amp;#33848;</p></li><li><p class="m-icon_ctn" title="add-pluss-2"><em class="u-iconfont">&#33849;</em></p><p>add-pluss-2： &amp;#33849;</p></li><li><p class="m-icon_ctn" title="add-pluss-3"><em class="u-iconfont">&#33850;</em></p><p>add-pluss-3： &amp;#33850;</p></li><li><p class="m-icon_ctn" title="alarm-1"><em class="u-iconfont">&#13907;</em></p><p>alarm-1： &amp;#13907;</p></li><li><p class="m-icon_ctn" title="alarm-clock"><em class="u-iconfont">&#39195;</em></p><p>alarm-clock： &amp;#39195;</p></li><li><p class="m-icon_ctn" title="arrow-down-1"><em class="u-iconfont">&#56292;</em></p><p>arrow-down-1： &amp;#56292;</p></li><li><p class="m-icon_ctn" title="arrow-down-2"><em class="u-iconfont">&#56293;</em></p><p>arrow-down-2： &amp;#56293;</p></li><li><p class="m-icon_ctn" title="arrow-down-3"><em class="u-iconfont">&#56294;</em></p><p>arrow-down-3： &amp;#56294;</p></li><li><p class="m-icon_ctn" title="arrow-left-1"><em class="u-iconfont">&#31844;</em></p><p>arrow-left-1： &amp;#31844;</p></li><li><p class="m-icon_ctn" title="arrow-left-2"><em class="u-iconfont">&#31845;</em></p><p>arrow-left-2： &amp;#31845;</p></li><li><p class="m-icon_ctn" title="arrow-left-3"><em class="u-iconfont">&#31846;</em></p><p>arrow-left-3： &amp;#31846;</p></li><li><p class="m-icon_ctn" title="arrow-right-1"><em class="u-iconfont">&#42540;</em></p><p>arrow-right-1： &amp;#42540;</p></li><li><p class="m-icon_ctn" title="arrow-right-2"><em class="u-iconfont">&#42541;</em></p><p>arrow-right-2： &amp;#42541;</p></li><li><p class="m-icon_ctn" title="arrow-right-3"><em class="u-iconfont">&#42542;</em></p><p>arrow-right-3： &amp;#42542;</p></li><li><p class="m-icon_ctn" title="arrow-up-1"><em class="u-iconfont">&#42025;</em></p><p>arrow-up-1： &amp;#42025;</p></li><li><p class="m-icon_ctn" title="arrow-up-2"><em class="u-iconfont">&#42026;</em></p><p>arrow-up-2： &amp;#42026;</p></li><li><p class="m-icon_ctn" title="arrow-up-3"><em class="u-iconfont">&#42027;</em></p><p>arrow-up-3： &amp;#42027;</p></li><li><p class="m-icon_ctn" title="backspace"><em class="u-iconfont">&#28157;</em></p><p>backspace： &amp;#28157;</p></li><li><p class="m-icon_ctn" title="battery-charge"><em class="u-iconfont">&#26097;</em></p><p>battery-charge： &amp;#26097;</p></li><li><p class="m-icon_ctn" title="battery-discharged"><em class="u-iconfont">&#21283;</em></p><p>battery-discharged： &amp;#21283;</p></li><li><p class="m-icon_ctn" title="battery-full"><em class="u-iconfont">&#24209;</em></p><p>battery-full： &amp;#24209;</p></li><li><p class="m-icon_ctn" title="battery-half"><em class="u-iconfont">&#24298;</em></p><p>battery-half： &amp;#24298;</p></li><li><p class="m-icon_ctn" title="battery-low"><em class="u-iconfont">&#52494;</em></p><p>battery-low： &amp;#52494;</p></li><li><p class="m-icon_ctn" title="bin"><em class="u-iconfont">&#51163;</em></p><p>bin： &amp;#51163;</p></li><li><p class="m-icon_ctn" title="board"><em class="u-iconfont">&#36078;</em></p><p>board： &amp;#36078;</p></li><li><p class="m-icon_ctn" title="boat"><em class="u-iconfont">&#21430;</em></p><p>boat： &amp;#21430;</p></li><li><p class="m-icon_ctn" title="book-1"><em class="u-iconfont">&#34534;</em></p><p>book-1： &amp;#34534;</p></li><li><p class="m-icon_ctn" title="book-2"><em class="u-iconfont">&#34535;</em></p><p>book-2： &amp;#34535;</p></li><li><p class="m-icon_ctn" title="bookmark-1"><em class="u-iconfont">&#51880;</em></p><p>bookmark-1： &amp;#51880;</p></li><li><p class="m-icon_ctn" title="bookmark-add"><em class="u-iconfont">&#59780;</em></p><p>bookmark-add： &amp;#59780;</p></li><li><p class="m-icon_ctn" title="bookmark-added"><em class="u-iconfont">&#24911;</em></p><p>bookmark-added： &amp;#24911;</p></li><li><p class="m-icon_ctn" title="bowtie"><em class="u-iconfont">&#33869;</em></p><p>bowtie： &amp;#33869;</p></li><li><p class="m-icon_ctn" title="box-1"><em class="u-iconfont">&#58797;</em></p><p>box-1： &amp;#58797;</p></li><li><p class="m-icon_ctn" title="box-2"><em class="u-iconfont">&#58798;</em></p><p>box-2： &amp;#58798;</p></li><li><p class="m-icon_ctn" title="box-3"><em class="u-iconfont">&#58799;</em></p><p>box-3： &amp;#58799;</p></li><li><p class="m-icon_ctn" title="box-4"><em class="u-iconfont">&#58800;</em></p><p>box-4： &amp;#58800;</p></li><li><p class="m-icon_ctn" title="brief-bag"><em class="u-iconfont">&#50882;</em></p><p>brief-bag： &amp;#50882;</p></li><li><p class="m-icon_ctn" title="browser"><em class="u-iconfont">&#39523;</em></p><p>browser： &amp;#39523;</p></li><li><p class="m-icon_ctn" title="bubble-1"><em class="u-iconfont">&#53766;</em></p><p>bubble-1： &amp;#53766;</p></li><li><p class="m-icon_ctn" title="bubble-2"><em class="u-iconfont">&#53767;</em></p><p>bubble-2： &amp;#53767;</p></li><li><p class="m-icon_ctn" title="bubble-rounded-1"><em class="u-iconfont">&#52454;</em></p><p>bubble-rounded-1： &amp;#52454;</p></li><li><p class="m-icon_ctn" title="bubble-rounded-2"><em class="u-iconfont">&#52455;</em></p><p>bubble-rounded-2： &amp;#52455;</p></li><li><p class="m-icon_ctn" title="bubble-rounded-chat"><em class="u-iconfont">&#27727;</em></p><p>bubble-rounded-chat： &amp;#27727;</p></li><li><p class="m-icon_ctn" title="bubbles-chat"><em class="u-iconfont">&#19155;</em></p><p>bubbles-chat： &amp;#19155;</p></li><li><p class="m-icon_ctn" title="bus"><em class="u-iconfont">&#51564;</em></p><p>bus： &amp;#51564;</p></li><li><p class="m-icon_ctn" title="calculator-1"><em class="u-iconfont">&#36721;</em></p><p>calculator-1： &amp;#36721;</p></li><li><p class="m-icon_ctn" title="calendar-1"><em class="u-iconfont">&#46407;</em></p><p>calendar-1： &amp;#46407;</p></li><li><p class="m-icon_ctn" title="calendar-2"><em class="u-iconfont">&#46408;</em></p><p>calendar-2： &amp;#46408;</p></li><li><p class="m-icon_ctn" title="car"><em class="u-iconfont">&#51992;</em></p><p>car： &amp;#51992;</p></li><li><p class="m-icon_ctn" title="card"><em class="u-iconfont">&#42666;</em></p><p>card： &amp;#42666;</p></li><li><p class="m-icon_ctn" title="cards"><em class="u-iconfont">&#36961;</em></p><p>cards： &amp;#36961;</p></li><li><p class="m-icon_ctn" title="chart-1"><em class="u-iconfont">&#37826;</em></p><p>chart-1： &amp;#37826;</p></li><li><p class="m-icon_ctn" title="chart-2"><em class="u-iconfont">&#37827;</em></p><p>chart-2： &amp;#37827;</p></li><li><p class="m-icon_ctn" title="chart-3"><em class="u-iconfont">&#37828;</em></p><p>chart-3： &amp;#37828;</p></li><li><p class="m-icon_ctn" title="chart-4"><em class="u-iconfont">&#37829;</em></p><p>chart-4： &amp;#37829;</p></li><li><p class="m-icon_ctn" title="chart-5"><em class="u-iconfont">&#37830;</em></p><p>chart-5： &amp;#37830;</p></li><li><p class="m-icon_ctn" title="chart-diagram-1"><em class="u-iconfont">&#21301;</em></p><p>chart-diagram-1： &amp;#21301;</p></li><li><p class="m-icon_ctn" title="chart-diagram-2"><em class="u-iconfont">&#21302;</em></p><p>chart-diagram-2： &amp;#21302;</p></li><li><p class="m-icon_ctn" title="chart-down-1"><em class="u-iconfont">&#52436;</em></p><p>chart-down-1： &amp;#52436;</p></li><li><p class="m-icon_ctn" title="chart-down-2"><em class="u-iconfont">&#52437;</em></p><p>chart-down-2： &amp;#52437;</p></li><li><p class="m-icon_ctn" title="chart-up-1"><em class="u-iconfont">&#10325;</em></p><p>chart-up-1： &amp;#10325;</p></li><li><p class="m-icon_ctn" title="chart-up-2"><em class="u-iconfont">&#10326;</em></p><p>chart-up-2： &amp;#10326;</p></li><li><p class="m-icon_ctn" title="check-1"><em class="u-iconfont">&#32738;</em></p><p>check-1： &amp;#32738;</p></li><li><p class="m-icon_ctn" title="check-2"><em class="u-iconfont">&#32739;</em></p><p>check-2： &amp;#32739;</p></li><li><p class="m-icon_ctn" title="check-3"><em class="u-iconfont">&#32740;</em></p><p>check-3： &amp;#32740;</p></li><li><p class="m-icon_ctn" title="clip"><em class="u-iconfont">&#54360;</em></p><p>clip： &amp;#54360;</p></li><li><p class="m-icon_ctn" title="clock-1"><em class="u-iconfont">&#36888;</em></p><p>clock-1： &amp;#36888;</p></li><li><p class="m-icon_ctn" title="clock-2"><em class="u-iconfont">&#36889;</em></p><p>clock-2： &amp;#36889;</p></li><li><p class="m-icon_ctn" title="cloud-download"><em class="u-iconfont">&#50969;</em></p><p>cloud-download： &amp;#50969;</p></li><li><p class="m-icon_ctn" title="cloud-upload"><em class="u-iconfont">&#34282;</em></p><p>cloud-upload： &amp;#34282;</p></li><li><p class="m-icon_ctn" title="cloud"><em class="u-iconfont">&#29555;</em></p><p>cloud： &amp;#29555;</p></li><li><p class="m-icon_ctn" title="coin-1"><em class="u-iconfont">&#58350;</em></p><p>coin-1： &amp;#58350;</p></li><li><p class="m-icon_ctn" title="coins-1"><em class="u-iconfont">&#33774;</em></p><p>coins-1： &amp;#33774;</p></li><li><p class="m-icon_ctn" title="coins-2"><em class="u-iconfont">&#33775;</em></p><p>coins-2： &amp;#33775;</p></li><li><p class="m-icon_ctn" title="color-picker"><em class="u-iconfont">&#21184;</em></p><p>color-picker： &amp;#21184;</p></li><li><p class="m-icon_ctn" title="colors"><em class="u-iconfont">&#19596;</em></p><p>colors： &amp;#19596;</p></li><li><p class="m-icon_ctn" title="compass"><em class="u-iconfont">&#32202;</em></p><p>compass： &amp;#32202;</p></li><li><p class="m-icon_ctn" title="coordinate"><em class="u-iconfont">&#14542;</em></p><p>coordinate： &amp;#14542;</p></li><li><p class="m-icon_ctn" title="crown"><em class="u-iconfont">&#45257;</em></p><p>crown： &amp;#45257;</p></li><li><p class="m-icon_ctn" title="cup-1"><em class="u-iconfont">&#51656;</em></p><p>cup-1： &amp;#51656;</p></li><li><p class="m-icon_ctn" title="dashboard-1"><em class="u-iconfont">&#10180;</em></p><p>dashboard-1： &amp;#10180;</p></li><li><p class="m-icon_ctn" title="delivery-1"><em class="u-iconfont">&#38205;</em></p><p>delivery-1： &amp;#38205;</p></li><li><p class="m-icon_ctn" title="diamond-1"><em class="u-iconfont">&#58899;</em></p><p>diamond-1： &amp;#58899;</p></li><li><p class="m-icon_ctn" title="dollar-1"><em class="u-iconfont">&#14199;</em></p><p>dollar-1： &amp;#14199;</p></li><li><p class="m-icon_ctn" title="iconfont"><em class="u-iconfont">&#27412;</em></p><p>iconfont： &amp;#27412;</p></li>
+  </li>
+</body>
+</html>

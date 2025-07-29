@@ -1,10 +1,10 @@
 {
   "name": "svgs2fonts",
-  "version": "2.0.1",
+  "version": "2.2.0",
   "author": "Wayne",
   "description": "svg icons to icons fonts(svg,ttf,eot,woff,woff2)",
   "main": "dist/index.js",
-  "typings": "./index.d.ts",
+  "typings": "./dist/index.d.ts",
   "scripts": {
     "build": "rimraf dist && tsc",
     "test": "jest",
@@ -53,6 +53,7 @@
   "dependencies": {
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
+    "prettier": "^3.6.2",
     "svg2ttf": "^6.0.2",
     "svgicons2svgfont": "^9.0.3",
     "ttf2eot": "^2.0.0",

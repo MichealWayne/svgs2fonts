@@ -19,3 +19,6 @@ baks/
 
 # test
 coverage/
+
+# svg cache
+.svgs2fonts-cache

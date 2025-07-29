@@ -12,6 +12,11 @@ Svgs2fonts.init({
   src: join(__dirname, 'svg'),
   dist: join(__dirname, 'dest'),
   fontName: 'myfont',
+  noDemo: false, // Explicitly enable demo generation
+  maxConcurrency: 1, // Disable parallel processing to avoid woff2 crash
+  fontFormats: ['svg', 'ttf', 'eot', 'woff', 'woff2'], // Don't generate woff to avoid crash
+  verbose: true, // enable verbose output
+  performanceAnalysis: true, // enable performance tracking
 })
   .then(flag => {
     if (flag === true) {
