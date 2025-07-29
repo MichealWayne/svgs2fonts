@@ -1,27 +1,66 @@
 {
   "compilerOptions": {
+    /* Basic Options */
     "esModuleInterop": true,
     "outDir": "./dist/",
-    "sourceMap": false,
+    "sourceMap": true,
+    "declaration": true,
+    "declarationMap": true,
+    
+    /* Type Checking */
     "strict": true,
     "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    
+    /* Module Resolution */
     "module": "commonjs",
-    "target": "es6",
+    "target": "es2020",
+    "moduleResolution": "node",
     "allowJs": true,
     "baseUrl": ".",
-    "lib": [
-      "es2018"
-    ],
+    "lib": ["es2020", "dom"],
+    "types": ["node", "jest"],
+    "resolveJsonModule": true,
+    
+    /* Path Mapping */
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["src/*"],
+      "@/types/*": ["src/types/*"],
+      "@/utils/*": ["src/utils/*"],
+      "@/config/*": ["src/config/*"],
+      "@/core/*": ["src/core/*"],
+      "@/builders/*": ["src/builders/*"],
+      "@/processors/*": ["src/processors/*"]
     },
-    "types": ["jest", "node"]
+
+    /* Advanced Options */
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "incremental": true,
+    "tsBuildInfoFile": "./dist/.tsbuildinfo",
+    
+    /* Emit Options */
+    "removeComments": false,
+    "preserveConstEnums": true,
+    "newLine": "lf"
   },
-  "include": ["src/**/*"],
+  "include": [
+    "src/**/*"
+  ],
   "exclude": [
     "__tests__",
-    "./baks/**/*",
+    "./baks/**/*", 
     "./temp/**/*",
-    "node_modules"
-  ]
+    "node_modules",
+    "**/__tests__/**/*",
+    "**/*.test.ts",
+    "dist/**/*",
+    "examples/**/*",
+    ".svgs2fonts-cache/**/*"
+  ],
+  "ts-node": {
+    "esm": true,
+    "experimentalSpecifierResolution": "node"
+  }
 }
