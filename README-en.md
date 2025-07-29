@@ -5,7 +5,7 @@ SVG icons to web font generator (SVG -> SVG, TTF, EOT, WOFF, WOFF2).
 
 ## Version
 
-2.1.0
+2.2.0
 
 ## Install
 
@@ -424,14 +424,15 @@ npm run test:example
 
 ## Changelog
 
-| Version | Date       | Changes                                        |
-| ------- | ---------- | ---------------------------------------------- |
-| v2.1.0  | 2024.09.28 | Remove debug parameter, optimize logging       |
-| v2.0.3  | 2023.12.16 | Add defensive handling, improve stability      |
-| v2.0.2  | 2023.06.03 | Optimize variable control, enhance performance |
-| v2.0.1  | 2022.11.03 | Split CSS styles, support SVG size options     |
-| v2.0.0  | 2022.03.20 | TypeScript rewrite, full type definitions      |
-| v1.x    | 2021.12.16 | Fix IE8 compatibility issues                   |
+| Version | Date       | Changes                                                                                             |
+| ------- | ---------- | --------------------------------------------------------------------------------------------------- |
+| v2.2.0  | 2025.07.27 | Clean up redundant code, remove unused index.d.ts type declaration file, optimize package structure |
+| v2.1.0  | 2024.09.28 | Remove debug parameter, optimize logging                                                            |
+| v2.0.3  | 2023.12.16 | Add defensive handling, improve stability                                                           |
+| v2.0.2  | 2023.06.03 | Optimize variable control, enhance performance                                                      |
+| v2.0.1  | 2022.11.03 | Split CSS styles, support SVG size options                                                          |
+| v2.0.0  | 2022.03.20 | TypeScript rewrite, full type definitions                                                           |
+| v1.x    | 2021.12.16 | Fix IE8 compatibility issues                                                                        |
 
 ## Contributing
 
@@ -490,4 +491,4 @@ svgs2fonts/
 
 ## Build time
 
-2024.09.28
+2025.07.27
