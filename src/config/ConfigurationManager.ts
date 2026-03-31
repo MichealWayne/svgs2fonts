@@ -13,12 +13,15 @@ import * as path from 'path';
 import DEFAULT_OPTIONS from '../builders/options';
 import { EnhancedOptions, FontFormat } from '../types/OptionType';
 
+export const DEFAULT_FONT_FORMATS: FontFormat[] = ['svg', 'ttf', 'eot', 'woff', 'woff2'];
+export const VALID_FONT_FORMATS: FontFormat[] = ['svg', 'ttf', 'eot', 'woff', 'woff2'];
+
 /**
  * Default enhanced options extending the base options
  */
 const ENHANCED_DEFAULT_OPTIONS: Partial<EnhancedOptions> = {
   // Font options
-  fontFormats: ['svg', 'ttf', 'eot', 'woff', 'woff2'] as FontFormat[],
+  fontFormats: DEFAULT_FONT_FORMATS,
 
   // Batch processing
   batchMode: false,
@@ -110,7 +113,7 @@ export class ConfigurationManager {
    * Validate required configuration fields
    */
   private validateRequiredFields(options: any): void {
-    if (!options.src) {
+    if (!options.batchMode && !options.src) {
       throw new ConfigurationError('Source directory (src) is required', 'src');
     }
 
@@ -149,14 +152,13 @@ export class ConfigurationManager {
   private validateOptions(options: any): void {
     // Validate font formats
     if (options.fontFormats && Array.isArray(options.fontFormats)) {
-      const validFormats: FontFormat[] = ['svg', 'ttf', 'eot', 'woff', 'woff2'];
       const invalidFormats = options.fontFormats.filter(
-        (format: string) => !validFormats.includes(format as FontFormat)
+        (format: string) => !VALID_FONT_FORMATS.includes(format as FontFormat)
       );
 
       if (invalidFormats.length > 0) {
         throw new ConfigurationError(
-          `Invalid font formats: ${invalidFormats.join(', ')}. Valid formats: ${validFormats.join(
+          `Invalid font formats: ${invalidFormats.join(', ')}. Valid formats: ${VALID_FONT_FORMATS.join(
             ', '
           )}`,
           'fontFormats'
@@ -169,8 +171,8 @@ export class ConfigurationManager {
       throw new ConfigurationError('Batch size must be a positive number', 'batchSize');
     }
 
-    // Check source directory exists
-    if (options.src && !fs.existsSync(options.src)) {
+    // Validate single-directory mode source
+    if (!options.batchMode && options.src && !fs.existsSync(options.src)) {
       throw new ConfigurationError(`Source directory does not exist: ${options.src}`, 'src');
     }
 
@@ -180,6 +182,19 @@ export class ConfigurationManager {
         'Batch mode requires inputDirectories to be specified',
         'inputDirectories'
       );
+    }
+
+    if (options.batchMode && Array.isArray(options.inputDirectories)) {
+      const missingDirectories = options.inputDirectories.filter(
+        (directory: string) => !fs.existsSync(directory)
+      );
+
+      if (missingDirectories.length > 0) {
+        throw new ConfigurationError(
+          `Input directories do not exist: ${missingDirectories.join(', ')}`,
+          'inputDirectories'
+        );
+      }
     }
   }
 }

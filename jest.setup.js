@@ -3,6 +3,7 @@
 
 // Set test environment variables
 process.env.NODE_ENV = 'test';
+global.performance = require('perf_hooks').performance;
 
 // Mock console methods to reduce noise in tests
 const originalConsoleLog = console.log;

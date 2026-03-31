@@ -32,11 +32,7 @@ export declare function fsExistsSync(folderPath: string): boolean;
  * @param {Boolean} replaceExisting replace original data or add
  * @return {Promise}
  */
-export declare function writeFile(
-  filePath: string,
-  fileData: string,
-  replaceExisting?: boolean
-): Promise<boolean>;
+export declare function writeFile(filePath: string, fileData: string, replaceExisting?: boolean): Promise<boolean>;
 /**
  * @function createIconFile
  * @description set font icon file
@@ -46,11 +42,7 @@ export declare function writeFile(
  * @param {Boolean} debug
  * @return {Promise}
  */
-export declare function createIconFile(
-  filePath: string,
-  iconData: string | Buffer,
-  iconType?: string
-): Promise<boolean>;
+export declare function createIconFile(filePath: string, iconData: string | Buffer, iconType?: string): Promise<boolean>;
 /**
  * @function filterSvgFiles
  * @param {String} svgFolderPath svg folder path.

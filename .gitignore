@@ -22,3 +22,10 @@ coverage/
 
 # svg cache
 .svgs2fonts-cache
+
+# ai
+.claude
+.codex
+.kiro
+.opencode
+openspec

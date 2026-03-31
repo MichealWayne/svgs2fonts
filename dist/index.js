@@ -1,60 +1,42 @@
-'use strict';
+"use strict";
 /**
  * @fileoverview SVG to Font Icons Converter - Enhanced Main Entry Point
  * @description A comprehensive toolkit for converting SVG icons to web fonts with advanced optimization
  * @author Wayne <michealwayne@163.com>
  * @buildTime 2018.07.30
- * @lastModified 2025-07-23 15:45:00
- * @version 2.1.0
+ * @lastModified 2025-07-27 15:45:00
+ * @version 2.1.1
  * @license MIT
  * @see {@link https://github.com/MichealWayne/svgs2fonts} Project Repository
  */
-var __createBinding =
-  (this && this.__createBinding) ||
-  (Object.create
-    ? function (o, m, k, k2) {
-        if (k2 === undefined) k2 = k;
-        var desc = Object.getOwnPropertyDescriptor(m, k);
-        if (!desc || ('get' in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-          desc = {
-            enumerable: true,
-            get: function () {
-              return m[k];
-            },
-          };
-        }
-        Object.defineProperty(o, k2, desc);
-      }
-    : function (o, m, k, k2) {
-        if (k2 === undefined) k2 = k;
-        o[k2] = m[k];
-      });
-var __setModuleDefault =
-  (this && this.__setModuleDefault) ||
-  (Object.create
-    ? function (o, v) {
-        Object.defineProperty(o, 'default', { enumerable: true, value: v });
-      }
-    : function (o, v) {
-        o['default'] = v;
-      });
-var __importStar =
-  (this && this.__importStar) ||
-  function (mod) {
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
     if (mod && mod.__esModule) return mod;
     var result = {};
-    if (mod != null)
-      for (var k in mod)
-        if (k !== 'default' && Object.prototype.hasOwnProperty.call(mod, k))
-          __createBinding(result, mod, k);
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
     __setModuleDefault(result, mod);
     return result;
-  };
-Object.defineProperty(exports, '__esModule', { value: true });
+};
+Object.defineProperty(exports, "__esModule", { value: true });
 exports.init = void 0;
-const config_1 = require('./config');
-const core_1 = require('./core');
-const processors_1 = require('./processors');
+const config_1 = require("./config");
+const core_1 = require("./core");
+const processors_1 = require("./processors");
 /**
  * @typedef {Object} InitResult
  * @property {boolean} success - Whether the operation completed successfully
@@ -132,32 +114,32 @@ const processors_1 = require('./processors');
  * });
  *
  * @since 1.0.0
- * @version 2.1.0
+ * @version 2.1.1
  */
 async function init(options) {
-  try {
-    // Validate input parameters
-    if (!options || typeof options !== 'object') {
-      throw new Error('Options parameter is required and must be an object');
+    try {
+        // Validate input parameters
+        if (!options || typeof options !== 'object') {
+            throw new Error('Options parameter is required and must be an object');
+        }
+        // Apply backward compatibility and create configuration
+        const { configManager, performanceTracker } = await setupConfiguration(options);
+        const validatedOptions = configManager.getOptions();
+        // Log configuration summary if verbose mode is enabled
+        await logConfiguration(configManager, validatedOptions.verbose);
+        // Choose appropriate processing mode based on configuration
+        const processor = validatedOptions.batchMode && validatedOptions.inputDirectories
+            ? new processors_1.BatchModeProcessor(configManager, performanceTracker)
+            : new processors_1.SingleDirectoryProcessor(configManager, performanceTracker);
+        // Execute the processing pipeline
+        const result = await processor.process();
+        // Log performance analysis if enabled
+        logPerformanceAnalysis(performanceTracker, validatedOptions.performanceAnalysis);
+        return result;
     }
-    // Apply backward compatibility and create configuration
-    const { configManager, performanceTracker } = await setupConfiguration(options);
-    const validatedOptions = configManager.getOptions();
-    // Log configuration summary if verbose mode is enabled
-    await logConfiguration(configManager, validatedOptions.verbose);
-    // Choose appropriate processing mode based on configuration
-    const processor =
-      validatedOptions.batchMode && validatedOptions.inputDirectories
-        ? new processors_1.BatchModeProcessor(configManager, performanceTracker)
-        : new processors_1.SingleDirectoryProcessor(configManager, performanceTracker);
-    // Execute the processing pipeline
-    const result = await processor.process();
-    // Log performance analysis if enabled
-    logPerformanceAnalysis(performanceTracker, validatedOptions.performanceAnalysis);
-    return result;
-  } catch (error) {
-    return await handleError(error, options);
-  }
+    catch (error) {
+        return await handleError(error, options);
+    }
 }
 exports.init = init;
 /**
@@ -184,19 +166,19 @@ exports.init = init;
  * @since 2.0.0
  */
 async function setupConfiguration(options) {
-  // Apply backward compatibility layer to handle legacy options
-  const compatLayer = (0, config_1.createBackwardCompatibilityLayer)();
-  const enhancedOptions = compatLayer.convertLegacyOptions(options);
-  // Create and validate configuration with comprehensive error handling
-  const configManager = (0, config_1.createConfiguration)(enhancedOptions);
-  const validatedOptions = configManager.getOptions();
-  // Log deprecation warnings for legacy option usage
-  compatLayer.logDeprecationWarnings(validatedOptions.verbose || false);
-  // Initialize performance tracker if analysis is requested
-  const performanceTracker = validatedOptions.performanceAnalysis
-    ? (0, core_1.createPerformanceTracker)()
-    : undefined;
-  return { configManager, performanceTracker };
+    // Apply backward compatibility layer to handle legacy options
+    const compatLayer = (0, config_1.createBackwardCompatibilityLayer)();
+    const enhancedOptions = compatLayer.convertLegacyOptions(options);
+    // Create and validate configuration with comprehensive error handling
+    const configManager = (0, config_1.createConfiguration)(enhancedOptions);
+    const validatedOptions = configManager.getOptions();
+    // Log deprecation warnings for legacy option usage
+    compatLayer.logDeprecationWarnings(validatedOptions.verbose || false);
+    // Initialize performance tracker if analysis is requested
+    const performanceTracker = validatedOptions.performanceAnalysis
+        ? (0, core_1.createPerformanceTracker)()
+        : undefined;
+    return { configManager, performanceTracker };
 }
 /**
  * Log configuration summary to console
@@ -215,11 +197,11 @@ async function setupConfiguration(options) {
  * @since 2.0.0
  */
 async function logConfiguration(configManager, verbose = false) {
-  if (verbose) {
-    const { log } = await Promise.resolve().then(() => __importStar(require('./utils')));
-    const configSummary = configManager.getSummary();
-    log(`[svgs2fonts] Configuration Summary:\n${configSummary}`);
-  }
+    if (verbose) {
+        const { log } = await Promise.resolve().then(() => __importStar(require('./utils')));
+        const configSummary = configManager.getSummary();
+        log(`[svgs2fonts] Configuration Summary:\n${configSummary}`);
+    }
 }
 /**
  * Log performance analysis results
@@ -237,12 +219,12 @@ async function logConfiguration(configManager, verbose = false) {
  * @since 2.0.0
  */
 function logPerformanceAnalysis(performanceTracker, performanceAnalysis = false) {
-  if (performanceTracker && performanceAnalysis) {
-    console.log('\n[svgs2fonts] Performance Analysis:');
-    console.log('=====================================');
-    console.log(performanceTracker.getSummary());
-    console.log('=====================================\n');
-  }
+    if (performanceTracker && performanceAnalysis) {
+        console.log('\n[svgs2fonts] Performance Analysis:');
+        console.log('=====================================');
+        console.log(performanceTracker.getSummary());
+        console.log('=====================================\n');
+    }
 }
 /**
  * Handle and report errors with structured error information
@@ -261,36 +243,37 @@ function logPerformanceAnalysis(performanceTracker, performanceAnalysis = false)
  * @since 2.0.0
  */
 async function handleError(error, options) {
-  // Extract verbose setting for appropriate error reporting level
-  const verbose = options.verbose || false;
-  const errorMessage = error instanceof Error ? error.message : String(error);
-  // Generate appropriate error output based on verbosity level
-  if (verbose) {
-    console.error('\n[svgs2fonts] Detailed Error Report:');
-    console.error('===================================');
-    console.error(`Error: ${errorMessage}`);
-    console.error(`Timestamp: ${new Date().toISOString()}`);
-    console.error(`Node Version: ${process.version}`);
-    console.error(`Platform: ${process.platform}`);
-    console.error(`Working Directory: ${process.cwd()}`);
-    console.error('\nSuggestions:');
-    console.error('- Verify that all required options are provided and valid');
-    console.error('- Check that source directory exists and contains SVG files');
-    console.error('- Ensure output directory is writable and has sufficient space');
-    console.error('- Validate font name contains only alphanumeric characters');
-    console.error('- Check Node.js version compatibility (>= 12.0.0 required)');
-    console.error('- Review console output for specific error details');
-    if (error instanceof Error && error.stack) {
-      console.error('\nStack trace:');
-      console.error(error.stack);
+    // Extract verbose setting for appropriate error reporting level
+    const verbose = options.verbose || false;
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    // Generate appropriate error output based on verbosity level
+    if (verbose) {
+        console.error('\n[svgs2fonts] Detailed Error Report:');
+        console.error('===================================');
+        console.error(`Error: ${errorMessage}`);
+        console.error(`Timestamp: ${new Date().toISOString()}`);
+        console.error(`Node Version: ${process.version}`);
+        console.error(`Platform: ${process.platform}`);
+        console.error(`Working Directory: ${process.cwd()}`);
+        console.error('\nSuggestions:');
+        console.error('- Verify that all required options are provided and valid');
+        console.error('- Check that source directory exists and contains SVG files');
+        console.error('- Ensure output directory is writable and has sufficient space');
+        console.error('- Validate font name contains only alphanumeric characters');
+        console.error('- Check Node.js version compatibility (>= 12.0.0 required)');
+        console.error('- Review console output for specific error details');
+        if (error instanceof Error && error.stack) {
+            console.error('\nStack trace:');
+            console.error(error.stack);
+        }
+        console.error('===================================\n');
     }
-    console.error('===================================\n');
-  } else {
-    console.error('[svgs2fonts] Error:', errorMessage);
-    console.error('[svgs2fonts] Use --verbose flag for detailed error information');
-  }
-  // Return normalized Error instance
-  return error instanceof Error ? error : new Error(String(error));
+    else {
+        console.error('[svgs2fonts] Error:', errorMessage);
+        console.error('[svgs2fonts] Use --verbose flag for detailed error information');
+    }
+    // Return normalized Error instance
+    return error instanceof Error ? error : new Error(String(error));
 }
 /**
  * @namespace SVGToFonts
@@ -313,9 +296,9 @@ async function handleError(error, options) {
  * @since 2.0.0
  */
 exports.default = {
-  init,
-  createConfiguration: config_1.createConfiguration,
-  createBackwardCompatibilityLayer: config_1.createBackwardCompatibilityLayer,
+    init,
+    createConfiguration: config_1.createConfiguration,
+    createBackwardCompatibilityLayer: config_1.createBackwardCompatibilityLayer,
 };
 /**
  * @exports init - Main initialization function

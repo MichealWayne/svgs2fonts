@@ -4,7 +4,9 @@ svg 图标转字体图标库（svgs -> svg,ttf,eot,woff,woff2）。[English read
 
 ## 版本
 
-2.2.0
+当前 npm 包版本：`2.2.0`
+
+如需查看历史变更，建议以 Git tags / release 记录为准，而不是在 README 中手工维护完整变更表。
 
 ## 安装
 
@@ -38,27 +40,36 @@ import Svgs2fonts from 'svgs2fonts';
 Svgs2fonts.init(options);
 ```
 
+`init(options)` 当前返回 `Promise<true | Error>`。
+成功时返回 `true`，失败时返回 `Error` 实例；调用方应显式判断结果，而不是只依赖 `.catch(...)`。
+
 其中 options 参数：
 
-| 字段                | 类型       | 默认值                         | 描述                                                                                           |
-| ------------------- | ---------- | ------------------------------ | ---------------------------------------------------------------------------------------------- |
-| src                 | `string`   | `-`                            | svg 图标文件的目录路径                                                                         |
-| dist                | `string`   | `./dist`                       | 字体图标输出路径                                                                               |
-| fontName            | `string`   | `iconfont`                     | 输出图标/字体名称                                                                              |
-| unicodeStart        | `number`   | `10000`                        | unicode 起始数字（设置此指是需要避开正常 unicode 范围），（`v2.0`之前对应字段为`startNumber`） |
-| noDemo              | `boolean`  | `false`                        | 是否需要输出 html Demo 文件                                                                    |
-| verbose             | `boolean`  | `false`                        | 是否启用详细输出模式                                                                           |
-| demoUnicodeHTML     | `string`   | `demo_unicode.html`            | unicode 类型的示例 html 名称                                                                   |
-| demoFontClassHTML   | `string`   | `demo_fontclass.html`          | fontClass 类型的示例 html 名称                                                                 |
-| batchMode           | `boolean`  | `false`                        | 是否启用批处理模式，用于处理多个 SVG 目录                                                      |
-| inputDirectories    | `string[]` | `-`                            | 批处理模式下的输入目录列表                                                                     |
-| batchSize           | `number`   | `3`                            | 批处理模式下的批次大小                                                                         |
-| continueOnError     | `boolean`  | `false`                        | 批处理模式下，当一个目录处理失败时是否继续处理其他目录                                         |
-| maxConcurrency      | `number`   | `4`                            | 最大并发处理数                                                                                 |
-| enableCache         | `boolean`  | `true`                         | 是否启用缓存                                                                                   |
-| fontFormats         | `string[]` | `['ttf','eot','woff','woff2']` | 要生成的字体格式列表                                                                           |
-| progressCallback    | `function` | `-`                            | 进度回调函数                                                                                   |
-| performanceAnalysis | `boolean`  | `false`                        | 是否启用性能分析                                                                               |
+| 字段                | 类型       | 默认值                               | 支持状态     | 描述                                                                                           |
+| ------------------- | ---------- | ------------------------------------ | ------------ | ---------------------------------------------------------------------------------------------- |
+| src                 | `string`   | `-`                                  | 已支持       | 单目录模式下的 svg 图标目录                                                                    |
+| dist                | `string`   | `./dist`                             | 已支持       | 字体图标输出路径                                                                               |
+| fontName            | `string`   | `iconfont`                           | 已支持       | 输出图标/字体名称                                                                              |
+| unicodeStart        | `number`   | `10000`                              | 已支持       | unicode 起始数字（设置此值时需要避开正常 unicode 范围），（`v2.0`之前对应字段为`startNumber`） |
+| noDemo              | `boolean`  | `false`                              | 已支持       | 是否跳过 html Demo 文件                                                                        |
+| verbose             | `boolean`  | `false`                              | 已支持       | 是否启用详细输出模式                                                                           |
+| demoUnicodeHTML     | `string`   | `demo_unicode.html`                  | 已支持       | unicode 类型的示例 html 名称                                                                   |
+| demoFontClassHTML   | `string`   | `demo_fontclass.html`                | 已支持       | fontClass 类型的示例 html 名称                                                                 |
+| batchMode           | `boolean`  | `false`                              | 已支持       | 是否启用批处理模式，用于处理多个 SVG 目录                                                      |
+| inputDirectories    | `string[]` | `-`                                  | 已支持       | 批处理模式下的输入目录列表                                                                     |
+| batchSize           | `number`   | `3`                                  | 已支持       | 批处理模式下每批处理的目录数量                                                                 |
+| continueOnError     | `boolean`  | `true`                               | 已支持       | 批处理模式下，当一个目录处理失败时是否继续处理其他目录                                         |
+| fontFormats         | `string[]` | `['svg','ttf','eot','woff','woff2']` | 已支持       | 要生成的字体格式列表                                                                           |
+| progressCallback    | `function` | `-`                                  | 已支持       | 进度回调函数                                                                                   |
+| performanceAnalysis | `boolean`  | `false`                              | 已支持       | 是否启用性能分析                                                                               |
+| maxConcurrency      | `number`   | `-`                                  | 实验性       | 参数已暴露，但当前版本不保证实际调度行为                                                      |
+| enableCache         | `boolean`  | `true`                               | 实验性       | 参数已暴露，但缓存链路尚未完整落地                                                             |
+| cacheDir            | `string`   | `-`                                  | 实验性       | 仅在未来缓存能力落地后生效                                                                     |
+| streamProcessing    | `boolean`  | `false`                              | 实验性       | 参数已暴露，但流式处理尚未完整落地                                                             |
+| outputPattern       | `string`   | `-`                                  | 已支持       | batch 输出模板，支持 `[name]` 与 `[fontname]`                                                  |
+| preserveDirectoryStructure | `boolean` | `false`                         | 已支持       | batch 输出时保留输入目录的相对结构                                                             |
+| optimization        | `object`   | `-`                                  | 实验性       | 优化参数目前仅完成解析，未形成完整执行闭环                                                     |
+| subsetting          | `object`   | `-`                                  | 实验性       | 子集化参数目前仅完成解析，未形成完整执行闭环                                                   |
 
 \*V2 废弃字段：
 
@@ -72,15 +83,23 @@ Svgs2fonts.init(options);
 import Svgs2fonts from 'svgs2fonts';
 import { join } from 'path';
 
-Svgs2fonts.init({
-  src: __dirname, // svg path
-  dist: join(__dirname, 'dest'), // output path
-  fontName: 'myIconfont', // font name
-  noDemo: false, // generate demo html files
-  verbose: true, // enable verbose output
-})
-  .then(() => console.log('task success!'))
-  .catch(err => console.log(`task failed(${err})`));
+async function main() {
+  const result = await Svgs2fonts.init({
+    src: __dirname, // svg path
+    dist: join(__dirname, 'dest'), // output path
+    fontName: 'myIconfont', // font name
+    noDemo: false, // generate demo html files
+    verbose: true, // enable verbose output
+  });
+
+  if (result === true) {
+    console.log('task success!');
+  } else {
+    console.log(`task failed(${result.message})`);
+  }
+}
+
+main();
 ```
 
 ##### 批处理模式示例
@@ -96,69 +115,122 @@ const inputDirectories = [
   join(__dirname, 'svg/logos'),
 ];
 
-Svgs2fonts.init({
-  // 启用批处理模式
-  batchMode: true,
+async function main() {
+  const result = await Svgs2fonts.init({
+    // 启用批处理模式
+    batchMode: true,
 
-  // 指定输入目录列表
-  inputDirectories,
+    // 指定输入目录列表
+    inputDirectories,
 
-  // 输出目录
-  dist: join(__dirname, 'batch-output'),
+    // 输出目录
+    dist: join(__dirname, 'batch-output'),
 
-  // 字体名称（将用于所有生成的字体）
-  fontName: 'batch-icons',
+    // 字体名称（将用于所有生成的字体）
+    fontName: 'batch-icons',
 
-  // 启用详细日志
-  verbose: true,
+    // 支持模板输出
+    outputPattern: 'fonts/[name]-[fontname]',
 
-  // 并行处理最大数量
-  maxConcurrency: 4,
+    // 保留输入目录的相对结构
+    preserveDirectoryStructure: true,
 
-  // 批次大小
-  batchSize: 3,
+    // 批次大小
+    batchSize: 3,
 
-  // 一个目录处理失败时继续处理其他目录
-  continueOnError: true,
+    // 一个目录处理失败时继续处理其他目录
+    continueOnError: true,
 
-  // 启用性能分析
-  performanceAnalysis: true,
-})
-  .then(() => console.log('批处理任务成功完成!'))
-  .catch(err => console.log(`批处理任务失败(${err})`));
+    // 启用性能分析
+    performanceAnalysis: true,
+  });
+
+  if (result === true) {
+    console.log('批处理任务成功完成!');
+  } else {
+    console.log(`批处理任务失败(${result.message})`);
+  }
+}
+
+main();
 ```
 
-##### 性能分析示例
+##### 性能分析示例（稳定能力）
 
 ```js
 import Svgs2fonts from 'svgs2fonts';
 import { join } from 'path';
 
-Svgs2fonts.init({
-  src: join(__dirname, 'svg'),
-  dist: join(__dirname, 'output'),
-  fontName: 'performance-icons',
+async function main() {
+  const result = await Svgs2fonts.init({
+    src: join(__dirname, 'svg'),
+    dist: join(__dirname, 'output'),
+    fontName: 'performance-icons',
 
-  // 启用性能分析
-  performanceAnalysis: true,
+    // 启用性能分析
+    performanceAnalysis: true,
 
-  // 启用详细输出
-  verbose: true,
+    // 启用详细输出
+    verbose: true,
 
-  // 设置并发数
-  maxConcurrency: 8,
+    // 进度回调
+    progressCallback: progress => {
+      console.log(`进度: ${progress.completed}/${progress.total} - ${progress.phase}`);
+    },
+  });
 
-  // 启用缓存
-  enableCache: true,
+  if (result === true) {
+    console.log('性能分析任务成功完成!');
+  } else {
+    console.log(`性能分析任务失败(${result.message})`);
+  }
+}
 
-  // 进度回调
-  progressCallback: progress => {
-    console.log(`进度: ${progress.completed}/${progress.total} - ${progress.phase}`);
-  },
-})
-  .then(() => console.log('性能分析任务成功完成!'))
-  .catch(err => console.log(`性能分析任务失败(${err})`));
+main();
 ```
+
+##### 实验性参数示例
+
+以下参数当前会被接受，但不保证完整执行效果：`maxConcurrency`、`enableCache`、`cacheDir`、`streamProcessing`、`optimization`、`subsetting`。
+
+```js
+async function main() {
+  const result = await Svgs2fonts.init({
+    src: './icons',
+    dist: './output',
+    fontName: 'experimental-icons',
+    maxConcurrency: 4,
+    enableCache: true,
+  });
+
+  if (result !== true) {
+    console.log(result.message);
+  }
+}
+
+main();
+```
+
+### CLI/配置支持矩阵
+
+| 能力 | CLI 参数 | 当前状态 | 说明 |
+| ---- | -------- | -------- | ---- |
+| 单目录生成 | `[src] [dist]` | 已支持 | 未传 `dist` 时默认输出到 `src` 目录 |
+| batch 输入解析 | `--batch --input=dirA,dirB [dist]` | 已支持 | `--input` 使用逗号分隔 |
+| 显式帮助 | `-h`, `--help` | 已支持 | 不依赖缺失位置参数触发 |
+| 版本输出 | `-v`, `--version` | 已支持 | 直接输出版本号 |
+| 字体格式控制 | `--formats=woff2,woff` | 已支持 | 当前文档约束为 `svg,ttf,eot,woff,woff2` |
+| 详细日志 | `--verbose` | 已支持 | 输出配置和错误上下文 |
+| 性能分析 | `--performance` | 已支持 | 完成后输出性能摘要 |
+| 进度关闭 | `--no-progress` | 已支持 | 非 TTY 环境也不会执行终端光标控制 |
+| 未知参数报错 | 任意未定义 flag | 已支持 | 返回非零退出码 |
+| batch 输出模板 | `--output-pattern` | 已支持 | 支持 `[name]`、`[fontname]` 占位符 |
+| 保留目录结构 | `--preserve-structure` | 已支持 | 会保留输入目录相对结构 |
+| 缓存/流式/子集/优化 | `--cache` 等 | 实验性 | 当前只保证解析，不保证完整执行效果 |
+
+说明：
+模块 API 默认 `dist` 为 `./dist`。
+CLI 中单目录模式未传 `dist` 时默认输出到 `src` 目录；batch 模式未传 `dist` 时默认输出到当前目录下的 `./dist`。
 
 ### 方式 2——控制台
 
@@ -168,8 +240,8 @@ svgs2fonts {srcpath} {distpath} {options}
 
 其中参数：
 
-- srcpath: svg 源文件路径（相对当前窗口环境），传""时为当前窗口路径;
-- distpath: 导出路径，默认在源文件路径下;
+- srcpath: 单目录模式下必填，表示 svg 源文件路径（相对当前窗口环境或绝对路径）；
+- distpath: 可选。单目录模式下默认输出到源文件路径；batch 模式下默认输出到当前目录下的 `dist`；
 - options: 配置参数，见下文
 
 ##### example
@@ -216,7 +288,7 @@ svgs2fonts svg dist --nodemo
 
 #### `-c` / `--concurrency`
 
-并行处理的最大并发数。默认值为系统 CPU 核心数（最小 2，最大 8）。
+实验性参数。当前版本接受该参数，但不保证对实际调度产生稳定影响。
 
 ##### example
 
@@ -226,7 +298,7 @@ svgs2fonts svg dist --concurrency=4
 
 #### `--cache`
 
-启用缓存以避免重新处理未更改的文件。默认为 true。
+实验性参数。当前版本接受该参数，但缓存链路尚未完整落地。
 
 ##### example
 
@@ -236,7 +308,7 @@ svgs2fonts svg dist --cache
 
 #### `--cache-dir`
 
-自定义缓存目录路径。默认为 `.svgs2fonts-cache`。
+实验性参数。当前版本接受该参数，但缓存目录不会形成稳定对外契约。
 
 ##### example
 
@@ -246,7 +318,7 @@ svgs2fonts svg dist --cache-dir=.mycache
 
 #### `--stream`
 
-启用流式处理以处理大型数据集。默认为 false。
+实验性参数。当前版本接受该参数，但流式处理尚未完整落地。
 
 ##### example
 
@@ -278,7 +350,7 @@ svgs2fonts --batch --input=icons1,icons2,icons3
 
 #### `--batch-size`
 
-批处理模式下并行处理的目录数量。默认为 10。
+批处理模式下每批处理的目录数量。默认为 `3`。
 
 ##### example
 
@@ -288,7 +360,7 @@ svgs2fonts --batch --input=icons1,icons2,icons3 --batch-size=5
 
 #### `--output-pattern`
 
-批处理模式下的输出路径模式。支持 `[name]` 和 `[fontname]` 占位符。默认为 `[name]/[fontname]`。
+batch 模式下的输出路径模板。支持 `[name]` 和 `[fontname]` 占位符。
 
 ##### example
 
@@ -308,7 +380,7 @@ svgs2fonts --batch --input=icons1,icons2 --continue-on-error
 
 #### `--preserve-structure`
 
-批处理模式下，是否保留目录结构。默认为 false。
+batch 模式下保留输入目录的相对结构。可与 `--output-pattern` 一起使用。
 
 ##### example
 
@@ -320,7 +392,7 @@ svgs2fonts --batch --input=icons1,icons2 --preserve-structure
 
 #### `--formats`
 
-要生成的字体格式（逗号分隔）。可选值：svg,ttf,eot,woff,woff2,variable。默认为所有格式。
+要生成的字体格式（逗号分隔）。当前稳定支持：`svg,ttf,eot,woff,woff2`。
 
 ##### example
 
@@ -330,7 +402,7 @@ svgs2fonts svg dist --formats=ttf,woff,woff2
 
 #### `-o` / `--optimize`
 
-启用字体优化。
+实验性参数。当前版本接受该参数，但优化链路尚未完整落地。
 
 ##### example
 
@@ -340,7 +412,7 @@ svgs2fonts svg dist --optimize
 
 #### `--compression-level`
 
-WOFF2 压缩级别（1-11）。默认为 11（最高压缩）。
+实验性参数。仅在 `--optimize` 下解析，当前不保证形成稳定优化行为。
 
 ##### example
 
@@ -350,7 +422,7 @@ svgs2fonts svg dist --optimize --compression-level=9
 
 #### `--subset`
 
-启用字体子集化。
+实验性参数。当前版本接受该参数，但字形过滤尚未完整落地。
 
 ##### example
 
@@ -360,7 +432,7 @@ svgs2fonts svg dist --subset --include-glyphs=icon1,icon2,icon3
 
 #### `--include-glyphs`
 
-要包含的字形（逗号分隔）。
+实验性参数。仅在 `--subset` 下解析，当前不保证形成稳定过滤行为。
 
 ##### example
 
@@ -370,7 +442,7 @@ svgs2fonts svg dist --subset --include-glyphs=icon1,icon2,icon3
 
 #### `--exclude-glyphs`
 
-要排除的字形（逗号分隔）。
+实验性参数。仅在 `--subset` 下解析，当前不保证形成稳定过滤行为。
 
 ##### example
 
@@ -412,7 +484,7 @@ svgs2fonts svg dist --no-progress
 
 #### `--report-compression`
 
-报告压缩统计信息。
+实验性参数。仅在 `--optimize` 下解析，当前不保证输出完整压缩报告。
 
 ##### example
 
@@ -504,21 +576,11 @@ npm run test:example
 - **浏览器**: 支持所有现代浏览器（IE9+）
 - **字体格式**: 支持 EOT、TTF、WOFF、WOFF2 完整字体格式
 
-## Build time
+## 版本说明
 
-2025.07.27
-
-## 更新日志
-
-| 版本   | 日期       | 更新内容                                                     |
-| ------ | ---------- | ------------------------------------------------------------ |
-| v2.2.0 | 2025.07.27 | 清理冗余代码，移除未使用的index.d.ts类型声明文件，优化包结构 |
-| v2.1.0 | 2024.09.28 | 移除 debug 参数，优化日志输出                                |
-| v2.0.3 | 2023.12.16 | 增加防御性处理，提升稳定性                                   |
-| v2.0.2 | 2023.06.03 | 优化变量控制，提升性能                                       |
-| v2.0.1 | 2022.11.03 | 分离 CSS 样式，支持 SVG 尺寸选项                             |
-| v2.0.0 | 2022.03.20 | TypeScript 重构，支持完整类型定义                            |
-| v1.x   | 2021.12.16 | 修复 IE8 兼容性问题                                          |
+- 当前 README 对应包版本：`2.2.0`
+- 历史变更请优先参考仓库的 Git tag / release 记录
+- 若 README 内容与已发布包存在差异，以当前代码与 `package.json` 为准
 
 ## 贡献指南
 
@@ -590,23 +652,29 @@ Svgs2fonts.init({
 
 ### 性能优化
 
-该工具提供多种性能优化选项：
+当前稳定可用的性能与监控能力主要有两类：
 
-- **并发处理**: 通过 `maxConcurrency` 设置并行处理数量
-- **缓存机制**: 通过 `enableCache` 启用缓存，避免重复处理
 - **性能分析**: 通过 `performanceAnalysis` 获取详细的性能报告
 - **进度监控**: 通过 `progressCallback` 实时监控处理进度
 
 ```js
-Svgs2fonts.init({
-  src: 'icons',
-  dist: 'output',
-  fontName: 'optimized-icons',
-  maxConcurrency: 8,
-  enableCache: true,
-  performanceAnalysis: true,
-  progressCallback: progress => {
-    console.log(`${progress.phase}: ${progress.completed}/${progress.total}`);
-  },
-});
+async function main() {
+  const result = await Svgs2fonts.init({
+    src: 'icons',
+    dist: 'output',
+    fontName: 'monitored-icons',
+    performanceAnalysis: true,
+    progressCallback: progress => {
+      console.log(`${progress.phase}: ${progress.completed}/${progress.total}`);
+    },
+  });
+
+  if (result !== true) {
+    console.log(result.message);
+  }
+}
+
+main();
 ```
+
+以下参数目前仍属于实验性能力，当前版本会接受它们，但不保证形成完整执行闭环：`maxConcurrency`、`enableCache`、`cacheDir`、`streamProcessing`、`optimization`、`subsetting`。

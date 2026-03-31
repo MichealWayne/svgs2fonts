@@ -11,6 +11,7 @@
 import { ConfigurationManager, createConfiguration } from '../config';
 import { createProgressMonitor, PerformanceTracker, ProgressMonitor } from '../core';
 import { ProgressInfo } from '../types/core/ProcessingTypes';
+import * as path from 'path';
 import { SingleDirectoryProcessor } from './SingleDirectoryProcessor';
 
 /**
@@ -22,6 +23,8 @@ import { SingleDirectoryProcessor } from './SingleDirectoryProcessor';
  * @since 2.0.0
  */
 export class BatchModeProcessor {
+  private readonly pathSeparatorPattern = new RegExp(`[\\\\${path.posix.sep}]`, 'g');
+
   /**
    * Create a new batch mode processor instance
    *
@@ -57,6 +60,8 @@ export class BatchModeProcessor {
         throw new Error('No input directories specified for batch processing');
       }
 
+      const commonRoot = this.getCommonInputRoot(inputDirectories);
+
       // Setup monitoring
 
       let progressMonitor: ProgressMonitor | undefined;
@@ -84,7 +89,13 @@ export class BatchModeProcessor {
             const dirOptions = {
               ...options,
               src: directory,
-              dist: options.dist ? `${options.dist}/${directory.split('/').pop()}` : undefined,
+              dist: options.dist
+                ? this.resolveOutputDirectory(directory, options.dist, commonRoot, {
+                    outputPattern: options.outputPattern,
+                    preserveDirectoryStructure: options.preserveDirectoryStructure,
+                    fontName: options.fontName,
+                  })
+                : undefined,
             };
 
             const dirConfigManager = createConfiguration(dirOptions);
@@ -140,5 +151,61 @@ export class BatchModeProcessor {
     } catch (error) {
       return error instanceof Error ? error : new Error(String(error));
     }
+  }
+
+  private resolveOutputDirectory(
+    inputDirectory: string,
+    baseOutputDirectory: string,
+    commonRoot: string,
+    options: {
+      outputPattern?: string;
+      preserveDirectoryStructure?: boolean;
+      fontName?: string;
+    }
+  ): string {
+    const directoryName = path.basename(inputDirectory);
+    const preservedPath = options.preserveDirectoryStructure
+      ? this.getPreservedDirectoryPath(inputDirectory, commonRoot)
+      : '';
+
+    if (options.outputPattern) {
+      const renderedPattern = options.outputPattern
+        .replace(/\[name\]/g, directoryName)
+        .replace(/\[fontname\]/g, options.fontName || 'iconfont');
+
+      const normalizedPattern = renderedPattern
+        .split(this.pathSeparatorPattern)
+        .filter(Boolean);
+
+      return path.join(baseOutputDirectory, preservedPath, ...normalizedPattern);
+    }
+
+    return path.join(baseOutputDirectory, preservedPath, directoryName);
+  }
+
+  private getCommonInputRoot(inputDirectories: string[]): string {
+    if (inputDirectories.length === 1) {
+      return path.dirname(inputDirectories[0]);
+    }
+
+    const normalizedParts = inputDirectories.map(directory => path.resolve(directory).split(path.sep));
+    const sharedParts: string[] = [];
+    const shortestLength = Math.min(...normalizedParts.map(parts => parts.length));
+
+    for (let index = 0; index < shortestLength; index++) {
+      const candidate = normalizedParts[0][index];
+      if (normalizedParts.every(parts => parts[index] === candidate)) {
+        sharedParts.push(candidate);
+      } else {
+        break;
+      }
+    }
+
+    return sharedParts.length > 0 ? sharedParts.join(path.sep) || path.sep : path.parse(inputDirectories[0]).root;
+  }
+
+  private getPreservedDirectoryPath(inputDirectory: string, commonRoot: string): string {
+    const relativePath = path.relative(commonRoot, inputDirectory);
+    return relativePath === '' ? path.basename(inputDirectory) : relativePath;
   }
 }

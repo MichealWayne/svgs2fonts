@@ -9,17 +9,15 @@ import { EnhancedOptions, InitOptionsParams } from '../types/OptionType';
  * Backward compatibility layer
  */
 export declare class BackwardCompatibilityLayer {
-  private deprecationWarnings;
-  /**
-   * Convert legacy options to enhanced options
-   */
-  convertLegacyOptions(
-    options: Partial<InitOptionsParams> | Partial<EnhancedOptions>
-  ): Partial<EnhancedOptions>;
-  /**
-   * Log deprecation warnings
-   */
-  logDeprecationWarnings(verbose?: boolean): void;
+    private deprecationWarnings;
+    /**
+     * Convert legacy options to enhanced options
+     */
+    convertLegacyOptions(options: Partial<InitOptionsParams> | Partial<EnhancedOptions>): Partial<EnhancedOptions>;
+    /**
+     * Log deprecation warnings
+     */
+    logDeprecationWarnings(verbose?: boolean): void;
 }
 /**
  * Factory function to create backward compatibility layer

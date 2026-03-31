@@ -209,7 +209,12 @@ export abstract class SVGBuilder {
    */
   constructor(options: Partial<InitOptionsParams>) {
     this.options = Object.freeze({ ...DEFAULT_OPTIONS, ...options });
-    this.svgsPaths = filterSvgFiles(this.options.src);
+    try {
+      this.svgsPaths = filterSvgFiles(this.options.src);
+    } catch (error) {
+      errorLog(error);
+      this.svgsPaths = new Set();
+    }
     this.unicodeStrategy = new SafeUnicodeStrategy(this.options.unicodeStart);
     this.observer = new DefaultBuildObserver(this.options.debug);
   }

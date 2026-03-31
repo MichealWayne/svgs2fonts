@@ -11,7 +11,7 @@
 import DemoBuilder from '../builders/DemoBuilder';
 import FontsBuilder from '../builders/FontsBuilder';
 import SVGBuilder from '../builders/SVGBuilder';
-import { ConfigurationManager } from '../config';
+import { ConfigurationManager, DEFAULT_FONT_FORMATS } from '../config';
 import { PerformanceTracker } from '../core';
 
 /**
@@ -66,17 +66,17 @@ export class SingleDirectoryProcessor {
       this.performanceTracker?.endPhase('SVG Processing');
       this.performanceTracker?.startPhase('Font Generation');
 
-      // Execute font generation
-      const fontResults = await Promise.all([
-        fontBuilder.ttf(),
-        fontBuilder.eot(),
-        fontBuilder.woff(),
-        fontBuilder.woff2(),
-      ]);
+      const requestedFormats = this.getRequestedFormats();
+      const nonSvgFormats = requestedFormats.filter(format => format !== 'svg');
+      const batchResult =
+        nonSvgFormats.length > 0 ? await fontBuilder.generateBatch(nonSvgFormats) : undefined;
 
-      // Check if all font generation succeeded
-      if (fontResults.some(result => !result)) {
+      if (batchResult && batchResult.failed.length > 0) {
         throw new Error('Font generation failed');
+      }
+
+      if (!requestedFormats.includes('svg')) {
+        await this.removeIntermediateSvg(svgBuilder);
       }
 
       this.performanceTracker?.endPhase('Font Generation');
@@ -126,6 +126,31 @@ export class SingleDirectoryProcessor {
     const demoBuilder = !options.noDemo ? new DemoBuilder(svgBuilder) : undefined;
 
     return { svgBuilder, fontBuilder, demoBuilder };
+  }
+
+  private getRequestedFormats(): string[] {
+    const options = this.configManager.getOptions();
+    return options.fontFormats && options.fontFormats.length > 0
+      ? [...options.fontFormats]
+      : [...DEFAULT_FONT_FORMATS];
+  }
+
+  private async removeIntermediateSvg(svgBuilder: SVGBuilder): Promise<void> {
+    const { promises: fs } = await import('fs');
+    const { join } = await import('path');
+    const svgPath = join(
+      svgBuilder.buildOptions.dist,
+      `${svgBuilder.buildOptions.fontName}.svg`
+    );
+
+    try {
+      await fs.unlink(svgPath);
+    } catch (error) {
+      const removeError = error as NodeJS.ErrnoException;
+      if (removeError.code !== 'ENOENT') {
+        throw removeError;
+      }
+    }
   }
 
   /**

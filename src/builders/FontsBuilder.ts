@@ -72,6 +72,7 @@ export interface BatchGenerationResult {
  */
 class FontFormatRegistry {
   private static readonly formats: ReadonlyMap<string, FontFormat> = new Map([
+    ['svg', { extension: 'svg', mimeType: 'image/svg+xml', description: 'SVG Font' }],
     ['ttf', { extension: 'ttf', mimeType: 'font/ttf', description: 'TrueType Font' }],
     [
       'eot',
@@ -213,6 +214,9 @@ class ConversionStrategyFactory {
    * @returns {FontConversionStrategy | null} Strategy instance or null if format not supported
    */
   static createStrategy(format: string): FontConversionStrategy | null {
+    if (format.toLowerCase() === 'svg') {
+      return null;
+    }
     const strategyFactory = this.strategies.get(format.toLowerCase());
     return strategyFactory ? strategyFactory() : null;
   }
@@ -299,7 +303,7 @@ class FontResourceManager {
  * Converts SVG font to various web font formats
  * @class FontsBuilder
  */
-export default class FontsBuilder {
+export class FontsBuilder {
   /** SVG builder instance providing font data */
   protected readonly svgBuilder: SVGBuilder;
   /** Base path for generated font files */
@@ -333,6 +337,20 @@ export default class FontsBuilder {
     try {
       if (!FontFormatRegistry.isValidFormat(format)) {
         throw new Error(`Unsupported font format: ${format}`);
+      }
+
+      if (format.toLowerCase() === 'svg') {
+        const outputPath = `${this.fontsPath}.svg`;
+        const stats = await fs.promises.stat(outputPath);
+        const endTime = performance.now();
+
+        return {
+          format,
+          success: true,
+          outputPath,
+          fileSize: stats.size,
+          generationTime: endTime - startTime,
+        };
       }
 
       const strategy = ConversionStrategyFactory.createStrategy(format);
@@ -574,3 +592,5 @@ export default class FontsBuilder {
     return FontFormatRegistry.getAllFormats();
   }
 }
+
+export default FontsBuilder;
