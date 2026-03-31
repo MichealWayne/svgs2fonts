@@ -4,7 +4,7 @@ svg 图标转字体图标库（svgs -> svg,ttf,eot,woff,woff2）。[English read
 
 ## 版本
 
-当前 npm 包版本：`2.2.0`
+当前 npm 包版本：`2.3.0`
 
 如需查看历史变更，建议以 Git tags / release 记录为准，而不是在 README 中手工维护完整变更表。
 
@@ -578,7 +578,7 @@ npm run test:example
 
 ## 版本说明
 
-- 当前 README 对应包版本：`2.2.0`
+- 当前 README 对应包版本：`2.3.0`
 - 历史变更请优先参考仓库的 Git tag / release 记录
 - 若 README 内容与已发布包存在差异，以当前代码与 `package.json` 为准
 

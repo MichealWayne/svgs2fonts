@@ -5,7 +5,7 @@ SVG icons to web font generator (SVG -> SVG, TTF, EOT, WOFF, WOFF2).
 
 ## Version
 
-Current package version: `2.2.0`
+Current package version: `2.3.0`
 
 For release history, prefer Git tags / release records instead of a manually maintained changelog table in the README.
 
@@ -513,7 +513,7 @@ npm run test:example
 
 ## Version Notes
 
-- Current README package version: `2.2.0`
+- Current README package version: `2.3.0`
 - For historical changes, prefer the repository's Git tags / release records
 - If published package behavior differs from this document, treat the current code and `package.json` as the source of truth
 

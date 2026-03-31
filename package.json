@@ -1,6 +1,6 @@
 {
   "name": "svgs2fonts",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "author": "Wayne",
   "description": "svg icons to icons fonts(svg,ttf,eot,woff,woff2)",
   "main": "dist/index.js",
