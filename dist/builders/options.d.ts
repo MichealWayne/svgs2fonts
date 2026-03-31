@@ -2,7 +2,7 @@
  * @module configFile
  * @author Micheal Wayne<michealwayne@163.com>
  * @Date 2022-03-22 14:53:16
- * @LastEditTime 2025-07-29 13:26:53
+ * @LastEditTime 2025-07-27 13:26:53
  */
 import { InitOptionsParams } from '../types/OptionType';
 /**

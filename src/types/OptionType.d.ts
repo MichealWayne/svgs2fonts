@@ -1032,14 +1032,14 @@ export type ProgressCallback = (progress: ProgressInfo) => void;
  * Enhanced configuration options with advanced features
  *
  * @interface EnhancedOptions
- * @extends InitOptionsParams
+ * @extends Partial<InitOptionsParams>
  * @description Comprehensive configuration interface that extends basic options
  * with advanced features including performance optimization, batch processing,
  * monitoring, and customization capabilities.
  *
  * @since 2.0.0
  */
-export interface EnhancedOptions extends InitOptionsParams {
+export interface EnhancedOptions extends Partial<InitOptionsParams> {
   // Performance and concurrency options
 
   /**

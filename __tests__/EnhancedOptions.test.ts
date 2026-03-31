@@ -7,6 +7,7 @@
 
 import { EnhancedOptions } from '../src/types/EnhancedOptions';
 import { FontFormat } from '../src/types/FontTypes';
+import { EnhancedOptions as CanonicalEnhancedOptions } from '../src/types/OptionType';
 
 describe('EnhancedOptions', () => {
   describe('Type definitions', () => {
@@ -165,6 +166,23 @@ describe('EnhancedOptions', () => {
       expect(enhancedOptions.fontName).toBe('test-font');
       expect(enhancedOptions.fontFormats).toEqual(['ttf', 'woff2']);
       expect(enhancedOptions.verbose).toBe(true);
+    });
+
+    it('should stay aligned with the canonical OptionType export', () => {
+      const canonicalOptions: Partial<CanonicalEnhancedOptions> = {
+        batchMode: true,
+        inputDirectories: ['./icons-a', './icons-b'],
+        fontName: 'aligned-font',
+        outputPattern: 'fonts/[name]-[fontname]',
+        preserveDirectoryStructure: true,
+        verbose: true,
+      };
+
+      const compatibilityOptions: Partial<EnhancedOptions> = canonicalOptions;
+
+      expect(compatibilityOptions.outputPattern).toBe('fonts/[name]-[fontname]');
+      expect(compatibilityOptions.preserveDirectoryStructure).toBe(true);
+      expect(compatibilityOptions.inputDirectories).toEqual(['./icons-a', './icons-b']);
     });
 
     it('should allow function types for callbacks', () => {

@@ -1,17 +1,12 @@
-'use strict';
+"use strict";
 /**
  * @module constant
  * @author Wayne<michealwayne@163.com>
  * @Date 2022-10-11 13:15:40
  * @LastEditTime 2024-09-29 20:23:54
  */
-Object.defineProperty(exports, '__esModule', { value: true });
-exports.DEMO_HTML =
-  exports.DEMO_CSS =
-  exports.FAIL_FLAG =
-  exports.SUCCESS_FLAG =
-  exports.IS_DEV =
-    void 0;
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DEMO_HTML = exports.DEMO_CSS = exports.FAIL_FLAG = exports.SUCCESS_FLAG = exports.IS_DEV = void 0;
 // 是否为开发环境，开发环境会开启一些调试日志
 exports.IS_DEV = process.env.NODE_ENV === 'development';
 // 成功标识

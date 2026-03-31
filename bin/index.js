@@ -1,209 +1,378 @@
 #!/usr/bin/env node
 
 'use strict';
-const argv = require('minimist')(process.argv.slice(2));
-const { join } = require('path');
+
+const minimist = require('minimist');
+const { join, resolve, isAbsolute } = require('path');
 const svgs2fonts = require('../dist/index');
+const rawArgs = process.argv.slice(2);
+
 const dirname = process.cwd();
-const fs = require('fs');
+const DEFAULT_FORMATS = ['svg', 'ttf', 'eot', 'woff', 'woff2'];
+const SUPPORTED_FLAGS = new Set([
+  'h',
+  'help',
+  'v',
+  'version',
+  'n',
+  'name',
+  'number',
+  'nodemo',
+  'c',
+  'concurrency',
+  'cache',
+  'cache-dir',
+  'stream',
+  'b',
+  'batch',
+  'input',
+  'batch-size',
+  'output-pattern',
+  'continue-on-error',
+  'preserve-structure',
+  'formats',
+  'o',
+  'optimize',
+  'compression-level',
+  'subset',
+  'include-glyphs',
+  'exclude-glyphs',
+  'V',
+  'verbose',
+  'p',
+  'performance',
+  'no-progress',
+  'report-compression',
+]);
 
 const Config = {
   version: require('../package.json').version,
-  time: '2018.07.30',
-  updateTime: '2025.07.18',
 };
 
-// Helper function to format progress bar
+function parseArgv() {
+  const unknownFlags = [];
+  const argv = minimist(process.argv.slice(2), {
+    boolean: [
+      'help',
+      'h',
+      'version',
+      'v',
+      'nodemo',
+      'cache',
+      'stream',
+      'batch',
+      'b',
+      'continue-on-error',
+      'preserve-structure',
+      'optimize',
+      'o',
+      'subset',
+      'verbose',
+      'V',
+      'performance',
+      'p',
+      'no-progress',
+      'report-compression',
+    ],
+    string: [
+      'name',
+      'n',
+      'number',
+      'concurrency',
+      'c',
+      'cache-dir',
+      'input',
+      'batch-size',
+      'output-pattern',
+      'formats',
+      'compression-level',
+      'include-glyphs',
+      'exclude-glyphs',
+    ],
+    alias: {
+      h: 'help',
+      v: 'version',
+      n: 'name',
+      c: 'concurrency',
+      b: 'batch',
+      o: 'optimize',
+      V: 'verbose',
+      p: 'performance',
+    },
+    unknown: arg => {
+      if (arg.startsWith('-')) {
+        const normalized = arg.replace(/^-+/, '').split('=')[0];
+        if (!SUPPORTED_FLAGS.has(normalized)) {
+          unknownFlags.push(arg);
+          return false;
+        }
+      }
+      return true;
+    },
+  });
+
+  return { argv, unknownFlags };
+}
+
 function formatProgressBar(progress, total, width = 30) {
+  if (total <= 0) {
+    return '[░░░░░░░░░░░░░░░░░░░░░░░░░░░░] 0/0 (0%)';
+  }
+
   const percentage = Math.round((progress / total) * 100);
   const filledWidth = Math.round((width * progress) / total);
   const emptyWidth = width - filledWidth;
 
-  const filledBar = '█'.repeat(filledWidth);
-  const emptyBar = '░'.repeat(emptyWidth);
-
-  return `[${filledBar}${emptyBar}] ${progress}/${total} (${percentage}%)`;
+  return `[${'█'.repeat(filledWidth)}${'░'.repeat(emptyWidth)}] ${progress}/${total} (${percentage}%)`;
 }
 
-// Helper function to format time
-function formatTime(ms) {
-  if (ms < 1000) return `${ms}ms`;
-  const seconds = Math.floor(ms / 1000);
-  if (seconds < 60) return `${seconds}s`;
-  const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = seconds % 60;
-  return `${minutes}m ${remainingSeconds}s`;
+function getHelpText() {
+  return [
+    'usage: svgs2fonts [src] [dist] [options]',
+    '       svgs2fonts --batch --input=dirA,dirB [dist] [options]',
+    '',
+    'Supported options:',
+    '  -h, --help            Show this help message',
+    '  -v, --version         Output version',
+    '  -n, --name            Font name (default: "iconfont")',
+    '      --number          Unicode start code number (default: 10000)',
+    '      --nodemo          Skip demo file generation',
+    '      --formats         Output formats: svg,ttf,eot,woff,woff2',
+    '  -b, --batch           Process multiple directories from --input',
+    '      --input           Batch input directories, comma-separated',
+    '      --batch-size      Number of directories processed per batch',
+    '      --continue-on-error Continue after a batch item fails',
+    '      --output-pattern  Batch output template, supports [name] and [fontname]',
+    '      --preserve-structure Preserve relative input directory structure',
+    '  -V, --verbose         Enable verbose logging',
+    '  -p, --performance     Print performance analysis after completion',
+    '      --no-progress     Disable progress rendering',
+    '',
+    'Experimental options:',
+    '  -c, --concurrency     Accepted, but does not yet guarantee scheduling changes',
+    '      --cache           Accepted, but cache pipeline is not implemented end-to-end',
+    '      --cache-dir       Accepted with --cache, but cache storage is experimental',
+    '      --stream          Accepted, but stream processing is not implemented end-to-end',
+    '  -o, --optimize        Accepted, but optimization pipeline is not implemented end-to-end',
+    '      --compression-level Parsed with --optimize, but compression tuning is experimental',
+    '      --report-compression Parsed with --optimize, but compression reporting is experimental',
+    '      --subset          Accepted, but glyph subsetting is not implemented end-to-end',
+    '      --include-glyphs  Parsed with --subset, but glyph filtering is experimental',
+    '      --exclude-glyphs  Parsed with --subset, but glyph filtering is experimental',
+    '',
+    'Examples:',
+    '  svgs2fonts ./icons ./dist --name=myicons --formats=woff2,woff',
+    '  svgs2fonts --batch --input=./icons1,./icons2 ./dist --continue-on-error',
+    '  svgs2fonts ./icons ./dist --verbose --no-progress',
+  ].join('\n');
 }
 
-// Helper function to format file size
-function formatFileSize(bytes) {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(2)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
+function printHelp() {
+  console.log(getHelpText());
 }
 
-// version
-if (argv.v || argv.version) {
-  console.log(`v${Config.version}`);
-} else if (argv._ && argv._.length) {
-  // typical init
+function printCliError(message, example) {
+  console.error(`Error: ${message}`);
+  if (example) {
+    console.error(`Example: ${example}`);
+  }
+  console.error('Run `svgs2fonts --help` for full usage.');
+}
+
+function parseInputDirectories(input) {
+  const rawValues = Array.isArray(input) ? input : [input];
+  return rawValues
+    .flatMap(value => String(value).split(','))
+    .map(value => value.trim())
+    .filter(Boolean)
+    .map(value => resolvePath(value));
+}
+
+function resolvePath(value) {
+  return isAbsolute(value) ? value : resolve(dirname, value);
+}
+
+function buildInitOptions(argv) {
+  const batchMode = Boolean(argv.batch || argv.b);
+  const positionals = argv._ || [];
+
+  if (!batchMode && positionals.length === 0) {
+    return { error: 'Single-directory mode requires [src].', example: 'svgs2fonts ./icons ./dist' };
+  }
+
+  if (batchMode && !argv.input) {
+    return {
+      error: 'Batch mode requires --input=dirA,dirB.',
+      example: 'svgs2fonts --batch --input=./icons1,./icons2 ./dist',
+    };
+  }
+
+  const inputDirectories = batchMode ? parseInputDirectories(argv.input) : undefined;
+  if (batchMode && inputDirectories.length === 0) {
+    return {
+      error: 'Batch mode requires at least one valid input directory in --input.',
+      example: 'svgs2fonts --batch --input=./icons1,./icons2 ./dist',
+    };
+  }
+
+  const src = batchMode ? undefined : resolvePath(positionals[0]);
+  const dist = batchMode
+    ? resolvePath(positionals[0] || 'dist')
+    : resolvePath(positionals[1] || positionals[0]);
+
   const initOpts = {
-    src: join(dirname, argv._[0]),
-    dist: join(dirname, argv._[1] || argv._[0]),
-
-    // Basic options
+    src,
+    dist,
     fontName: argv.n || argv.name,
-    unicodeStart: argv.number,
+    unicodeStart: argv.number ? Number(argv.number) : undefined,
     noDemo: argv.nodemo,
-
-    // Performance options
-    maxConcurrency: argv.concurrency || argv.c,
-    enableCache: argv.cache !== false,
+    maxConcurrency: argv.concurrency || argv.c ? Number(argv.concurrency || argv.c) : undefined,
+    enableCache: argv.cache !== undefined ? argv.cache : undefined,
     cacheDir: argv['cache-dir'],
     streamProcessing: argv.stream,
-
-    // Batch processing options
-    batchMode: argv.batch || argv.b,
-    batchSize: argv['batch-size'],
+    batchMode,
+    inputDirectories,
+    batchSize: argv['batch-size'] ? Number(argv['batch-size']) : undefined,
     continueOnError: argv['continue-on-error'],
     preserveDirectoryStructure: argv['preserve-structure'],
-
-    // Font options
-    fontFormats: argv.formats ? argv.formats.split(',') : undefined,
-
-    // Monitoring options
+    fontFormats: argv.formats
+      ? argv.formats
+          .split(',')
+          .map(format => format.trim())
+          .filter(Boolean)
+      : undefined,
     verbose: argv.verbose || argv.V,
     performanceAnalysis: argv.performance || argv.p,
+    outputPattern: batchMode && argv['output-pattern'] ? argv['output-pattern'] : undefined,
   };
 
-  // Handle input directories for batch mode
-  if (initOpts.batchMode && argv.input) {
-    initOpts.inputDirectories = Array.isArray(argv.input)
-      ? argv.input.map(dir => join(dirname, dir))
-      : [join(dirname, argv.input)];
-  }
-
-  // Handle output pattern for batch mode
-  if (initOpts.batchMode && argv['output-pattern']) {
-    initOpts.outputPattern = argv['output-pattern'];
-  }
-
-  // Handle optimization options
   if (argv.optimize || argv.o) {
     initOpts.optimization = {
       compressWoff2: true,
       optimizeForWeb: true,
-      woff2CompressionLevel: argv['compression-level'] || 11,
-      reportCompressionStats: argv['report-compression'] || false,
+      woff2CompressionLevel: argv['compression-level']
+        ? Number(argv['compression-level'])
+        : 11,
+      reportCompressionStats: Boolean(argv['report-compression']),
     };
   }
 
-  // Handle subsetting options
   if (argv.subset) {
     initOpts.subsetting = {
-      includeGlyphs: argv['include-glyphs'] ? argv['include-glyphs'].split(',') : undefined,
-      excludeGlyphs: argv['exclude-glyphs'] ? argv['exclude-glyphs'].split(',') : undefined,
+      includeGlyphs: argv['include-glyphs']
+        ? argv['include-glyphs'].split(',').map(glyph => glyph.trim()).filter(Boolean)
+        : undefined,
+      excludeGlyphs: argv['exclude-glyphs']
+        ? argv['exclude-glyphs'].split(',').map(glyph => glyph.trim()).filter(Boolean)
+        : undefined,
     };
   }
 
-  // Clean up undefined values
   Object.keys(initOpts).forEach(key => {
     if (initOpts[key] === undefined) {
       delete initOpts[key];
     }
   });
 
-  // Setup progress display for CLI
-  if (!argv.no_progress) {
-    let lastUpdate = 0;
-    const updateInterval = 100; // Update progress bar at most every 100ms
+  return { initOpts };
+}
 
-    initOpts.progressCallback = progress => {
-      const now = Date.now();
-      if (now - lastUpdate < updateInterval && progress.completed < progress.total) {
-        return; // Throttle updates
-      }
-      lastUpdate = now;
+function attachProgressCallback(argv, initOpts) {
+  if (argv['no-progress'] === true || argv.progress === false) {
+    return;
+  }
 
-      // Clear the current line
+  let lastUpdate = 0;
+  const updateInterval = 100;
+  const interactive = Boolean(process.stdout.isTTY);
+
+  initOpts.progressCallback = progress => {
+    const now = Date.now();
+    if (now - lastUpdate < updateInterval && progress.completed < progress.total) {
+      return;
+    }
+    lastUpdate = now;
+
+    const progressBar = formatProgressBar(progress.completed, progress.total);
+    const message = progress.current ? ` ${progress.current}` : '';
+    const line = `${progress.phase}: ${progressBar}${message}`;
+
+    if (interactive && typeof process.stdout.clearLine === 'function') {
       process.stdout.clearLine(0);
       process.stdout.cursorTo(0);
-
-      // Format and display progress
-      const progressBar = formatProgressBar(progress.completed, progress.total);
-      const message = progress.current ? ` ${progress.current}` : '';
-      process.stdout.write(`${progress.phase}: ${progressBar}${message}`);
-
-      // Add a new line when complete
+      process.stdout.write(line);
       if (progress.completed >= progress.total) {
         process.stdout.write('\n');
       }
-    };
-  }
+      return;
+    }
 
-  // Execute with enhanced options
-  svgs2fonts
-    .init(initOpts)
-    .then(result => {
-      if (result === true) {
-        console.log('✓ Font generation completed successfully!');
-      } else {
-        console.error('✗ Font generation failed:', result.message);
-        process.exit(1);
-      }
-    })
-    .catch(err => {
-      console.error('✗ Font generation failed:', err.message);
-      process.exit(1);
-    });
-} else {
-  // help
-  console.log(
-    [
-      'usage: svgs2fonts [src] [dist] [options]',
-      '',
-      'Basic options:',
-      '  -n, --name            Font name (default: "iconfont")',
-      '      --number          Unicode start code number',
-      '      --nodemo          No demo files',
-      '',
-      'Performance options:',
-      '  -c, --concurrency     Maximum concurrency for parallel processing',
-      '      --cache           Enable caching (default: true)',
-      '      --cache-dir       Custom cache directory',
-      '      --stream          Enable streaming processing for large datasets',
-      '',
-      'Batch processing options:',
-      '  -b, --batch           Enable batch mode for processing multiple directories',
-      '      --input           Input directories for batch mode (comma-separated)',
-      '      --batch-size      Number of directories to process in parallel',
-      '      --output-pattern  Output pattern for batch mode (e.g. "[name]/[fontname]")',
-      '      --continue-on-error Continue batch processing when errors occur',
-      '      --preserve-structure Preserve directory structure in output',
-      '',
-      'Font options:',
-      '      --formats         Font formats to generate (comma-separated: svg,ttf,eot,woff,woff2,variable)',
-      '  -o, --optimize        Enable font optimization',
-      '      --compression-level WOFF2 compression level (1-11)',
-      '      --subset          Enable font subsetting',
-      '      --include-glyphs  Glyphs to include (comma-separated)',
-      '      --exclude-glyphs  Glyphs to exclude (comma-separated)',
-      '',
-      'Monitoring options:',
-      '  -V, --verbose         Enable verbose output',
-      '  -p, --performance     Enable performance analysis',
-      '      --no-progress     Disable progress display',
-      '      --report-compression Report compression statistics',
-      '',
-      'Other options:',
-      '  -v, --version         Output version',
-      '',
-      'Examples:',
-      '  svgs2fonts ./icons ./dist --name="myicons" --formats=ttf,woff,woff2',
-      '  svgs2fonts ./icons ./dist --concurrency=4 --cache --verbose',
-      '  svgs2fonts ./icons ./dist --optimize --compression-level=9',
-      '  svgs2fonts ./icons --batch --input=./icons1,./icons2 --output-pattern="[name]/fonts"',
-    ].join('\n')
-  );
-  process.exit();
+    process.stdout.write(`${line}\n`);
+  };
 }
+
+function formatSuccessSummary(initOpts) {
+  const formats = initOpts.fontFormats || DEFAULT_FORMATS;
+  const demoStatus = initOpts.noDemo ? 'disabled' : 'enabled';
+
+  return [
+    '✓ Font generation completed successfully',
+    `  Font: ${initOpts.fontName || 'iconfont'}`,
+    `  Output: ${initOpts.dist}`,
+    `  Formats: ${formats.join(', ')}`,
+    `  Demo: ${demoStatus}`,
+  ].join('\n');
+}
+
+const { argv, unknownFlags } = parseArgv();
+
+if (unknownFlags.length > 0) {
+  printCliError(`Unknown option(s): ${unknownFlags.join(', ')}`, 'svgs2fonts --help');
+  process.exit(1);
+}
+
+if (argv.h || argv.help) {
+  printHelp();
+  process.exit(0);
+}
+
+if (argv.v || argv.version) {
+  console.log(`v${Config.version}`);
+  process.exit(0);
+}
+
+if (rawArgs.length === 0) {
+  printHelp();
+  process.exit(0);
+}
+
+const { initOpts, error, example } = buildInitOptions(argv);
+if (error) {
+  printCliError(error, example);
+  process.exit(1);
+}
+
+attachProgressCallback(argv, initOpts);
+
+svgs2fonts
+  .init(initOpts)
+  .then(result => {
+    if (result === true) {
+      console.log(formatSuccessSummary(initOpts));
+      return;
+    }
+
+    printCliError(result.message, initOpts.batchMode
+      ? 'svgs2fonts --batch --input=./icons1,./icons2 ./dist'
+      : 'svgs2fonts ./icons ./dist');
+    process.exit(1);
+  })
+  .catch(err => {
+    printCliError(
+      err.message,
+      initOpts.batchMode
+        ? 'svgs2fonts --batch --input=./icons1,./icons2 ./dist'
+        : 'svgs2fonts ./icons ./dist'
+    );
+    process.exit(1);
+  });

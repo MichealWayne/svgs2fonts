@@ -3,8 +3,8 @@
  * @description A comprehensive toolkit for converting SVG icons to web fonts with advanced optimization
  * @author Wayne <michealwayne@163.com>
  * @buildTime 2018.07.30
- * @lastModified 2025-07-23 15:45:00
- * @version 2.1.0
+ * @lastModified 2025-07-27 15:45:00
+ * @version 2.1.1
  * @license MIT
  * @see {@link https://github.com/MichealWayne/svgs2fonts} Project Repository
  */
@@ -87,11 +87,9 @@ import { EnhancedOptions, InitOptionsParams } from './types/OptionType';
  * });
  *
  * @since 1.0.0
- * @version 2.1.0
+ * @version 2.1.1
  */
-export declare function init(
-  options: Partial<InitOptionsParams> | Partial<EnhancedOptions>
-): Promise<true | Error>;
+export declare function init(options: Partial<InitOptionsParams> | Partial<EnhancedOptions>): Promise<true | Error>;
 /**
  * @namespace SVGToFonts
  * @description Factory functions and utilities for advanced font generation workflows
@@ -113,9 +111,9 @@ export declare function init(
  * @since 2.0.0
  */
 declare const _default: {
-  readonly init: typeof init;
-  readonly createConfiguration: typeof createConfiguration;
-  readonly createBackwardCompatibilityLayer: typeof createBackwardCompatibilityLayer;
+    readonly init: typeof init;
+    readonly createConfiguration: typeof createConfiguration;
+    readonly createBackwardCompatibilityLayer: typeof createBackwardCompatibilityLayer;
 };
 export default _default;
 /**

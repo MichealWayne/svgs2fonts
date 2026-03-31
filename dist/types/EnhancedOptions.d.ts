@@ -1,18 +1,8 @@
 /**
- * @module EnhancedOptions
- * @description Enhanced configuration options
+ * Compatibility re-export for the canonical EnhancedOptions type.
+ *
+ * Keep OptionType as the single authority for public option types so the
+ * runtime contract, tests, and docs do not drift independently.
  */
-import { InitOptionsParams } from './OptionType';
-import { FontFormat } from './FontTypes';
-import { ProgressCallback } from './core/ProcessingTypes';
-export interface EnhancedOptions extends InitOptionsParams {
-  fontFormats?: FontFormat[];
-  batchMode?: boolean;
-  inputDirectories?: string[];
-  batchSize?: number;
-  continueOnError?: boolean;
-  verbose?: boolean;
-  progressCallback?: ProgressCallback;
-  performanceAnalysis?: boolean;
-}
+export type { EnhancedOptions, FontMetrics, OptimizationOptions, SubsettingOptions, } from './OptionType';
 //# sourceMappingURL=EnhancedOptions.d.ts.map

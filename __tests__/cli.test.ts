@@ -1,95 +1,146 @@
-/**
- * @module cli.test
- * @description Tests for CLI functionality
- */
-
-import { exec } from 'child_process';
-import * as path from 'path';
+import { execFileSync, spawnSync } from 'child_process';
 import * as fs from 'fs';
-import { promisify } from 'util';
+import * as os from 'os';
+import * as path from 'path';
 
-const execAsync = promisify(exec);
+const cliPath = path.resolve(__dirname, '../bin/index.js');
+const fixtureSvg = path.resolve(__dirname, '../examples/svg/24.svg');
 
-// Helper function to run CLI commands
-async function runCLI(args: string): Promise<{ stdout: string; stderr: string }> {
-  const cliPath = path.resolve(__dirname, '../bin/index.js');
-  return execAsync(`node ${cliPath} ${args}`);
+function createTempSvgDir(prefix: string): string {
+  const directory = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
+  fs.copyFileSync(fixtureSvg, path.join(directory, 'sample.svg'));
+  return directory;
+}
+
+function runCLI(args: string[]) {
+  return spawnSync('node', [cliPath, ...args], {
+    cwd: path.resolve(__dirname, '..'),
+    encoding: 'utf8',
+  });
 }
 
 describe('CLI', () => {
-  // Test version flag
-  test('should display version with -v flag', async () => {
-    const { stdout } = await runCLI('-v');
-    expect(stdout).toMatch(/^v\d+\.\d+\.\d+$/);
+  beforeAll(() => {
+    execFileSync('npm', ['run', 'build'], {
+      cwd: path.resolve(__dirname, '..'),
+      stdio: 'pipe',
+    });
   });
 
-  // Test help output
-  test('should display help when no arguments provided', async () => {
-    const { stdout } = await runCLI('');
-    expect(stdout).toContain('usage: svgs2fonts [src] [dist] [options]');
-    expect(stdout).toContain('Performance options:');
-    expect(stdout).toContain('Batch processing options:');
-    expect(stdout).toContain('Font options:');
-    expect(stdout).toContain('Monitoring options:');
+  test('prints version with explicit flag', () => {
+    const result = runCLI(['--version']);
+
+    expect(result.status).toBe(0);
+    expect(result.stdout.trim()).toMatch(/^v\d+\.\d+\.\d+$/);
   });
 
-  // Test basic options parsing
-  test('should parse basic options correctly', async () => {
-    // Mock the init function to capture options
-    const mockInit = jest.fn().mockResolvedValue(true);
-    jest.mock('../dist/index', () => ({
-      init: mockInit,
-    }));
+  test('prints help with explicit help flag', () => {
+    const result = runCLI(['--help']);
 
-    try {
-      await runCLI('./examples/svg ./examples/dest --name=testfont --verbose');
-
-      // This will fail because we mocked the module after it was already loaded
-      // In a real test, we would need to set up the mock before importing
-      // For now, we're just testing the structure of the test
-
-      expect(mockInit).toHaveBeenCalledWith(
-        expect.objectContaining({
-          src: expect.stringContaining('examples/svg'),
-          dist: expect.stringContaining('examples/dest'),
-          fontName: 'testfont',
-          verbose: true,
-        })
-      );
-    } catch (error) {
-      // Expected to fail in this test setup
-    }
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain('usage: svgs2fonts [src] [dist] [options]');
+    expect(result.stdout).toContain('Experimental options:');
   });
 
-  // Test performance options parsing
-  test('should parse performance options correctly', async () => {
-    // Similar to above, this is a structural test
-    try {
-      await runCLI('./examples/svg --concurrency=4 --cache --cache-dir=.mycache');
-    } catch (error) {
-      // Expected to fail in this test setup
-    }
+  test('fails on unknown flags with a non-zero exit code', () => {
+    const result = runCLI(['--wat']);
+
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('Unknown option(s): --wat');
   });
 
-  // Test batch processing options parsing
-  test('should parse batch processing options correctly', async () => {
-    // Similar to above, this is a structural test
-    try {
-      await runCLI(
-        '--batch --input=./examples/svg,./examples/svg2 --output-pattern="[name]/fonts"'
-      );
-    } catch (error) {
-      // Expected to fail in this test setup
-    }
+  test('fails with a short recovery message when src is missing', () => {
+    const result = runCLI(['--name=test-font']);
+
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain('Single-directory mode requires [src].');
+    expect(result.stderr).toContain('svgs2fonts ./icons ./dist');
   });
 
-  // Test font options parsing
-  test('should parse font options correctly', async () => {
-    // Similar to above, this is a structural test
-    try {
-      await runCLI('./examples/svg --formats=ttf,woff,woff2 --optimize --compression-level=9');
-    } catch (error) {
-      // Expected to fail in this test setup
-    }
+  test('parses comma-separated batch input without placeholder src', () => {
+    const inputA = createTempSvgDir('svgs2fonts-batch-a-');
+    const inputB = createTempSvgDir('svgs2fonts-batch-b-');
+    const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), 'svgs2fonts-batch-out-'));
+
+    const result = runCLI([
+      '--batch',
+      `--input=${inputA},${inputB}`,
+      outputDir,
+      '--name=batch-font',
+      '--nodemo',
+      '--no-progress',
+    ]);
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain('Font: batch-font');
+    expect(result.stdout).not.toContain('Batch Processing:');
+    expect(fs.existsSync(path.join(outputDir, path.basename(inputA), 'batch-font.svg'))).toBe(true);
+    expect(fs.existsSync(path.join(outputDir, path.basename(inputB), 'batch-font.svg'))).toBe(true);
+  });
+
+  test('only keeps requested output formats in single-directory mode', () => {
+    const inputDir = createTempSvgDir('svgs2fonts-formats-in-');
+    const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), 'svgs2fonts-formats-out-'));
+
+    const result = runCLI([
+      inputDir,
+      outputDir,
+      '--name=formats-only',
+      '--formats=woff2,woff',
+      '--nodemo',
+      '--no-progress',
+    ]);
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain('Formats: woff2, woff');
+    expect(fs.existsSync(path.join(outputDir, 'formats-only.woff'))).toBe(true);
+    expect(fs.existsSync(path.join(outputDir, 'formats-only.woff2'))).toBe(true);
+    expect(fs.existsSync(path.join(outputDir, 'formats-only.svg'))).toBe(false);
+    expect(fs.existsSync(path.join(outputDir, 'formats-only.ttf'))).toBe(false);
+    expect(fs.existsSync(path.join(outputDir, 'formats-only.eot'))).toBe(false);
+  });
+
+  test('supports batch output templates and preserved directory structure', () => {
+    const rootDir = fs.mkdtempSync(path.join(os.tmpdir(), 'svgs2fonts-cli-root-'));
+    const nestedGroup = path.join(rootDir, 'group');
+    fs.mkdirSync(nestedGroup, { recursive: true });
+
+    const inputA = path.join(rootDir, 'alpha');
+    const inputB = path.join(nestedGroup, 'beta');
+    fs.mkdirSync(inputA, { recursive: true });
+    fs.mkdirSync(inputB, { recursive: true });
+    fs.copyFileSync(fixtureSvg, path.join(inputA, 'sample.svg'));
+    fs.copyFileSync(fixtureSvg, path.join(inputB, 'sample.svg'));
+
+    const outputDir = fs.mkdtempSync(path.join(os.tmpdir(), 'svgs2fonts-cli-pattern-out-'));
+    const result = runCLI([
+      '--batch',
+      `--input=${inputA},${inputB}`,
+      outputDir,
+      '--name=templated-font',
+      '--output-pattern=fonts/[name]-[fontname]',
+      '--preserve-structure',
+      '--nodemo',
+      '--no-progress',
+    ]);
+
+    expect(result.status).toBe(0);
+    expect(
+      fs.existsSync(
+        path.join(outputDir, 'alpha', 'fonts', 'alpha-templated-font', 'templated-font.svg')
+      )
+    ).toBe(true);
+    expect(
+      fs.existsSync(
+        path.join(
+          outputDir,
+          'group',
+          'beta',
+          'fonts',
+          'beta-templated-font',
+          'templated-font.svg'
+        )
+      )
+    ).toBe(true);
   });
 });

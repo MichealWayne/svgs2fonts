@@ -330,7 +330,7 @@ class DemoFileManager {
  * Generates HTML and CSS files to showcase the icon font
  * @class DemoBuilder
  */
-export default class DemoBuilder {
+export class DemoBuilder {
   /** SVG builder instance providing icon data */
   private readonly svgBuilder: SVGBuilder;
   /** Template renderer for generating HTML/CSS content */
@@ -555,3 +555,5 @@ export default class DemoBuilder {
     return new DemoBuilder(svgBuilder, rendererName);
   }
 }
+
+export default DemoBuilder;

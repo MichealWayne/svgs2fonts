@@ -5,7 +5,9 @@ SVG icons to web font generator (SVG -> SVG, TTF, EOT, WOFF, WOFF2).
 
 ## Version
 
-2.2.0
+Current package version: `2.3.0`
+
+For release history, prefer Git tags / release records instead of a manually maintained changelog table in the README.
 
 ## Install
 
@@ -36,27 +38,36 @@ const Svgs2fonts = require('svgs2fonts');
 Svgs2fonts.init(options);
 ```
 
+`init(options)` currently returns `Promise<true | Error>`.
+It resolves to `true` on success and to an `Error` instance on failure, so callers should check the result explicitly instead of relying only on `.catch(...)`.
+
 `options`:
 
-| Field               | Type       | Default                        | Description                         |
-| ------------------- | ---------- | ------------------------------ | ----------------------------------- |
-| src                 | `string`   | -                              | SVG source directory path           |
-| dist                | `string`   | `./dist`                       | Output directory for font files     |
-| fontName            | `string`   | `iconfont`                     | Font family name                    |
-| unicodeStart        | `number`   | `10000`                        | Unicode start number for icons      |
-| noDemo              | `boolean`  | `false`                        | Whether to generate demo HTML files |
-| verbose             | `boolean`  | `false`                        | Enable verbose output               |
-| demoUnicodeHTML     | `string`   | `demo_unicode.html`            | Unicode demo HTML filename          |
-| demoFontClassHTML   | `string`   | `demo_fontclass.html`          | Font-class demo HTML filename       |
-| batchMode           | `boolean`  | `false`                        | Enable batch processing mode        |
-| inputDirectories    | `string[]` | -                              | Input directories for batch mode    |
-| batchSize           | `number`   | `3`                            | Batch size for parallel processing  |
-| continueOnError     | `boolean`  | `false`                        | Continue on errors in batch mode    |
-| maxConcurrency      | `number`   | `4`                            | Maximum concurrent operations       |
-| enableCache         | `boolean`  | `true`                         | Enable caching mechanism            |
-| fontFormats         | `string[]` | `['ttf','eot','woff','woff2']` | Font formats to generate            |
-| progressCallback    | `function` | -                              | Progress monitoring callback        |
-| performanceAnalysis | `boolean`  | `false`                        | Enable performance analysis         |
+| Field               | Type       | Default                              | Status         | Description                                  |
+| ------------------- | ---------- | ------------------------------------ | -------------- | -------------------------------------------- |
+| src                 | `string`   | -                                    | Supported      | SVG source directory path in single mode     |
+| dist                | `string`   | `./dist`                             | Supported      | Output directory for font files              |
+| fontName            | `string`   | `iconfont`                           | Supported      | Font family name                             |
+| unicodeStart        | `number`   | `10000`                              | Supported      | Unicode start number for icons               |
+| noDemo              | `boolean`  | `false`                              | Supported      | Whether to skip demo HTML files              |
+| verbose             | `boolean`  | `false`                              | Supported      | Enable verbose output                        |
+| demoUnicodeHTML     | `string`   | `demo_unicode.html`                  | Supported      | Unicode demo HTML filename                   |
+| demoFontClassHTML   | `string`   | `demo_fontclass.html`                | Supported      | Font-class demo HTML filename                |
+| batchMode           | `boolean`  | `false`                              | Supported      | Enable batch processing mode                 |
+| inputDirectories    | `string[]` | -                                    | Supported      | Input directories for batch mode             |
+| batchSize           | `number`   | `3`                                  | Supported      | Number of directories processed per batch    |
+| continueOnError     | `boolean`  | `true`                               | Supported      | Continue on errors in batch mode             |
+| fontFormats         | `string[]` | `['svg','ttf','eot','woff','woff2']` | Supported      | Font formats to generate                     |
+| progressCallback    | `function` | -                                    | Supported      | Progress monitoring callback                 |
+| performanceAnalysis | `boolean`  | `false`                              | Supported      | Enable performance analysis                  |
+| maxConcurrency      | `number`   | -                                    | Experimental   | Accepted, but scheduling behavior is not guaranteed |
+| enableCache         | `boolean`  | `true`                               | Experimental   | Accepted, but cache pipeline is not fully implemented |
+| cacheDir            | `string`   | -                                    | Experimental   | Reserved for future cache support            |
+| streamProcessing    | `boolean`  | `false`                              | Experimental   | Accepted, but streaming is not fully implemented |
+| outputPattern       | `string`   | -                                    | Supported      | Batch output template with `[name]` and `[fontname]` |
+| preserveDirectoryStructure | `boolean` | `false`                        | Supported      | Preserve relative input directory structure in batch mode |
+| optimization        | `object`   | -                                    | Experimental   | Parsed, but not executed end-to-end          |
+| subsetting          | `object`   | -                                    | Experimental   | Parsed, but not executed end-to-end          |
 
 **Deprecated fields:**
 
@@ -70,19 +81,97 @@ Svgs2fonts.init(options);
 const svgs2fonts = require('svgs2fonts');
 const { join } = require('path');
 
-svgs2fonts
-  .init({
+async function main() {
+  const result = await svgs2fonts.init({
     src: __dirname, // svg source directory
     dist: join(__dirname, 'dest'), // output directory
     fontName: 'myIconfont', // font family name
     unicodeStart: 20000, // unicode start number
     noDemo: false, // generate demo files
     verbose: true, // enable verbose output
-    performanceAnalysis: true, // enable performance tracking
-  })
-  .then(() => console.log('Font generation completed successfully!'))
-  .catch(err => console.error('Font generation failed:', err));
+  });
+
+  if (result === true) {
+    console.log('Font generation completed successfully!');
+  } else {
+    console.error('Font generation failed:', result.message);
+  }
+}
+
+main();
 ```
+
+##### stable performance-analysis example
+
+```js
+const svgs2fonts = require('svgs2fonts');
+
+async function main() {
+  const result = await svgs2fonts.init({
+    src: './icons',
+    dist: './output',
+    fontName: 'performance-icons',
+    performanceAnalysis: true,
+    verbose: true,
+    progressCallback: progress => {
+      console.log(`${progress.phase}: ${progress.completed}/${progress.total}`);
+    },
+  });
+
+  if (result !== true) {
+    console.error(result.message);
+  }
+}
+
+main();
+```
+
+##### experimental flags example
+
+These flags are currently accepted but not guaranteed to produce full end-to-end behavior: `maxConcurrency`, `enableCache`, `cacheDir`, `streamProcessing`, `optimization`, `subsetting`.
+
+```js
+async function main() {
+  const result = await svgs2fonts.init({
+    src: './icons',
+    dist: './output',
+    fontName: 'experimental-icons',
+    maxConcurrency: 4,
+    enableCache: true,
+  });
+
+  if (result !== true) {
+    console.error(result.message);
+  }
+}
+
+main();
+```
+
+Notes:
+- `performanceAnalysis` and `progressCallback` are supported today.
+- `maxConcurrency`, `enableCache`, `cacheDir`, `streamProcessing`, `optimization`, and `subsetting` are still experimental inputs.
+
+### CLI/config support matrix
+
+| Capability | CLI syntax | Status | Notes |
+| ---------- | ---------- | ------ | ----- |
+| Single-directory generation | `[src] [dist]` | Supported | If `dist` is omitted, CLI writes to `src` |
+| Batch input parsing | `--batch --input=dirA,dirB [dist]` | Supported | `--input` is comma-separated |
+| Explicit help | `-h`, `--help` | Supported | Does not depend on missing positional args |
+| Version output | `-v`, `--version` | Supported | Prints package version |
+| Format selection | `--formats=woff2,woff` | Supported | Supported values are `svg,ttf,eot,woff,woff2` |
+| Verbose logging | `--verbose` | Supported | Prints configuration and error context |
+| Performance summary | `--performance` | Supported | Prints a performance summary after completion |
+| Disable progress | `--no-progress` | Supported | Safe in non-TTY environments |
+| Unknown-flag failure | any unsupported flag | Supported | Returns a non-zero exit code |
+| Batch output template | `--output-pattern` | Supported | Supports `[name]` and `[fontname]` placeholders |
+| Preserve directory structure | `--preserve-structure` | Supported | Keeps the relative input directory structure |
+| Cache/stream/subset/optimize | `--cache` and related flags | Experimental | Parsed, but not guaranteed to be fully effective |
+
+Notes:
+The module API defaults `dist` to `./dist`.
+In the CLI, single-directory mode defaults `dist` to `src`, while batch mode defaults `dist` to `./dist`.
 
 ### 2.cmd
 
@@ -90,8 +179,8 @@ svgs2fonts
 svgs2fonts {{srcpath}} {{distpath}} {{options}}
 ```
 
-- srcpath: svg file dirname, "" -> now dirname path;
-- distpath: output files path;
+- srcpath: required in single-directory mode; may be relative or absolute;
+- distpath: optional. In single-directory mode it defaults to the source directory. In batch mode it defaults to `./dist`;
 - options: configurations.
 
 ##### example
@@ -138,7 +227,7 @@ svgs2fonts svg dist --nodemo
 
 #### `-c` / `--concurrency`
 
-Maximum concurrency for parallel processing. Default is the number of CPU cores (min 2, max 8).
+Experimental flag. Accepted by the CLI, but does not yet guarantee stable scheduling changes.
 
 ##### example
 
@@ -148,7 +237,7 @@ svgs2fonts svg dist --concurrency=4
 
 #### `--cache`
 
-Enable caching to avoid reprocessing unchanged files. Default is true.
+Experimental flag. Accepted by the CLI, but the cache pipeline is not fully implemented end-to-end.
 
 ##### example
 
@@ -158,7 +247,7 @@ svgs2fonts svg dist --cache
 
 #### `--cache-dir`
 
-Custom cache directory path. Default is `.svgs2fonts-cache`.
+Experimental flag. Accepted by the CLI, but cache directory handling is not yet a stable public contract.
 
 ##### example
 
@@ -168,7 +257,7 @@ svgs2fonts svg dist --cache-dir=.mycache
 
 #### `--stream`
 
-Enable streaming processing for large datasets. Default is false.
+Experimental flag. Accepted by the CLI, but streaming support is not fully implemented end-to-end.
 
 ##### example
 
@@ -200,7 +289,7 @@ svgs2fonts --batch --input=icons1,icons2,icons3
 
 #### `--batch-size`
 
-Number of directories to process in parallel in batch mode. Default is 10.
+Number of directories processed per batch in batch mode. Default is `3`.
 
 ##### example
 
@@ -210,7 +299,7 @@ svgs2fonts --batch --input=icons1,icons2,icons3 --batch-size=5
 
 #### `--output-pattern`
 
-Output pattern for batch mode. Supports `[name]` and `[fontname]` placeholders. Default is `[name]/[fontname]`.
+Output template for batch mode. Supports `[name]` and `[fontname]` placeholders.
 
 ##### example
 
@@ -230,7 +319,7 @@ svgs2fonts --batch --input=icons1,icons2 --continue-on-error
 
 #### `--preserve-structure`
 
-Preserve directory structure in batch mode. Default is false.
+Preserve the relative input directory structure in batch mode. Can be combined with `--output-pattern`.
 
 ##### example
 
@@ -242,7 +331,7 @@ svgs2fonts --batch --input=icons1,icons2 --preserve-structure
 
 #### `--formats`
 
-Font formats to generate (comma-separated). Options: svg,ttf,eot,woff,woff2,variable. Default is all formats.
+Font formats to generate (comma-separated). Stable values: `svg,ttf,eot,woff,woff2`.
 
 ##### example
 
@@ -252,7 +341,7 @@ svgs2fonts svg dist --formats=ttf,woff,woff2
 
 #### `-o` / `--optimize`
 
-Enable font optimization.
+Experimental flag. Accepted by the CLI, but the optimization pipeline is not fully implemented end-to-end.
 
 ##### example
 
@@ -422,17 +511,11 @@ npm run test:example
 - **Browsers**: All modern browsers (IE9+)
 - **Font Formats**: Complete support for EOT, TTF, WOFF, WOFF2
 
-## Changelog
+## Version Notes
 
-| Version | Date       | Changes                                                                                             |
-| ------- | ---------- | --------------------------------------------------------------------------------------------------- |
-| v2.2.0  | 2025.07.27 | Clean up redundant code, remove unused index.d.ts type declaration file, optimize package structure |
-| v2.1.0  | 2024.09.28 | Remove debug parameter, optimize logging                                                            |
-| v2.0.3  | 2023.12.16 | Add defensive handling, improve stability                                                           |
-| v2.0.2  | 2023.06.03 | Optimize variable control, enhance performance                                                      |
-| v2.0.1  | 2022.11.03 | Split CSS styles, support SVG size options                                                          |
-| v2.0.0  | 2022.03.20 | TypeScript rewrite, full type definitions                                                           |
-| v1.x    | 2021.12.16 | Fix IE8 compatibility issues                                                                        |
+- Current README package version: `2.3.0`
+- For historical changes, prefer the repository's Git tags / release records
+- If published package behavior differs from this document, treat the current code and `package.json` as the source of truth
 
 ## Contributing
 

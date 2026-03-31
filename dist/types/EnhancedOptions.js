@@ -1,7 +1,9 @@
-'use strict';
+"use strict";
 /**
- * @module EnhancedOptions
- * @description Enhanced configuration options
+ * Compatibility re-export for the canonical EnhancedOptions type.
+ *
+ * Keep OptionType as the single authority for public option types so the
+ * runtime contract, tests, and docs do not drift independently.
  */
-Object.defineProperty(exports, '__esModule', { value: true });
+Object.defineProperty(exports, "__esModule", { value: true });
 //# sourceMappingURL=EnhancedOptions.js.map

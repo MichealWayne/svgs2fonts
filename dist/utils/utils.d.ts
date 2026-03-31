@@ -7,8 +7,8 @@
  * @module utils/utils
  * @author Wayne <michealwayne@163.com>
  * @since 2018.07.30
- * @version 2.1.0
- * @lastModified 2025-07-23 17:45:00
+ * @version 2.1.1
+ * @lastModified 2025-07-27 17:45:00
  *
  * @example
  * // Logging utilities
@@ -39,14 +39,14 @@
  * @since 2.0.0
  */
 declare enum LogLevel {
-  /** Detailed debugging information for development */
-  DEBUG = 0,
-  /** General informational messages */
-  INFO = 1,
-  /** Warning messages for potential issues */
-  WARN = 2,
-  /** Error messages for failures and exceptions */
-  ERROR = 3,
+    /** Detailed debugging information for development */
+    DEBUG = 0,
+    /** General informational messages */
+    INFO = 1,
+    /** Warning messages for potential issues */
+    WARN = 2,
+    /** Error messages for failures and exceptions */
+    ERROR = 3
 }
 /**
  * Logger configuration options interface
@@ -58,50 +58,50 @@ declare enum LogLevel {
  * @since 2.0.0
  */
 interface LoggerOptions {
-  /**
-   * Minimum log level to output
-   *
-   * @type {LogLevel} level
-   * @description Messages below this level will be filtered out.
-   * Higher values show fewer messages.
-   *
-   * @default LogLevel.INFO
-   * @since 2.0.0
-   */
-  readonly level: LogLevel;
-  /**
-   * Whether to include timestamps in log messages
-   *
-   * @type {boolean} timestamp
-   * @description When true, prepends ISO timestamp to each message.
-   *
-   * @default true
-   * @since 2.0.0
-   */
-  readonly timestamp: boolean;
-  /**
-   * Whether to use ANSI colors in console output
-   *
-   * @type {boolean} colors
-   * @description When true, applies color coding based on log level.
-   * Automatically disabled in non-TTY environments.
-   *
-   * @default true
-   * @since 2.0.0
-   */
-  readonly colors: boolean;
-  /**
-   * Optional prefix for all log messages
-   *
-   * @type {string} [prefix]
-   * @description Custom prefix added to the beginning of each message.
-   *
-   * @example
-   * prefix: '[MyApp]'
-   *
-   * @since 2.0.0
-   */
-  readonly prefix?: string;
+    /**
+     * Minimum log level to output
+     *
+     * @type {LogLevel} level
+     * @description Messages below this level will be filtered out.
+     * Higher values show fewer messages.
+     *
+     * @default LogLevel.INFO
+     * @since 2.0.0
+     */
+    readonly level: LogLevel;
+    /**
+     * Whether to include timestamps in log messages
+     *
+     * @type {boolean} timestamp
+     * @description When true, prepends ISO timestamp to each message.
+     *
+     * @default true
+     * @since 2.0.0
+     */
+    readonly timestamp: boolean;
+    /**
+     * Whether to use ANSI colors in console output
+     *
+     * @type {boolean} colors
+     * @description When true, applies color coding based on log level.
+     * Automatically disabled in non-TTY environments.
+     *
+     * @default true
+     * @since 2.0.0
+     */
+    readonly colors: boolean;
+    /**
+     * Optional prefix for all log messages
+     *
+     * @type {string} [prefix]
+     * @description Custom prefix added to the beginning of each message.
+     *
+     * @example
+     * prefix: '[MyApp]'
+     *
+     * @since 2.0.0
+     */
+    readonly prefix?: string;
 }
 /**
  * Enhanced logging functions with better formatting
