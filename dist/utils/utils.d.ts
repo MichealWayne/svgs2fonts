@@ -117,4 +117,6 @@ export declare function isObject(value: unknown): value is Record<string, unknow
 export declare function getIconStrUnicode(iconName: string, unicodeStart: number): number;
 export { LogLevel };
 export type { LoggerOptions };
+/** Isolate font builds while keeping the legacy hash for existing non-colliding names. */
+export declare function createUnicodeGenerator(unicodeStart: number): (name: string) => number;
 //# sourceMappingURL=utils.d.ts.map

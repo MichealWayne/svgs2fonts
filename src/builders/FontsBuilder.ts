@@ -1,3 +1,4 @@
+import { performance } from 'perf_hooks';
 /**
  * @module FontsBuilder
  * @author Wayne<michealwayne@163.com>

@@ -142,7 +142,7 @@ describe('PerformanceTracker', () => {
       const summary = tracker.getSummary();
 
       expect(summary).toContain('ongoing-phase:');
-      expect(summary).toContain('0ms (NaN%)');
+      expect(summary).toContain('ongoing-phase: 0ms (0%)');
     });
 
     it('should format summary correctly', async () => {

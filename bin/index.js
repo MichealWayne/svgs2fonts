@@ -4,7 +4,6 @@
 
 const minimist = require('minimist');
 const { join, resolve, isAbsolute } = require('path');
-const svgs2fonts = require('../dist/index');
 const rawArgs = process.argv.slice(2);
 
 const dirname = process.cwd();
@@ -43,6 +42,16 @@ const SUPPORTED_FLAGS = new Set([
   'performance',
   'no-progress',
   'report-compression',
+  'debug',
+  'json',
+  'check',
+  'css',
+  'manifest',
+  'codepoint-map',
+  'migrate',
+  'migration-src',
+  'migration-output',
+  'migration-format',
 ]);
 
 const Config = {
@@ -73,6 +82,11 @@ function parseArgv() {
       'p',
       'no-progress',
       'report-compression',
+      'debug',
+      'json',
+      'check',
+      'css',
+      'manifest',
     ],
     string: [
       'name',
@@ -88,6 +102,11 @@ function parseArgv() {
       'compression-level',
       'include-glyphs',
       'exclude-glyphs',
+      'codepoint-map',
+      'migrate',
+      'migration-src',
+      'migration-output',
+      'migration-format',
     ],
     alias: {
       h: 'help',
@@ -99,10 +118,18 @@ function parseArgv() {
       V: 'verbose',
       p: 'performance',
     },
+    default: { 'continue-on-error': true },
     unknown: arg => {
       if (arg.startsWith('-')) {
         const normalized = arg.replace(/^-+/, '').split('=')[0];
-        if (!SUPPORTED_FLAGS.has(normalized)) {
+        const positiveFlag = normalized.startsWith('no-') ? normalized.slice(3) : normalized;
+        if (
+          !SUPPORTED_FLAGS.has(normalized) &&
+          !(
+            SUPPORTED_FLAGS.has(positiveFlag) &&
+            ['continue-on-error', 'cache', 'verbose', 'preserve-structure'].includes(positiveFlag)
+          )
+        ) {
           unknownFlags.push(arg);
           return false;
         }
@@ -130,6 +157,7 @@ function getHelpText() {
   return [
     'usage: svgs2fonts [src] [dist] [options]',
     '       svgs2fonts --batch --input=dirA,dirB [dist] [options]',
+    '       svgs2fonts --migrate=deployed.svg [--migration-src=icons] [--migration-output=codepoints.json] [--json]',
     '',
     'Supported options:',
     '  -h, --help            Show this help message',
@@ -147,6 +175,19 @@ function getHelpText() {
     '  -V, --verbose         Enable verbose logging',
     '  -p, --performance     Print performance analysis after completion',
     '      --no-progress     Disable progress rendering',
+    '      --debug           Deprecated alias for --verbose',
+    '      --css             Write production <name>.css, even with --nodemo',
+    '      --manifest        Write <name>.json with icon codepoints',
+    '      --codepoint-map   Persist codepoints in an output-relative .json filename',
+    '      --check           Inspect inputs without writing files',
+    '      --json            Print one machine-readable result to stdout',
+    '      --no-continue-on-error Stop scheduling batches after a failure',
+    '',
+    'Encoding migration (read-only unless --migration-output is given):',
+    '      --migrate          Read a deployed JSON mapping/manifest or SVG font',
+    '      --migration-format auto (extension), json or svg; default auto',
+    '      --migration-src   Compare names with a current flat SVG directory',
+    '      --migration-output Write a new schema-1 map; never overwrite files',
     '',
     'Experimental options:',
     '  -c, --concurrency     Accepted, but does not yet guarantee scheduling changes',
@@ -172,6 +213,23 @@ function printHelp() {
 }
 
 function printCliError(message, example) {
+  if (argv.json) {
+    console.log(
+      JSON.stringify({
+        schemaVersion: 1,
+        status: 'failed',
+        success: false,
+        mode: argv.migrate !== undefined ? 'migrate' : argv.check ? 'check' : 'generate',
+        directories: [],
+        ...(argv.migrate !== undefined ? { codepoints: {}, iconCount: 0 } : {}),
+        outputs: [],
+        errors: [{ code: 'INVALID_ARGUMENT', message }],
+        warnings: [],
+        durationMs: 0,
+      })
+    );
+    return;
+  }
   console.error(`Error: ${message}`);
   if (example) {
     console.error(`Example: ${example}`);
@@ -189,12 +247,18 @@ function parseInputDirectories(input) {
 }
 
 function resolvePath(value) {
+  value = String(value);
   return isAbsolute(value) ? value : resolve(dirname, value);
 }
 
 function buildInitOptions(argv) {
+  if (
+    ['migration-src', 'migration-output', 'migration-format'].some(flag => argv[flag] !== undefined)
+  )
+    return { error: 'Migration options require --migrate.' };
   const batchMode = Boolean(argv.batch || argv.b);
   const positionals = argv._ || [];
+  if (positionals.length > (batchMode ? 1 : 2)) return { error: 'Too many positional arguments.' };
 
   if (!batchMode && positionals.length === 0) {
     return { error: 'Single-directory mode requires [src].', example: 'svgs2fonts ./icons ./dist' };
@@ -205,6 +269,24 @@ function buildInitOptions(argv) {
       error: 'Batch mode requires --input=dirA,dirB.',
       example: 'svgs2fonts --batch --input=./icons1,./icons2 ./dist',
     };
+  }
+
+  for (const flag of [
+    'name',
+    'number',
+    'concurrency',
+    'batch-size',
+    'output-pattern',
+    'formats',
+    'compression-level',
+    'include-glyphs',
+    'exclude-glyphs',
+    'codepoint-map',
+    'cache-dir',
+  ]) {
+    if (argv[flag] !== undefined && (typeof argv[flag] !== 'string' || !argv[flag].trim())) {
+      return { error: `--${flag} requires one non-empty value.` };
+    }
   }
 
   const inputDirectories = batchMode ? parseInputDirectories(argv.input) : undefined;
@@ -241,7 +323,11 @@ function buildInitOptions(argv) {
           .map(format => format.trim())
           .filter(Boolean)
       : undefined,
-    verbose: argv.verbose || argv.V,
+    verbose: argv.verbose || argv.V || argv.debug,
+    debug: argv.debug,
+    outputCss: argv.css,
+    outputManifest: argv.manifest,
+    codepointMap: argv['codepoint-map'],
     performanceAnalysis: argv.performance || argv.p,
     outputPattern: batchMode && argv['output-pattern'] ? argv['output-pattern'] : undefined,
   };
@@ -250,9 +336,7 @@ function buildInitOptions(argv) {
     initOpts.optimization = {
       compressWoff2: true,
       optimizeForWeb: true,
-      woff2CompressionLevel: argv['compression-level']
-        ? Number(argv['compression-level'])
-        : 11,
+      woff2CompressionLevel: argv['compression-level'] ? Number(argv['compression-level']) : 11,
       reportCompressionStats: Boolean(argv['report-compression']),
     };
   }
@@ -260,10 +344,16 @@ function buildInitOptions(argv) {
   if (argv.subset) {
     initOpts.subsetting = {
       includeGlyphs: argv['include-glyphs']
-        ? argv['include-glyphs'].split(',').map(glyph => glyph.trim()).filter(Boolean)
+        ? argv['include-glyphs']
+            .split(',')
+            .map(glyph => glyph.trim())
+            .filter(Boolean)
         : undefined,
       excludeGlyphs: argv['exclude-glyphs']
-        ? argv['exclude-glyphs'].split(',').map(glyph => glyph.trim()).filter(Boolean)
+        ? argv['exclude-glyphs']
+            .split(',')
+            .map(glyph => glyph.trim())
+            .filter(Boolean)
         : undefined,
     };
   }
@@ -278,13 +368,13 @@ function buildInitOptions(argv) {
 }
 
 function attachProgressCallback(argv, initOpts) {
-  if (argv['no-progress'] === true || argv.progress === false) {
+  if (argv.json || argv.check || argv['no-progress'] === true || argv.progress === false) {
     return;
   }
 
   let lastUpdate = 0;
   const updateInterval = 100;
-  const interactive = Boolean(process.stdout.isTTY);
+  const interactive = Boolean(process.stderr.isTTY);
 
   initOpts.progressCallback = progress => {
     const now = Date.now();
@@ -297,17 +387,17 @@ function attachProgressCallback(argv, initOpts) {
     const message = progress.current ? ` ${progress.current}` : '';
     const line = `${progress.phase}: ${progressBar}${message}`;
 
-    if (interactive && typeof process.stdout.clearLine === 'function') {
-      process.stdout.clearLine(0);
-      process.stdout.cursorTo(0);
-      process.stdout.write(line);
+    if (interactive && typeof process.stderr.clearLine === 'function') {
+      process.stderr.clearLine(0);
+      process.stderr.cursorTo(0);
+      process.stderr.write(line);
       if (progress.completed >= progress.total) {
-        process.stdout.write('\n');
+        process.stderr.write('\n');
       }
       return;
     }
 
-    process.stdout.write(`${line}\n`);
+    process.stderr.write(`${line}\n`);
   };
 }
 
@@ -346,33 +436,124 @@ if (rawArgs.length === 0) {
   process.exit(0);
 }
 
-const { initOpts, error, example } = buildInitOptions(argv);
-if (error) {
-  printCliError(error, example);
-  process.exit(1);
-}
-
-attachProgressCallback(argv, initOpts);
-
-svgs2fonts
-  .init(initOpts)
-  .then(result => {
-    if (result === true) {
-      console.log(formatSuccessSummary(initOpts));
+async function main() {
+  if (argv.migrate !== undefined) {
+    const allowed = new Set([
+      'migrate',
+      'migration-src',
+      'migration-output',
+      'migration-format',
+      'json',
+    ]);
+    for (const flag of allowed) {
+      if (
+        flag !== 'json' &&
+        argv[flag] !== undefined &&
+        (typeof argv[flag] !== 'string' || !argv[flag].trim())
+      ) {
+        printCliError(`--${flag} requires one non-empty value.`);
+        process.exitCode = 1;
+        return;
+      }
+    }
+    if (
+      argv._.length ||
+      rawArgs.some(arg => arg.startsWith('-') && !allowed.has(arg.replace(/^-+/, '').split('=')[0]))
+    ) {
+      printCliError(
+        'Migration accepts only --migrate, --migration-src, --migration-output, --migration-format and --json.'
+      );
+      process.exitCode = 1;
       return;
     }
+    const report = await require('../dist/index').migrateCodepoints({
+      from: resolvePath(argv.migrate),
+      src: argv['migration-src'] === undefined ? undefined : resolvePath(argv['migration-src']),
+      output:
+        argv['migration-output'] === undefined ? undefined : resolvePath(argv['migration-output']),
+      format: argv['migration-format'],
+    });
+    if (argv.json) console.log(JSON.stringify(report));
+    else {
+      report.warnings.forEach(warning =>
+        console.warn(`Warning [${warning.code}]: ${warning.message}`)
+      );
+      if (report.success) {
+        console.log(`✓ Imported ${report.iconCount} deployed codepoints from ${report.from}`);
+        Object.entries(report.codepoints).forEach(([name, code]) =>
+          console.log(`  ${name}: U+${code.toString(16).toUpperCase().padStart(4, '0')}`)
+        );
+        if (report.comparison)
+          console.log(
+            `  Matched: ${report.comparison.matched.join(', ') || '(none)'}\n  Missing sources: ${report.comparison.missing.join(', ') || '(none)'}\n  Unmapped sources: ${report.comparison.unmapped.join(', ') || '(none)'}`
+          );
+        console.log(
+          report.outputs.length
+            ? `  Map: ${report.outputs[0]}`
+            : '  Preview only; no files written.'
+        );
+      } else
+        report.errors.forEach(error => console.error(`Error [${error.code}]: ${error.message}`));
+    }
+    process.exitCode = report.success ? 0 : 1;
+    return;
+  }
+  const { initOpts, error, example } = buildInitOptions(argv);
+  if (error) {
+    printCliError(error, example);
+    process.exit(1);
+  }
 
-    printCliError(result.message, initOpts.batchMode
-      ? 'svgs2fonts --batch --input=./icons1,./icons2 ./dist'
-      : 'svgs2fonts ./icons ./dist');
-    process.exit(1);
-  })
-  .catch(err => {
-    printCliError(
-      err.message,
-      initOpts.batchMode
-        ? 'svgs2fonts --batch --input=./icons1,./icons2 ./dist'
-        : 'svgs2fonts ./icons ./dist'
-    );
-    process.exit(1);
-  });
+  attachProgressCallback(argv, initOpts);
+
+  const svgs2fonts = require('../dist/index');
+  svgs2fonts
+    .generate(initOpts, { checkOnly: Boolean(argv.check) })
+    .then(report => {
+      if (argv.json) {
+        console.log(JSON.stringify(report));
+      } else {
+        report.warnings.forEach(warning =>
+          console.warn(
+            `Warning [${warning.code}]: ${warning.message}${warning.file ? ` (${warning.file})` : ''}`
+          )
+        );
+        if (report.success) {
+          console.log(
+            argv.check
+              ? '✓ Input checks passed (font conversion and visual fidelity are not verified)'
+              : formatSuccessSummary(initOpts)
+          );
+        } else {
+          console.error(
+            `Build ${report.status}: ${report.directories.filter(item => item.status === 'success').length} directories succeeded`
+          );
+          report.errors.forEach(error =>
+            console.error(
+              `Error [${error.code}]: ${error.message}${error.file ? ` (${error.file})` : ''}`
+            )
+          );
+        }
+        if (report.outputs.length)
+          console.log(`  Files:\n${report.outputs.map(file => `    ${file}`).join('\n')}`);
+        if (initOpts.performanceAnalysis) {
+          console.error(`Total time: ${report.durationMs}ms`);
+          report.directories.forEach(item =>
+            Object.entries(item.timings || {}).forEach(([phase, ms]) =>
+              console.error(`${item.source} / ${phase}: ${ms}ms`)
+            )
+          );
+        }
+      }
+      process.exitCode = report.success ? 0 : 1;
+    })
+    .catch(error => {
+      printCliError(error.message);
+      process.exitCode = 1;
+    });
+}
+
+main().catch(error => {
+  printCliError(error.message);
+  process.exitCode = 1;
+});

@@ -73,6 +73,7 @@ export function writeFile(
 
     if (!fileData) {
       resolve(FAIL_FLAG);
+      return;
     }
     try {
       if (fsExistsSync(filePath)) {
@@ -125,7 +126,7 @@ export function filterSvgFiles(svgFolderPath: string): Set<string> {
     const files = fs.readdirSync(svgFolderPath, 'utf-8');
 
     files.forEach(file => {
-      if (isString(file) && extname(file) === '.svg') {
+      if (isString(file) && extname(file).toLowerCase() === '.svg') {
         svgSet.add(join(svgFolderPath, file));
       }
     });

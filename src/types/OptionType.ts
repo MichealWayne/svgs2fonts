@@ -248,8 +248,8 @@ export interface InitOptionsParams extends SvgIcons2FontOptions {
    * conflicts with standard Unicode characters.
    *
    * @minimum 0x0000
-   * @maximum 0x10FFFF
-   * @default 0xE000
+   * @maximum 59998
+   * @default 10000
    * @example
    * unicodeStart: 0xE000  // Private Use Area start
    * unicodeStart: 0xF000  // Alternative PUA start
@@ -472,7 +472,7 @@ export interface UnicodeRange {
    * Must be less than or equal to end value.
    *
    * @minimum 0x0000
-   * @maximum 0x10FFFF
+   * @maximum 59998
    * @since 2.0.0
    */
   start: number;
@@ -485,7 +485,7 @@ export interface UnicodeRange {
    * Must be greater than or equal to start value.
    *
    * @minimum 0x0000
-   * @maximum 0x10FFFF
+   * @maximum 59998
    * @since 2.0.0
    */
   end: number;
@@ -1202,11 +1202,11 @@ export interface EnhancedOptions extends Partial<InitOptionsParams> {
   /**
    * Font formats to generate
    *
-   * @type {FontFormat[]} [fontFormats=['ttf','eot','woff','woff2']]
+   * @type {FontFormat[]} [fontFormats=['svg','ttf','eot','woff','woff2']]
    * @description Array of font formats to generate. Order affects processing sequence.
    *
    * @see FontFormat for available options
-   * @default ['ttf','eot','woff','woff2']
+   * @default ['svg','ttf','eot','woff','woff2']
    * @since 2.0.0
    */
   fontFormats?: FontFormat[];
@@ -1273,7 +1273,7 @@ export interface EnhancedOptions extends Partial<InitOptionsParams> {
   /**
    * Output path pattern for batch mode
    *
-   * @type {string} [outputPattern='[name]/[fontname]']
+   * @type {string} [outputPattern]
    * @description Template for generating output paths in batch mode.
    * Supports [name] and [fontname] placeholders.
    *
@@ -1281,7 +1281,7 @@ export interface EnhancedOptions extends Partial<InitOptionsParams> {
    * outputPattern: 'fonts/[name]'
    * outputPattern: '[name]/[fontname]-v1'
    *
-   * @default '[name]/[fontname]'
+   * @default undefined
    * @since 2.0.0
    */
   outputPattern?: string;
@@ -1289,12 +1289,12 @@ export interface EnhancedOptions extends Partial<InitOptionsParams> {
   /**
    * Number of directories to process simultaneously
    *
-   * @type {number} [batchSize=10]
+   * @type {number} [batchSize=3]
    * @description Maximum number of directories to process concurrently in batch mode.
    *
    * @minimum 1
    * @maximum 50
-   * @default 10
+   * @default 3
    * @since 2.0.0
    */
   batchSize?: number;
@@ -1302,11 +1302,11 @@ export interface EnhancedOptions extends Partial<InitOptionsParams> {
   /**
    * Continue processing on individual errors
    *
-   * @type {boolean} [continueOnError=false]
+   * @type {boolean} [continueOnError=true]
    * @description When true, continues batch processing even if individual
    * directories fail. Failed directories are reported at the end.
    *
-   * @default false
+   * @default true
    * @since 2.0.0
    */
   continueOnError?: boolean;
@@ -1368,6 +1368,15 @@ export interface EnhancedOptions extends Partial<InitOptionsParams> {
    * @since 2.0.0
    */
   performanceAnalysis?: boolean;
+
+  /** Generate production CSS independently of demo HTML. Default false. */
+  outputCss?: boolean;
+  /** Write a versioned icon manifest. Default false. */
+  outputManifest?: boolean;
+  /** Persist codepoints; resolved relative to each output directory. */
+  codepointMap?: string;
+  /** Existing explicit mapping to seed an optional stable map. */
+  codepoints?: Record<string, number>;
 
   // Template customization
 }

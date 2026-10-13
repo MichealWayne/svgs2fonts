@@ -1,60 +1,17 @@
-/**
- * @fileoverview Configuration Management System
- * @description Configuration manager for font generation
- *
- * @module config/ConfigurationManager
- * @author Wayne <michealwayne@163.com>
- * @since 1.0.0
- * @version 2.1.1
- */
-import { EnhancedOptions, FontFormat } from '../types/OptionType';
+import { EnhancedOptions, FontFormat, InitOptionsParams } from '../types/OptionType';
+export declare type ValidatedOptions = EnhancedOptions & InitOptionsParams;
 export declare const DEFAULT_FONT_FORMATS: FontFormat[];
 export declare const VALID_FONT_FORMATS: FontFormat[];
-/**
- * Configuration validation errors
- */
 export declare class ConfigurationError extends Error {
     field?: string | undefined;
+    readonly code = "INVALID_CONFIG";
     constructor(message: string, field?: string | undefined);
 }
-/**
- * Advanced configuration manager with validation and defaults
- */
 export declare class ConfigurationManager {
     private options;
-    /**
-     * Create new configuration manager
-     *
-     * @param rawOptions - Raw configuration options
-     */
     constructor(rawOptions: Partial<EnhancedOptions>);
-    /**
-     * Get validated and processed options
-     */
-    getOptions(): EnhancedOptions;
-    /**
-     * Get configuration summary for debugging
-     */
+    getOptions(): ValidatedOptions;
     getSummary(): string;
-    /**
-     * Create validated options by merging defaults with user input
-     */
-    private createValidatedOptions;
-    /**
-     * Validate required configuration fields
-     */
-    private validateRequiredFields;
-    /**
-     * Normalize file paths
-     */
-    private normalizePaths;
-    /**
-     * Validate specific configuration options
-     */
-    private validateOptions;
 }
-/**
- * Factory function to create configuration manager
- */
 export declare function createConfiguration(options: Partial<EnhancedOptions>): ConfigurationManager;
 //# sourceMappingURL=ConfigurationManager.d.ts.map

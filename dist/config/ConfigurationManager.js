@@ -1,186 +1,158 @@
 "use strict";
-/**
- * @fileoverview Configuration Management System
- * @description Configuration manager for font generation
- *
- * @module config/ConfigurationManager
- * @author Wayne <michealwayne@163.com>
- * @since 1.0.0
- * @version 2.1.1
- */
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
-    __setModuleDefault(result, mod);
-    return result;
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createConfiguration = exports.ConfigurationManager = exports.ConfigurationError = exports.VALID_FONT_FORMATS = exports.DEFAULT_FONT_FORMATS = void 0;
-const fs = __importStar(require("fs"));
-const path = __importStar(require("path"));
+const fs_1 = __importDefault(require("fs"));
+const path_1 = __importDefault(require("path"));
 const options_1 = __importDefault(require("../builders/options"));
 exports.DEFAULT_FONT_FORMATS = ['svg', 'ttf', 'eot', 'woff', 'woff2'];
-exports.VALID_FONT_FORMATS = ['svg', 'ttf', 'eot', 'woff', 'woff2'];
-/**
- * Default enhanced options extending the base options
- */
-const ENHANCED_DEFAULT_OPTIONS = {
-    // Font options
-    fontFormats: exports.DEFAULT_FONT_FORMATS,
-    // Batch processing
-    batchMode: false,
-    inputDirectories: undefined,
-    batchSize: 3,
-    continueOnError: true,
-    // Monitoring
-    verbose: false,
-    progressCallback: undefined,
-    performanceAnalysis: false,
-};
-/**
- * Configuration validation errors
- */
+exports.VALID_FONT_FORMATS = [...exports.DEFAULT_FONT_FORMATS];
 class ConfigurationError extends Error {
     constructor(message, field) {
         super(message);
         this.field = field;
+        this.code = 'INVALID_CONFIG';
         this.name = 'ConfigurationError';
     }
 }
 exports.ConfigurationError = ConfigurationError;
-/**
- * Advanced configuration manager with validation and defaults
- */
 class ConfigurationManager {
-    /**
-     * Create new configuration manager
-     *
-     * @param rawOptions - Raw configuration options
-     */
     constructor(rawOptions) {
-        this.options = this.createValidatedOptions(rawOptions);
-    }
-    /**
-     * Get validated and processed options
-     */
-    getOptions() {
-        return { ...this.options };
-    }
-    /**
-     * Get configuration summary for debugging
-     */
-    getSummary() {
-        const { src, dist, fontName, fontFormats, batchMode } = this.options;
-        return `Source: ${src}\nOutput: ${dist}\nFont Name: ${fontName}\nFormats: ${fontFormats?.join(', ')}\nBatch Mode: ${batchMode}`;
-    }
-    /**
-     * Create validated options by merging defaults with user input
-     */
-    createValidatedOptions(rawOptions) {
-        // Start with base defaults
-        const baseOptions = { ...options_1.default };
-        // Merge with enhanced defaults
-        const enhancedDefaults = { ...ENHANCED_DEFAULT_OPTIONS };
-        // Apply user options
-        const mergedOptions = {
-            ...baseOptions,
-            ...enhancedDefaults,
-            ...rawOptions,
+        if (!rawOptions || typeof rawOptions !== 'object' || Array.isArray(rawOptions)) {
+            throw new ConfigurationError('Options must be an object');
+        }
+        const supplied = Object.fromEntries(Object.entries(rawOptions).filter(([, value]) => value !== undefined));
+        const options = {
+            ...options_1.default,
+            fontFormats: [...exports.DEFAULT_FONT_FORMATS],
+            batchMode: false,
+            batchSize: 3,
+            continueOnError: true,
+            verbose: false,
+            ...supplied,
         };
-        // Validate required fields
-        this.validateRequiredFields(mergedOptions);
-        // Normalize paths
-        this.normalizePaths(mergedOptions);
-        // Validate specific options
-        this.validateOptions(mergedOptions);
-        return mergedOptions;
-    }
-    /**
-     * Validate required configuration fields
-     */
-    validateRequiredFields(options) {
-        if (!options.batchMode && !options.src) {
-            throw new ConfigurationError('Source directory (src) is required', 'src');
+        const fail = (message, field) => {
+            throw new ConfigurationError(message, field);
+        };
+        for (const field of [
+            'batchMode',
+            'noDemo',
+            'verbose',
+            'debug',
+            'continueOnError',
+            'preserveDirectoryStructure',
+            'outputCss',
+            'outputManifest',
+            'performanceAnalysis',
+        ]) {
+            if (options[field] !== undefined && typeof options[field] !== 'boolean')
+                fail(`${field} must be a boolean`, field);
         }
-        if (!options.dist) {
-            throw new ConfigurationError('Output directory (dist) is required', 'dist');
+        if (!options.dist || typeof options.dist !== 'string')
+            fail('Output directory (dist) is required', 'dist');
+        if (typeof options.fontName !== 'string' || !/^[a-zA-Z0-9_-]+$/.test(options.fontName))
+            fail('Font name must contain only letters, numbers, hyphens and underscores', 'fontName');
+        if (!Number.isInteger(options.unicodeStart) ||
+            options.unicodeStart < 0 ||
+            options.unicodeStart >= 59999 ||
+            (options.unicodeStart >= 0xd800 && options.unicodeStart <= 0xdfff))
+            fail('unicodeStart must be an integer from 0 to 59998 outside the surrogate range', 'unicodeStart');
+        if (!Number.isInteger(options.batchSize) ||
+            !Number.isFinite(options.batchSize) ||
+            options.batchSize < 1)
+            fail('Batch size must be a positive finite integer', 'batchSize');
+        if (!Array.isArray(options.fontFormats) ||
+            !options.fontFormats.length ||
+            options.fontFormats.some(format => !exports.VALID_FONT_FORMATS.includes(format)))
+            fail(`Invalid font formats. Use a non-empty array of: ${exports.VALID_FONT_FORMATS.join(', ')}`, 'fontFormats');
+        options.fontFormats = [...new Set(options.fontFormats)];
+        if (options.progressCallback !== undefined && typeof options.progressCallback !== 'function')
+            fail('progressCallback must be a function', 'progressCallback');
+        for (const field of ['fontHeight', 'round']) {
+            const value = options[field];
+            if (value !== undefined &&
+                (typeof value !== 'number' || !Number.isFinite(value) || value <= 0))
+                fail(`${field} must be a positive finite number`, field);
         }
-        if (!options.fontName || typeof options.fontName !== 'string') {
-            throw new ConfigurationError('Font name must be a non-empty string', 'fontName');
+        for (const field of ['normalize', 'centerHorizontally']) {
+            if (options[field] !== undefined && typeof options[field] !== 'boolean')
+                fail(`${field} must be a boolean`, field);
         }
-    }
-    /**
-     * Normalize file paths
-     */
-    normalizePaths(options) {
-        // Normalize src path
+        for (const field of ['demoUnicodeHTML', 'demoFontClassHTML']) {
+            const value = options[field];
+            if (typeof value !== 'string' || !/^[a-zA-Z0-9_-][a-zA-Z0-9_.-]*\.html$/i.test(value))
+                fail(`${field} must be a plain .html filename`, field);
+        }
+        if (options.outputPattern !== undefined &&
+            (typeof options.outputPattern !== 'string' ||
+                !options.outputPattern ||
+                path_1.default.isAbsolute(options.outputPattern) ||
+                /(^|[\\/])\.\.?([\\/]|$)/.test(options.outputPattern) ||
+                /\[[^\]]+\]/.test(options.outputPattern.replace(/\[(name|fontname)\]/g, ''))))
+            fail('outputPattern must be a relative path using only [name] and [fontname] placeholders', 'outputPattern');
+        if (options.codepointMap !== undefined &&
+            (typeof options.codepointMap !== 'string' ||
+                !/^[a-zA-Z0-9_-][a-zA-Z0-9_.-]*\.json$/i.test(options.codepointMap)))
+            fail('codepointMap must be a plain .json filename relative to the output directory', 'codepointMap');
+        if (options.codepoints !== undefined &&
+            (!options.codepoints ||
+                typeof options.codepoints !== 'object' ||
+                Array.isArray(options.codepoints)))
+            fail('codepoints must be a name-to-codepoint object', 'codepoints');
+        const outputs = [...options.fontFormats.map(format => `${options.fontName}.${format}`)];
+        if (!options.noDemo) {
+            outputs.push(options.demoUnicodeHTML, options.demoFontClassHTML, options.demoUnicodeHTML.replace(/\.html$/i, '.css'), options.demoFontClassHTML.replace(/\.html$/i, '.css'));
+        }
+        if (options.outputCss)
+            outputs.push(`${options.fontName}.css`);
+        if (options.outputManifest)
+            outputs.push(`${options.fontName}.json`);
+        if (options.codepointMap)
+            outputs.push(options.codepointMap);
+        if (new Set(outputs.map(name => name.toLowerCase())).size !== outputs.length)
+            fail('Requested output filenames collide', 'dist');
+        options.dist = path_1.default.resolve(options.dist);
+        if (fs_1.default.existsSync(options.dist) && !fs_1.default.statSync(options.dist).isDirectory())
+            fail(`Output is not a directory: ${options.dist}`, 'dist');
         if (options.src) {
-            options.src = path.resolve(options.src);
+            if (typeof options.src !== 'string')
+                fail('src must be a directory path', 'src');
+            options.src = path_1.default.resolve(options.src);
         }
-        // Normalize dist path
-        if (options.dist) {
-            options.dist = path.resolve(options.dist);
+        if (!options.batchMode) {
+            if (!options.src)
+                fail('Source directory (src) is required', 'src');
+            if (!fs_1.default.existsSync(options.src))
+                fail(`Source directory does not exist: ${options.src}`, 'src');
+            if (!fs_1.default.statSync(options.src).isDirectory())
+                fail(`Source is not a directory: ${options.src}`, 'src');
         }
-        // Normalize input directories for batch mode
-        if (options.inputDirectories && Array.isArray(options.inputDirectories)) {
-            options.inputDirectories = options.inputDirectories.map((dir) => path.resolve(dir));
+        else {
+            if (!Array.isArray(options.inputDirectories) ||
+                !options.inputDirectories.length ||
+                options.inputDirectories.some(dir => typeof dir !== 'string' || !dir))
+                fail('Batch mode requires inputDirectories to be a non-empty array of paths', 'inputDirectories');
+            options.inputDirectories = options.inputDirectories.map(dir => path_1.default.resolve(dir));
+            // Missing batch inputs are diagnosed per item so continueOnError can work.
         }
+        this.options = options;
     }
-    /**
-     * Validate specific configuration options
-     */
-    validateOptions(options) {
-        // Validate font formats
-        if (options.fontFormats && Array.isArray(options.fontFormats)) {
-            const invalidFormats = options.fontFormats.filter((format) => !exports.VALID_FONT_FORMATS.includes(format));
-            if (invalidFormats.length > 0) {
-                throw new ConfigurationError(`Invalid font formats: ${invalidFormats.join(', ')}. Valid formats: ${exports.VALID_FONT_FORMATS.join(', ')}`, 'fontFormats');
-            }
-        }
-        // Validate batch size
-        if (options.batchSize && (typeof options.batchSize !== 'number' || options.batchSize < 1)) {
-            throw new ConfigurationError('Batch size must be a positive number', 'batchSize');
-        }
-        // Validate single-directory mode source
-        if (!options.batchMode && options.src && !fs.existsSync(options.src)) {
-            throw new ConfigurationError(`Source directory does not exist: ${options.src}`, 'src');
-        }
-        // Validate batch mode requirements
-        if (options.batchMode && (!options.inputDirectories || options.inputDirectories.length === 0)) {
-            throw new ConfigurationError('Batch mode requires inputDirectories to be specified', 'inputDirectories');
-        }
-        if (options.batchMode && Array.isArray(options.inputDirectories)) {
-            const missingDirectories = options.inputDirectories.filter((directory) => !fs.existsSync(directory));
-            if (missingDirectories.length > 0) {
-                throw new ConfigurationError(`Input directories do not exist: ${missingDirectories.join(', ')}`, 'inputDirectories');
-            }
-        }
+    getOptions() {
+        return {
+            ...this.options,
+            fontFormats: [...this.options.fontFormats],
+            inputDirectories: this.options.inputDirectories && [...this.options.inputDirectories],
+            codepoints: this.options.codepoints && { ...this.options.codepoints },
+        };
+    }
+    getSummary() {
+        const o = this.options;
+        return `Source: ${o.src}\nOutput: ${o.dist}\nFont Name: ${o.fontName}\nFormats: ${o.fontFormats.join(', ')}\nBatch Mode: ${o.batchMode}`;
     }
 }
 exports.ConfigurationManager = ConfigurationManager;
-/**
- * Factory function to create configuration manager
- */
 function createConfiguration(options) {
     return new ConfigurationManager(options);
 }

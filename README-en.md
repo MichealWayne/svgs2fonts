@@ -1,577 +1,283 @@
 # svgs2fonts
 
-SVG icons to web font generator (SVG -> SVG, TTF, EOT, WOFF, WOFF2).
-[GitHub (中文)](https://github.com/MichealWayne/svgs2fonts)
+Convert a directory of SVG icons into an icon font (woff2, woff, ttf, eot, svg), with optional application CSS, an icon manifest and preview pages. Works from the CLI, JavaScript and TypeScript. [中文](./README.md)
 
-## Version
+Not sure whether to use an icon font or SVG? See [When to use icon fonts](#when-to-use-icon-fonts).
 
-Current package version: `2.3.0`
+Requires Node.js 16 or later. See the [CHANGELOG](./CHANGELOG.md) for release notes.
 
-For release history, prefer Git tags / release records instead of a manually maintained changelog table in the README.
+**Contents**: [When to use icon fonts](#when-to-use-icon-fonts) · [Quick start](#quick-start) · [Common commands](#common-commands) · [JavaScript / TypeScript API](#javascript--typescript-api) · [Stable codepoints](#stable-codepoints) · [Options](#options) · [FAQ](#faq) · [More docs](#more-docs)
 
-## Install
+## When to use icon fonts
 
-### 1.global install
+An icon font treats icons as text: the browser loads one font file and CSS class names display the matching characters. Icon fonts and plain SVG each have trade-offs; use this section to decide whether your project is a good fit.
+
+### Good fit
+
+- **Single-color icons that should follow text color and size**: icons inherit the element's `color` and `font-size`, so hover colors, theme switching and scaling with text are plain CSS — buttons, menus, table actions, form states.
+- **Icons mixed with text**: icons take part in text layout like characters and line up with surrounding text.
+- **One icon set shared across many pages or stacks**: server-rendered pages, traditional multi-page sites, CMS templates, jQuery projects, or several Vue/React projects can all include one CSS file and use a class name, without depending on a framework or bundler.
+- **Pages that use many icons**: all icons live in one font file — one request, cached and reused across pages.
+- **CSS-only contexts**: icons can be inserted with `::before` `content` in pure CSS, e.g. in themes or style overrides for third-party systems.
+- **Projects already using icon fonts**: for example, moving from fonts downloaded from an online icon platform to SVG sources maintained and built in your repository, while keeping deployed codepoints unchanged (see [Migrating an existing project](#migrating-an-existing-project)).
+
+### Poor fit — prefer SVG
+
+- **Multicolor, gradient or stroked icons**: fonts only represent single-color filled outlines, so these icons will not convert faithfully.
+- **Pages that use only a few icons**: the whole font must load; inlining a few SVGs is lighter. This tool does not currently subset fonts.
+- **Animating or coloring parts of an icon**: a font icon is a single character, so its parts cannot be controlled separately.
+- **New projects built with component frameworks such as React or Vue**: an SVG icon component library is usually more convenient, and bundles only the icons you use.
+
+### Things to keep in mind
+
+- **Icons are invisible until the font loads**: on slow networks or if the font fails to load, icons show as blanks or boxes. Pair important actions with text.
+- **Users may override page fonts**: some browsers let users disable web fonts (for readability or personal preference), which hides font icons.
+- **Accessibility**: screen readers may announce icon characters. Mark decorative icons with `aria-hidden="true"` and give clickable icons an accessible name on the surrounding element (see the example in [Quick start](#4-preview-and-use)).
+
+## Quick start
+
+### 1. Install
 
 ```sh
-npm i -g svgs2fonts
+npm install --save-dev svgs2fonts
 ```
 
-#### check
+### 2. Prepare icons
+
+Put SVG files directly in one directory (**subdirectories are not scanned**). Each filename becomes the icon name and must not contain whitespace or control characters:
+
+```text
+icons/
+  home.svg
+  arrow-left.svg
+```
+
+### 3. Generate
 
 ```sh
-svgs2fonts -v
+npx svgs2fonts ./icons ./fonts --name=myicons --formats=woff2,woff --css --manifest
 ```
 
-### 2.module install
+The first argument is the icon directory; the second is the output directory.
 
-```sh
-npm i --save svgs2fonts
+> **Note**: if you omit the output directory (e.g. `npx svgs2fonts ./icons`), files are written into the icon directory itself. Always pass an output directory explicitly.
+
+Output:
+
+```text
+fonts/
+  myicons.woff2           # font files (per --formats)
+  myicons.woff
+  myicons.css             # CSS for your application (--css)
+  myicons.json            # icon name → codepoint manifest (--manifest)
+  demo_fontclass.html     # preview (class usage), searchable with copy buttons
+  demo_fontclass.css
+  demo_unicode.html       # preview (Unicode usage)
+  demo_unicode.css
 ```
 
-## Usage
+### 4. Preview and use
 
-### 1. module import
+Open `fonts/demo_fontclass.html` in a browser to review the icons. Then include the generated CSS in your page:
 
-```js
-const Svgs2fonts = require('svgs2fonts');
-Svgs2fonts.init(options);
+```html
+<link rel="stylesheet" href="./fonts/myicons.css" />
+
+<!-- Decorative icon -->
+<span class="u-iconfont icon-home" aria-hidden="true"></span>
+
+<!-- Interactive control: the button provides the accessible name -->
+<button aria-label="Home">
+  <span class="u-iconfont icon-home" aria-hidden="true"></span>
+</button>
 ```
 
-`init(options)` currently returns `Promise<true | Error>`.
-It resolves to `true` on success and to an `Error` instance on failure, so callers should check the result explicitly instead of relying only on `.catch(...)`.
+Class names: the base class is always `u-iconfont`; each icon class is `icon-<filename>` (`home.svg` → `icon-home`). The CSS references fonts by relative path, so deploy the CSS and font files in the same directory.
 
-`options`:
+## Common commands
 
-| Field               | Type       | Default                              | Status         | Description                                  |
-| ------------------- | ---------- | ------------------------------------ | -------------- | -------------------------------------------- |
-| src                 | `string`   | -                                    | Supported      | SVG source directory path in single mode     |
-| dist                | `string`   | `./dist`                             | Supported      | Output directory for font files              |
-| fontName            | `string`   | `iconfont`                           | Supported      | Font family name                             |
-| unicodeStart        | `number`   | `10000`                              | Supported      | Unicode start number for icons               |
-| noDemo              | `boolean`  | `false`                              | Supported      | Whether to skip demo HTML files              |
-| verbose             | `boolean`  | `false`                              | Supported      | Enable verbose output                        |
-| demoUnicodeHTML     | `string`   | `demo_unicode.html`                  | Supported      | Unicode demo HTML filename                   |
-| demoFontClassHTML   | `string`   | `demo_fontclass.html`                | Supported      | Font-class demo HTML filename                |
-| batchMode           | `boolean`  | `false`                              | Supported      | Enable batch processing mode                 |
-| inputDirectories    | `string[]` | -                                    | Supported      | Input directories for batch mode             |
-| batchSize           | `number`   | `3`                                  | Supported      | Number of directories processed per batch    |
-| continueOnError     | `boolean`  | `true`                               | Supported      | Continue on errors in batch mode             |
-| fontFormats         | `string[]` | `['svg','ttf','eot','woff','woff2']` | Supported      | Font formats to generate                     |
-| progressCallback    | `function` | -                                    | Supported      | Progress monitoring callback                 |
-| performanceAnalysis | `boolean`  | `false`                              | Supported      | Enable performance analysis                  |
-| maxConcurrency      | `number`   | -                                    | Experimental   | Accepted, but scheduling behavior is not guaranteed |
-| enableCache         | `boolean`  | `true`                               | Experimental   | Accepted, but cache pipeline is not fully implemented |
-| cacheDir            | `string`   | -                                    | Experimental   | Reserved for future cache support            |
-| streamProcessing    | `boolean`  | `false`                              | Experimental   | Accepted, but streaming is not fully implemented |
-| outputPattern       | `string`   | -                                    | Supported      | Batch output template with `[name]` and `[fontname]` |
-| preserveDirectoryStructure | `boolean` | `false`                        | Supported      | Preserve relative input directory structure in batch mode |
-| optimization        | `object`   | -                                    | Experimental   | Parsed, but not executed end-to-end          |
-| subsetting          | `object`   | -                                    | Experimental   | Parsed, but not executed end-to-end          |
-
-**Deprecated fields:**
-
-- ~~debug~~ (v2.1.0): Debug mode flag, replaced by `verbose`
-- ~~timeout~~ (v2.0.0): Timeout setting in milliseconds
-- ~~logger~~ (v2.0.0): Custom logger configuration
-
-##### demo
-
-```js
-const svgs2fonts = require('svgs2fonts');
-const { join } = require('path');
-
-async function main() {
-  const result = await svgs2fonts.init({
-    src: __dirname, // svg source directory
-    dist: join(__dirname, 'dest'), // output directory
-    fontName: 'myIconfont', // font family name
-    unicodeStart: 20000, // unicode start number
-    noDemo: false, // generate demo files
-    verbose: true, // enable verbose output
-  });
-
-  if (result === true) {
-    console.log('Font generation completed successfully!');
-  } else {
-    console.error('Font generation failed:', result.message);
-  }
-}
-
-main();
-```
-
-##### stable performance-analysis example
-
-```js
-const svgs2fonts = require('svgs2fonts');
-
-async function main() {
-  const result = await svgs2fonts.init({
-    src: './icons',
-    dist: './output',
-    fontName: 'performance-icons',
-    performanceAnalysis: true,
-    verbose: true,
-    progressCallback: progress => {
-      console.log(`${progress.phase}: ${progress.completed}/${progress.total}`);
-    },
-  });
-
-  if (result !== true) {
-    console.error(result.message);
-  }
-}
-
-main();
-```
-
-##### experimental flags example
-
-These flags are currently accepted but not guaranteed to produce full end-to-end behavior: `maxConcurrency`, `enableCache`, `cacheDir`, `streamProcessing`, `optimization`, `subsetting`.
-
-```js
-async function main() {
-  const result = await svgs2fonts.init({
-    src: './icons',
-    dist: './output',
-    fontName: 'experimental-icons',
-    maxConcurrency: 4,
-    enableCache: true,
-  });
-
-  if (result !== true) {
-    console.error(result.message);
-  }
-}
-
-main();
-```
+| Task                                   | Command                                                                                                                                        |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| Production files only, no previews     | `npx svgs2fonts ./icons ./fonts --formats=woff2 --nodemo --css --manifest`                                                                     |
+| Keep codepoints stable as icons change | `npx svgs2fonts ./icons ./fonts --number=57344 --codepoint-map=codepoints.json --css --manifest` — see [Stable codepoints](#stable-codepoints) |
+| Check inputs without writing files     | `npx svgs2fonts ./icons ./fonts --check`                                                                                                       |
+| Machine-readable result for CI         | `npx svgs2fonts ./icons ./fonts --nodemo --css --json`                                                                                         |
+| Build several icon directories         | `npx svgs2fonts --batch --input=./icons/ui,./icons/editor ./fonts --css --manifest`                                                            |
 
 Notes:
-- `performanceAnalysis` and `progressCallback` are supported today.
-- `maxConcurrency`, `enableCache`, `cacheDir`, `streamProcessing`, `optimization`, and `subsetting` are still experimental inputs.
 
-### CLI/config support matrix
+- `--nodemo` only disables preview pages; it does not affect `--css` or `--manifest`.
+- `--check` runs structural checks only (configuration, directories, obvious SVG problems, names, codepoint maps, batch output collisions). It does not run the real font conversion or prove visual fidelity; generate and review the preview afterwards.
+- With `--json`, stdout contains exactly one JSON report and logs go to stderr. Exit code is `0` when everything succeeds and `1` on partial or complete failure. See [automation](./docs/automation.md).
 
-| Capability | CLI syntax | Status | Notes |
-| ---------- | ---------- | ------ | ----- |
-| Single-directory generation | `[src] [dist]` | Supported | If `dist` is omitted, CLI writes to `src` |
-| Batch input parsing | `--batch --input=dirA,dirB [dist]` | Supported | `--input` is comma-separated |
-| Explicit help | `-h`, `--help` | Supported | Does not depend on missing positional args |
-| Version output | `-v`, `--version` | Supported | Prints package version |
-| Format selection | `--formats=woff2,woff` | Supported | Supported values are `svg,ttf,eot,woff,woff2` |
-| Verbose logging | `--verbose` | Supported | Prints configuration and error context |
-| Performance summary | `--performance` | Supported | Prints a performance summary after completion |
-| Disable progress | `--no-progress` | Supported | Safe in non-TTY environments |
-| Unknown-flag failure | any unsupported flag | Supported | Returns a non-zero exit code |
-| Batch output template | `--output-pattern` | Supported | Supports `[name]` and `[fontname]` placeholders |
-| Preserve directory structure | `--preserve-structure` | Supported | Keeps the relative input directory structure |
-| Cache/stream/subset/optimize | `--cache` and related flags | Experimental | Parsed, but not guaranteed to be fully effective |
-
-Notes:
-The module API defaults `dist` to `./dist`.
-In the CLI, single-directory mode defaults `dist` to `src`, while batch mode defaults `dist` to `./dist`.
-
-### 2.cmd
+### Batch builds
 
 ```sh
-svgs2fonts {{srcpath}} {{distpath}} {{options}}
+npx svgs2fonts --batch --input=./icons/ui,./icons/editor ./fonts --batch-size=3
 ```
 
-- srcpath: required in single-directory mode; may be relative or absolute;
-- distpath: optional. In single-directory mode it defaults to the source directory. In batch mode it defaults to `./dist`;
-- options: configurations.
+- Each input directory produces an independent font, by default in `./fonts/<input-dir-name>/`, e.g. `./fonts/ui/` and `./fonts/editor/`.
+- `--batch-size` sets how many directories are processed at once (default 3).
+- By default a failed directory does not stop the others; with `--no-continue-on-error`, processing stops after the current batch.
+- Duplicate or nested output targets are rejected before anything is written.
+- `--output-pattern=kits/[name]-[fontname]` customizes subdirectory names; `--preserve-structure` keeps the inputs' relative layout.
 
-##### example
+## JavaScript / TypeScript API
+
+Use `generate()`. It returns a structured report instead of throwing on configuration or conversion errors:
+
+```js
+const { generate } = require('svgs2fonts');
+// TypeScript / ESM: import { generate } from 'svgs2fonts';
+
+async function main() {
+  const report = await generate({
+    src: './icons',
+    dist: './fonts',
+    fontName: 'myicons',
+    fontFormats: ['woff2', 'woff'],
+    noDemo: true,
+    outputCss: true,
+    outputManifest: true,
+  });
+
+  if (!report.success) {
+    console.error(report.status, report.errors);
+    process.exitCode = 1;
+    return;
+  }
+  console.log(report.outputs); // files actually written by this run
+}
+
+main();
+```
+
+Most useful report fields:
+
+| Field                 | Meaning                                                                              |
+| --------------------- | ------------------------------------------------------------------------------------ |
+| `success`             | `true` only when every directory succeeded                                           |
+| `status`              | `success`, `partial` (some batch items failed) or `failed`                           |
+| `outputs`             | absolute paths of files actually written                                             |
+| `errors` / `warnings` | each has a stable `code` and `message`, plus file/directory details where applicable |
+| `directories`         | per-directory details: status, icon count, codepoints, outputs, duration             |
+
+See [automation](./docs/automation.md) for the full report schema and error codes.
+
+Other exports:
+
+- `check(options)`: same as `--check`; read-only, returns the same report shape.
+- `migrateCodepoints(options)`: import codepoints from a deployed font; see the [migration guide](./docs/migration.md).
+- `init(options)`: legacy API returning `Promise<true | Error>`, still supported. Note that it resolves `true` on partial batch success (printing warnings only); use `generate()` when you need to detect partial failure.
+
+## Stable codepoints
+
+Each icon maps to a Unicode codepoint in the font. If your code **hardcodes codepoints** (e.g. `&#xE001;`), they must stay the same across rebuilds.
+
+### Default behavior
+
+With no configuration, codepoints are derived from a hash of the icon name, in the range `--number` (default `10000`) to `59999`:
+
+- Without name collisions, an icon usually keeps the same codepoint. With a hash collision the result depends on input order, so **adding or removing icons can change codepoints**.
+- The `10000` default is kept for backward compatibility. That range includes CJK and other ordinary characters, which may clash with page text.
+
+### Recommended for new projects
 
 ```sh
-svgs2fonts svg dist
+npx svgs2fonts ./icons ./fonts --number=57344 --codepoint-map=codepoints.json --css --manifest
 ```
 
-`options`:
+- `--number=57344` is `U+E000`, the start of the Unicode Private Use Area, which does not clash with ordinary text.
+- `--codepoint-map=codepoints.json` maintains a map file **inside the output directory** (e.g. `fonts/codepoints.json`). Pass a filename only, not a path.
+- With a map: existing icons keep their codepoints; new icons get new codepoints in name order; removed icons' codepoints stay reserved and are never reassigned.
+- **Commit the map to version control**, and back it up before deleting the output directory.
 
-### Basic Options
+The map also records a content hash for each SVG. Later `check()` / `generate()` reports list `added`, `removed` and `changed` icons under `changes`. Hashes cover raw bytes, so whitespace or comment edits count as changes; they do not indicate visual changes.
 
-#### `-n` / `--name`
+### Migrating an existing project
 
-Font icon's name (default: `iconfont`).
-
-##### example
+For a project already in production, import codepoints from the **font or manifest currently deployed**. Do not rely on regenerating to "guess" old codepoints:
 
 ```sh
-svgs2fonts svg dist -n myiconfont
+# 1. Read-only preview: read the deployed font and compare names with the current icons
+npx svgs2fonts --migrate=./deployed/iconfont.svg --migration-src=./icons
+
+# 2. After review, write the map (path relative to the current directory;
+#    the parent must exist and existing files are never overwritten)
+mkdir -p ./fonts
+npx svgs2fonts --migrate=./deployed/iconfont.svg --migration-output=./fonts/codepoints.json
+
+# 3. Build as usual, using the same map filename
+npx svgs2fonts ./icons ./fonts --codepoint-map=codepoints.json --css --manifest
 ```
 
-#### `--number`
-
-Unicode start number (default: `10000`).
-
-##### example
-
-```sh
-svgs2fonts svg dist --number 50000
-```
-
-#### `--nodemo`
-
-No demo HTML files.
-
-##### example
-
-```sh
-svgs2fonts svg dist --nodemo
-```
-
-### Performance Options
-
-#### `-c` / `--concurrency`
-
-Experimental flag. Accepted by the CLI, but does not yet guarantee stable scheduling changes.
-
-##### example
-
-```
-svgs2fonts svg dist --concurrency=4
-```
-
-#### `--cache`
-
-Experimental flag. Accepted by the CLI, but the cache pipeline is not fully implemented end-to-end.
-
-##### example
-
-```
-svgs2fonts svg dist --cache
-```
-
-#### `--cache-dir`
-
-Experimental flag. Accepted by the CLI, but cache directory handling is not yet a stable public contract.
-
-##### example
-
-```
-svgs2fonts svg dist --cache-dir=.mycache
-```
-
-#### `--stream`
-
-Experimental flag. Accepted by the CLI, but streaming support is not fully implemented end-to-end.
-
-##### example
-
-```
-svgs2fonts svg dist --stream
-```
-
-### Batch Processing Options
-
-#### `-b` / `--batch`
-
-Enable batch mode for processing multiple directories.
-
-##### example
-
-```
-svgs2fonts --batch --input=icons1,icons2,icons3
-```
-
-#### `--input`
-
-Input directories for batch mode (comma-separated).
-
-##### example
-
-```
-svgs2fonts --batch --input=icons1,icons2,icons3
-```
-
-#### `--batch-size`
-
-Number of directories processed per batch in batch mode. Default is `3`.
-
-##### example
-
-```
-svgs2fonts --batch --input=icons1,icons2,icons3 --batch-size=5
-```
-
-#### `--output-pattern`
-
-Output template for batch mode. Supports `[name]` and `[fontname]` placeholders.
-
-##### example
-
-```
-svgs2fonts --batch --input=icons1,icons2 --output-pattern="[fontname]-[name]"
-```
-
-#### `--continue-on-error`
-
-Continue processing other directories when one fails in batch mode. Default is true.
-
-##### example
-
-```
-svgs2fonts --batch --input=icons1,icons2 --continue-on-error
-```
-
-#### `--preserve-structure`
-
-Preserve the relative input directory structure in batch mode. Can be combined with `--output-pattern`.
-
-##### example
-
-```
-svgs2fonts --batch --input=icons1,icons2 --preserve-structure
-```
-
-### Font Options
-
-#### `--formats`
-
-Font formats to generate (comma-separated). Stable values: `svg,ttf,eot,woff,woff2`.
-
-##### example
-
-```
-svgs2fonts svg dist --formats=ttf,woff,woff2
-```
-
-#### `-o` / `--optimize`
-
-Experimental flag. Accepted by the CLI, but the optimization pipeline is not fully implemented end-to-end.
-
-##### example
-
-```
-svgs2fonts svg dist --optimize
-```
-
-#### `--compression-level`
-
-WOFF2 compression level (1-11). Default is 11 (maximum compression).
-
-##### example
-
-```
-svgs2fonts svg dist --optimize --compression-level=9
-```
-
-#### `--subset`
-
-Enable font subsetting.
-
-##### example
-
-```
-svgs2fonts svg dist --subset --include-glyphs=icon1,icon2,icon3
-```
-
-#### `--include-glyphs`
-
-Glyphs to include (comma-separated).
-
-##### example
-
-```
-svgs2fonts svg dist --subset --include-glyphs=icon1,icon2,icon3
-```
-
-#### `--exclude-glyphs`
-
-Glyphs to exclude (comma-separated).
-
-##### example
-
-```
-svgs2fonts svg dist --subset --exclude-glyphs=icon4,icon5
-```
-
-### Monitoring Options
-
-#### `-V` / `--verbose`
-
-Enable verbose output.
-
-##### example
-
-```
-svgs2fonts svg dist --verbose
-```
-
-#### `-p` / `--performance`
-
-Enable performance analysis.
-
-##### example
-
-```
-svgs2fonts svg dist --performance
-```
-
-#### `--no-progress`
-
-Disable progress display.
-
-##### example
-
-```
-svgs2fonts svg dist --no-progress
-```
-
-#### `--report-compression`
-
-Report compression statistics.
-
-##### example
-
-```
-svgs2fonts svg dist --optimize --report-compression
-```
-
-### Complete Example
-
-```
-svgs2fonts svg dist -n myicons --formats=ttf,woff,woff2 --concurrency=4 --cache --verbose
-```
-
-## Project build
-
-install dependencies：
-
-```
-npm i
-```
-
-build：
-
-```
-npm run build
-```
-
-unit test：
-
-```
-npm run test
-```
-
-demo test：
-
-```
-npm run test:example
-```
-
-> [Technical blog - Research and conversion of SVG, TTF, WOFF, WOFF2 icons](http://blog.michealwayne.cn/2018/07/26/notes/%E3%80%90%E7%AC%94%E8%AE%B0%E3%80%91%E7%94%B1iconfont%E5%BC%95%E8%B5%B7%E7%9A%84svg%E3%80%81ttf%E3%80%81woff%E3%80%81woff2%E5%9B%BE%E6%A0%87%E7%9A%84%E7%A0%94%E7%A9%B6%E5%8F%8A%E5%85%B6%E8%BD%AC%E6%8D%A2/)
-
-## Project Architecture
-
-### Core Modules
-
-- **Configuration Management** (`src/config/`): Configuration handling and backward compatibility
-  - `ConfigurationManager.ts`: Configuration validation and management
-  - `BackwardCompatibilityLayer.ts`: Backward compatibility support
-- **Core Features** (`src/core/`): Core business logic and orchestration
-  - `ProgressMonitor.ts`: Progress monitoring
-  - `PerformanceTracker.ts`: Performance tracking and analysis
-- **Processors** (`src/processors/`): Processing workflow orchestration
-  - `SingleDirectoryProcessor.ts`: Single directory processor
-  - `BatchModeProcessor.ts`: Batch mode processor
-- **Builders** (`src/builders/`): Font generation core modules
-  - `SVGBuilder.ts`: Converts SVG icons to SVG font
-  - `FontsBuilder.ts`: Transforms SVG font to TTF, EOT, WOFF, WOFF2 formats
-  - `DemoBuilder.ts`: Generates HTML demo files and CSS styles
-- **Utilities** (`src/utils/`): File system operations and utility functions
-- **Type Definitions** (`src/types/`): TypeScript type definitions
-
-### Build Process
-
-1. **Input**: Collection of SVG icon files
-2. **Configuration Processing**: ConfigurationManager validates and normalizes options
-3. **Processor Selection**: Choose single directory or batch mode processor based on config
-4. **SVG Processing**: SVGBuilder creates SVG font file
-5. **Font Generation**: FontsBuilder generates TTF, EOT, WOFF, WOFF2 formats in parallel
-6. **Demo Generation**: DemoBuilder generates demo HTML and CSS files (optional)
-7. **Performance Report**: PerformanceTracker outputs performance analysis (optional)
-
-### Technology Stack
-
-- **Language**: TypeScript
-- **Dependencies**:
-  - `svgicons2svgfont`: SVG icons to SVG font
-  - `svg2ttf`: SVG font to TTF
-  - `ttf2eot`: TTF to EOT
-  - `ttf2woff`: TTF to WOFF
-  - `ttf2woff2`: TTF to WOFF2
-
-## Compatibility
-
-- **Node.js**: ≥ 12.0.0
-- **Browsers**: All modern browsers (IE9+)
-- **Font Formats**: Complete support for EOT, TTF, WOFF, WOFF2
-
-## Version Notes
-
-- Current README package version: `2.3.0`
-- For historical changes, prefer the repository's Git tags / release records
-- If published package behavior differs from this document, treat the current code and `package.json` as the source of truth
-
-## Contributing
-
-Contributions are welcome! Feel free to submit issues and pull requests.
-
-### Development Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/MichealWayne/svgs2fonts.git
-
-# Install dependencies
-npm install
-
-# Start development mode
-npm run test:example
-
-# Run tests
-npm test
-
-# Build the project
-npm run build
-```
-
-### Project Structure
-
-```
-svgs2fonts/
-├── src/                    # Source code
-│   ├── builders/          # Builder modules
-│   │   ├── SVGBuilder.ts  # SVG font builder
-│   │   ├── FontsBuilder.ts # Font format converter
-│   │   └── DemoBuilder.ts  # Demo file generator
-│   ├── config/            # Configuration management
-│   │   ├── ConfigurationManager.ts # Configuration manager
-│   │   └── BackwardCompatibilityLayer.ts # Backward compatibility
-│   ├── core/              # Core features
-│   │   ├── ProgressMonitor.ts # Progress monitoring
-│   │   └── PerformanceTracker.ts # Performance tracking
-│   ├── processors/        # Processors
-│   │   ├── SingleDirectoryProcessor.ts # Single directory processing
-│   │   └── BatchModeProcessor.ts # Batch mode processing
-│   ├── types/             # Type definitions
-│   ├── utils/             # Utility functions
-│   ├── constant.ts        # Constants
-│   ├── options.ts         # Configuration options
-│   └── index.ts           # Entry point
-├── examples/              # Examples directory
-├── __tests__/             # Test files
-└── dist/                  # Build output
-```
-
-## Author
-
-[Micheal Wayne](mailto:michealwayne@163.com)
-
-## Build time
-
-2025.07.27
+See the [migration guide](./docs/migration.md) for supported sources (SVG fonts, JSON manifests), the API and error handling.
+
+## Options
+
+| API option                                        | CLI                              | Default and notes                                                                                        |
+| ------------------------------------------------- | -------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `src`                                             | 1st positional                   | Icon directory; required in single-directory mode                                                        |
+| `dist`                                            | 2nd positional                   | API: `./dist`; single-directory CLI: same as `src` (writes into the icon directory); batch CLI: `./dist` |
+| `fontName`                                        | `--name`, `-n`                   | `iconfont`; letters, digits, `-` and `_` only                                                            |
+| `fontFormats`                                     | `--formats`                      | `svg,ttf,eot,woff,woff2`; array in the API, comma-separated in the CLI                                   |
+| `unicodeStart`                                    | `--number`                       | `10000`; integer 0–59998 outside the surrogate range; `57344` recommended for new projects               |
+| `noDemo`                                          | `--nodemo`                       | `false`; `true` skips preview pages                                                                      |
+| `outputCss`                                       | `--css`                          | `false`; writes `<fontName>.css`                                                                         |
+| `outputManifest`                                  | `--manifest`                     | `false`; writes `<fontName>.json`                                                                        |
+| `codepointMap`                                    | `--codepoint-map`                | Off; a `.json` filename (no path) inside the output directory                                            |
+| `codepoints`                                      | —                                | Optional `{ name: codepoint }` seeds; conflicts with an existing map fail                                |
+| `demoUnicodeHTML`                                 | —                                | `demo_unicode.html`                                                                                      |
+| `demoFontClassHTML`                               | —                                | `demo_fontclass.html`                                                                                    |
+| `batchMode`                                       | `--batch`, `-b`                  | `false`                                                                                                  |
+| `inputDirectories`                                | `--input`                        | Required for batch; comma-separated or repeated in the CLI                                               |
+| `batchSize`                                       | `--batch-size`                   | `3`; directories processed at once                                                                       |
+| `continueOnError`                                 | `--no-continue-on-error`         | `true`; whether to continue after a directory fails                                                      |
+| `outputPattern`                                   | `--output-pattern`               | Batch subdirectory template; supports `[name]` and `[fontname]`                                          |
+| `preserveDirectoryStructure`                      | `--preserve-structure`           | `false`                                                                                                  |
+| `verbose`                                         | `--verbose`, `-V`                | `false`; legacy `debug` / `--debug` still work with a deprecation warning                                |
+| `progressCallback`                                | `--no-progress` disables the bar | Optional progress callback; exceptions in it do not fail the build                                       |
+| `performanceAnalysis`                             | `--performance`, `-p`            | `false`; prints per-phase timings                                                                        |
+| `fontHeight` / `normalize` / `centerHorizontally` | —                                | `1000` / `true` / `true`                                                                                 |
+
+CLI only: `--check` (read-only checks), `--json` (JSON output), the `--migrate` family (see the migration guide), `--help`, `--version`.
+
+**Accepted for compatibility but not implemented**: `maxConcurrency`, `enableCache`, `cacheDir`, `streamProcessing`, `optimization`, `subsetting`, `fontMetrics`, and the CLI flags `--concurrency`, `--cache`, `--cache-dir`, `--stream`, `--optimize`, `--compression-level`, `--report-compression`, `--subset`, `--include-glyphs`, `--exclude-glyphs`. They have no effect other than an `EXPERIMENTAL_OPTION_IGNORED` warning. Use `batchSize` to control concurrency.
+
+## Output safety
+
+- **Failures leave old files intact**: each directory is built in a temporary directory, and requested files are replaced only after everything succeeds. Other files in the output directory (including formats from earlier runs) are never deleted.
+- **No concurrent writers**: only one build may write to an output directory at a time; conflicts return `OUTPUT_LOCKED`.
+- **Leftovers**: locks and temporary directories live in the output directory's **parent**, named `.svgs2fonts-*`, and are cleaned up on normal exit. If a process is killed, confirm no build is running before removing them.
+- **Limits**: this is not a system-wide transaction; crashes or power loss can leave an intermediate state. Batch directories commit independently.
+
+## FAQ
+
+**Icons render as boxes or misaligned?**
+First check the preview page. Most modern browsers cannot render SVG-only fonts, so include at least `woff2`. Also make sure the CSS sits next to the font files.
+
+**Wrong shapes or missing strokes?**
+Fonts support single-color filled outlines only. Convert strokes, gradients and multiple colors to filled paths in your design tool first.
+
+**`INVALID_ICON_NAME` error?**
+Filenames must not contain whitespace or control characters; rename to something like `arrow-left.svg`.
+
+**Extra `demo_*.html` files in the output?**
+Those are preview pages; pass `--nodemo` to skip them.
+
+**A `punycode` DeprecationWarning appears?**
+Newer Node.js versions emit it for a dependency; it does not affect the output.
+
+**Codepoints changed after upgrading?**
+Default hash allocation may resolve name collisions differently from older versions. If you depend on fixed codepoints, follow [Migrating an existing project](#migrating-an-existing-project) and read the behavior changes in the [CHANGELOG](./CHANGELOG.md).
+
+## More docs
+
+- [Automation](./docs/automation.md): JSON report schema, error codes and handling, CI / AI workflows
+- [Migration guide](./docs/migration.md): supported sources, API, comparison results and safety
+- [CHANGELOG](./CHANGELOG.md): release notes and upgrade notes
+- [CONTRIBUTING](./CONTRIBUTING.md): local development, tests and project layout
+
+## License
+
+[MIT](./LICENSE) © [Wayne](mailto:michealwayne@163.com)

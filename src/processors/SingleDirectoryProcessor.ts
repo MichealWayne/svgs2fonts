@@ -1,176 +1,201 @@
-/**
- * @fileoverview Single Directory Font Generation Processor
- * @description Processor for handling font generation from a single directory of SVG files
- *
- * @module processors/SingleDirectoryProcessor
- * @author Wayne <michealwayne@163.com>
- * @since 2.0.0
- * @version 2.1.1
- */
-
+import fs from 'fs';
+import path from 'path';
+import { createHash } from 'crypto';
 import DemoBuilder from '../builders/DemoBuilder';
 import FontsBuilder from '../builders/FontsBuilder';
 import SVGBuilder from '../builders/SVGBuilder';
-import { ConfigurationManager, DEFAULT_FONT_FORMATS } from '../config';
-import { PerformanceTracker } from '../core';
+import { iconCss } from '../builders/presentation';
+import { ConfigurationManager } from '../config';
+import { createPerformanceTracker, PerformanceTracker } from '../core';
+import { DirectoryReport } from '../types/BuildReport';
+import { BuildError, emptyDirectory, inspectInput, issue, progress } from '../core/buildSupport';
+import { prepareCodepoints } from '../core/CodepointMap';
+import { OutputTransaction } from '../core/OutputTransaction';
 
-/**
- * Single directory font generation processor
- *
- * @class SingleDirectoryProcessor
- * @description Processor that orchestrates the entire font generation
- * pipeline for a single directory of SVG files
- *
- * @since 2.0.0
- */
 export class SingleDirectoryProcessor {
-  /**
-   * Create a new single directory processor instance
-   *
-   * @constructor
-   * @param {ConfigurationManager} configManager - Validated configuration manager instance
-   * @param {PerformanceTracker} [performanceTracker] - Optional performance tracking instance
-   *
-   * @since 2.0.0
-   */
   constructor(
     private configManager: ConfigurationManager,
     private performanceTracker?: PerformanceTracker
   ) {}
 
-  /**
-   * Execute font generation process for single directory
-   *
-   * @async
-   * @method process
-   * @description Orchestrates the complete font generation pipeline
-   *
-   * @returns {Promise<true | Error>} Promise resolving to true on success, Error on failure
-   *
-   * @since 2.0.0
-   */
   async process(): Promise<true | Error> {
+    const report = await this.processDetailed();
+    return report.status === 'success'
+      ? true
+      : new BuildError(
+          report.errors[0]?.code || 'BUILD_FAILED',
+          report.errors.map(e => e.message).join('; ')
+        );
+  }
+
+  async processDetailed(checkOnly = false): Promise<DirectoryReport> {
+    const started = Date.now();
+    const options = this.configManager.getOptions();
+    const report = emptyDirectory(options);
+    const tracker =
+      this.performanceTracker ||
+      (options.performanceAnalysis ? createPerformanceTracker() : undefined);
+    let transaction: OutputTransaction | undefined;
+    let svgBuilder: SVGBuilder | undefined;
+    let fontBuilder: FontsBuilder | undefined;
     try {
-      // Create builders
-      const { svgBuilder, fontBuilder, demoBuilder } = this.createBuilders();
-
-      // Track performance phases
-      this.performanceTracker?.startPhase('SVG Processing');
-
-      // Execute SVG processing
-      const svgResult = await svgBuilder.createSvgsFont();
-      if (!svgResult) {
-        throw new Error('SVG processing failed');
+      const inspected = inspectInput(options);
+      report.warnings.push(...inspected.warnings);
+      report.iconCount = inspected.files.length;
+      report.sourceHashes = inspected.sourceHashes;
+      const names = inspected.files.map(file => path.basename(file).replace(/\.svg$/i, ''));
+      if (new Set(names).size !== names.length)
+        throw new BuildError('ICON_NAME_CONFLICT', 'Input contains duplicate icon names');
+      if (!checkOnly) transaction = new OutputTransaction(options.dist, options.fontName);
+      const stable = prepareCodepoints(options, names, inspected.sourceHashes);
+      if (stable) {
+        report.codepoints = Object.fromEntries(names.map(name => [name, stable.codepoints[name]]));
+        report.changes = stable.changes;
       }
-
-      this.performanceTracker?.endPhase('SVG Processing');
-      this.performanceTracker?.startPhase('Font Generation');
-
-      const requestedFormats = this.getRequestedFormats();
-      const nonSvgFormats = requestedFormats.filter(format => format !== 'svg');
-      const batchResult =
-        nonSvgFormats.length > 0 ? await fontBuilder.generateBatch(nonSvgFormats) : undefined;
-
-      if (batchResult && batchResult.failed.length > 0) {
-        throw new Error('Font generation failed');
+      if (checkOnly) {
+        report.status = 'success';
+        return report;
       }
-
-      if (!requestedFormats.includes('svg')) {
-        await this.removeIntermediateSvg(svgBuilder);
-      }
-
-      this.performanceTracker?.endPhase('Font Generation');
-
-      // Execute demo generation if not disabled
-      if (demoBuilder) {
-        this.performanceTracker?.startPhase('Demo Generation');
-        const demoResult = await demoBuilder.html();
-        if (!demoResult) {
-          throw new Error('Demo generation failed');
+      const stagedOptions = {
+        ...options,
+        dist: transaction!.stage,
+        codepoints: stable?.codepoints,
+      };
+      svgBuilder = new SVGBuilder(stagedOptions, inspected.files);
+      fontBuilder = new FontsBuilder(svgBuilder);
+      tracker?.startPhase('SVG Processing');
+      progress(options, 'SVG Processing', 0, report.iconCount);
+      if (!(await svgBuilder.createSvgsFont()))
+        throw (
+          svgBuilder.error ||
+          new BuildError('SVG_FAILED', 'SVG processing failed', options.src, 'svg')
+        );
+      progress(options, 'SVG Processing', report.iconCount, report.iconCount);
+      tracker?.endPhase('SVG Processing');
+      report.codepoints = Object.fromEntries(
+        Object.entries(svgBuilder.unicodeMapping).map(([name, entity]) => [
+          name,
+          Number(entity.replace(/&#|;/g, '')),
+        ])
+      );
+      tracker?.startPhase('Font Generation');
+      const formats = options.fontFormats!;
+      const nonSvg = formats.filter(format => format !== 'svg');
+      progress(options, 'Font Generation', 0, nonSvg.length);
+      if (nonSvg.length) {
+        const result = await fontBuilder.generateBatch(nonSvg);
+        if (result.failed.length) {
+          for (const failure of result.failed)
+            report.errors.push({
+              code: 'FONT_CONVERSION_FAILED',
+              message: failure.error?.message || 'Font generation failed',
+              format: failure.format,
+              directory: options.src,
+              phase: 'font',
+            });
+          throw new BuildError('FONT_CONVERSION_FAILED', 'Font generation failed');
         }
-        this.performanceTracker?.endPhase('Demo Generation');
       }
-
-      await this.logSuccess();
-
-      // Cleanup
-      svgBuilder.clearCache();
-
-      return true;
-    } catch (error) {
-      return error instanceof Error ? error : new Error(String(error));
-    }
-  }
-
-  /**
-   * Create and configure font generation builders
-   *
-   * @private
-   * @method createBuilders
-   * @description Instantiates and configures all required builders
-   *
-   * @returns {BuilderSetup} Object containing configured builders
-   *
-   * @since 2.0.0
-   */
-  private createBuilders() {
-    const options = this.configManager.getOptions();
-
-    // Create SVG builder
-    const svgBuilder = new SVGBuilder(options);
-
-    // Create font builder
-    const fontBuilder = new FontsBuilder(svgBuilder);
-
-    // Create demo builder if needed
-    const demoBuilder = !options.noDemo ? new DemoBuilder(svgBuilder) : undefined;
-
-    return { svgBuilder, fontBuilder, demoBuilder };
-  }
-
-  private getRequestedFormats(): string[] {
-    const options = this.configManager.getOptions();
-    return options.fontFormats && options.fontFormats.length > 0
-      ? [...options.fontFormats]
-      : [...DEFAULT_FONT_FORMATS];
-  }
-
-  private async removeIntermediateSvg(svgBuilder: SVGBuilder): Promise<void> {
-    const { promises: fs } = await import('fs');
-    const { join } = await import('path');
-    const svgPath = join(
-      svgBuilder.buildOptions.dist,
-      `${svgBuilder.buildOptions.fontName}.svg`
-    );
-
-    try {
-      await fs.unlink(svgPath);
-    } catch (error) {
-      const removeError = error as NodeJS.ErrnoException;
-      if (removeError.code !== 'ENOENT') {
-        throw removeError;
+      progress(options, 'Font Generation', nonSvg.length, nonSvg.length);
+      tracker?.endPhase('Font Generation');
+      const outputs = formats.map(format => `${options.fontName}.${format}`);
+      if (!formats.includes('svg'))
+        fs.unlinkSync(path.join(transaction!.stage, `${options.fontName}.svg`));
+      if (!options.noDemo) {
+        tracker?.startPhase('Demo Generation');
+        progress(options, 'Demo Generation', 0, 4);
+        const demoBuilder = new DemoBuilder(svgBuilder);
+        if (!(await demoBuilder.html()))
+          throw new BuildError(
+            'DEMO_FAILED',
+            demoBuilder.error?.message || 'Demo generation failed',
+            options.dist,
+            'demo'
+          );
+        outputs.push(
+          options.demoUnicodeHTML,
+          options.demoFontClassHTML,
+          options.demoUnicodeHTML.replace(/\.html$/i, '.css'),
+          options.demoFontClassHTML.replace(/\.html$/i, '.css')
+        );
+        progress(options, 'Demo Generation', 4, 4);
+        tracker?.endPhase('Demo Generation');
       }
+      if (options.outputCss) {
+        const filename = `${options.fontName}.css`;
+        fs.writeFileSync(
+          path.join(transaction!.stage, filename),
+          iconCss(options.fontName, formats, svgBuilder.unicodeMapping)
+        );
+        outputs.push(filename);
+      }
+      if (options.outputManifest) outputs.push(`${options.fontName}.json`);
+      if (stable?.path) outputs.push(path.basename(stable.path));
+      if (options.outputManifest) {
+        const filename = `${options.fontName}.json`;
+        fs.writeFileSync(
+          path.join(transaction!.stage, filename),
+          JSON.stringify(
+            {
+              schemaVersion: 1,
+              fontName: options.fontName,
+              fontFormats: formats,
+              codepoints: report.codepoints,
+              sourceHashes: report.sourceHashes,
+              outputs,
+              changes: report.changes,
+            },
+            null,
+            2
+          ) + '\n'
+        );
+      }
+      if (stable?.path) {
+        const filename = path.basename(stable.path);
+        fs.writeFileSync(
+          path.join(transaction!.stage, filename),
+          JSON.stringify(
+            { schemaVersion: 1, codepoints: stable.codepoints, sourceHashes: stable.sourceHashes },
+            null,
+            2
+          ) + '\n'
+        );
+      }
+      for (const file of inspected.files) {
+        const name = path.basename(file).replace(/\.svg$/i, '');
+        const currentHash = createHash('sha256').update(fs.readFileSync(file)).digest('hex');
+        if (currentHash !== inspected.sourceHashes[name])
+          throw new BuildError(
+            'INPUT_CHANGED',
+            `Input changed during conversion; rerun the build: ${file}`,
+            file,
+            'commit'
+          );
+      }
+      report.outputs = transaction!.commit(outputs);
+      report.status = 'success';
+    } catch (error) {
+      if (!report.errors.length) report.errors.push(issue(error, options.src));
+    } finally {
+      fontBuilder?.cleanup();
+      svgBuilder?.clearCache();
+      try {
+        transaction?.cleanup();
+      } catch (e) {
+        report.warnings.push({
+          code: 'TEMP_CLEANUP_FAILED',
+          message: `Temporary files retained at ${transaction?.stage}: ${(e as Error).message}`,
+        });
+      }
+      report.durationMs = Date.now() - started;
+      if (tracker)
+        report.timings = Object.fromEntries(
+          Object.entries(tracker.phases).map(([name, phase]) => [
+            name,
+            phase.duration ?? Date.now() - phase.start,
+          ])
+        );
     }
-  }
-
-  /**
-   * Log successful execution completion details
-   *
-   * @private
-   * @async
-   * @method logSuccess
-   * @description Outputs execution success information when verbose mode is enabled
-   *
-   * @returns {Promise<void>} Promise that resolves when logging is complete
-   *
-   * @since 2.0.0
-   */
-  private async logSuccess() {
-    const options = this.configManager.getOptions();
-
-    if (options.verbose) {
-      const { log } = await import('../utils');
-      log('[svgs2fonts] Font generation completed successfully');
-    }
+    return report;
   }
 }

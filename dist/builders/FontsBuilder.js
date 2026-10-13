@@ -1,4 +1,10 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.FontsBuilder = void 0;
+const perf_hooks_1 = require("perf_hooks");
 /**
  * @module FontsBuilder
  * @author Wayne<michealwayne@163.com>
@@ -8,11 +14,6 @@
  * @summary Converts SVG font to various web font formats (TTF, EOT, WOFF, WOFF2)
  * @since 2.0.0
  */
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.FontsBuilder = void 0;
 const fs_1 = __importDefault(require("fs"));
 const path_1 = require("path");
 const svg2ttf_1 = __importDefault(require("svg2ttf"));
@@ -250,7 +251,7 @@ class FontsBuilder {
      * @returns {Promise<FontGenerationResult>} Generation result
      */
     async generateFormat(format) {
-        const startTime = performance.now();
+        const startTime = perf_hooks_1.performance.now();
         try {
             if (!FontFormatRegistry.isValidFormat(format)) {
                 throw new Error(`Unsupported font format: ${format}`);
@@ -258,7 +259,7 @@ class FontsBuilder {
             if (format.toLowerCase() === 'svg') {
                 const outputPath = `${this.fontsPath}.svg`;
                 const stats = await fs_1.default.promises.stat(outputPath);
-                const endTime = performance.now();
+                const endTime = perf_hooks_1.performance.now();
                 return {
                     format,
                     success: true,
@@ -275,7 +276,7 @@ class FontsBuilder {
             const convertedBuffer = await strategy.convert(ttfBuffer);
             const outputPath = `${this.fontsPath}.${format}`;
             const success = await (0, fsUtils_1.createIconFile)(outputPath, convertedBuffer, format);
-            const endTime = performance.now();
+            const endTime = perf_hooks_1.performance.now();
             if (!success) {
                 throw new Error(`Failed to write ${format} file`);
             }
@@ -290,7 +291,7 @@ class FontsBuilder {
             };
         }
         catch (error) {
-            const endTime = performance.now();
+            const endTime = perf_hooks_1.performance.now();
             const fontError = error instanceof Error ? error : new Error(String(error));
             return {
                 format,
@@ -339,7 +340,7 @@ class FontsBuilder {
      * @returns {Promise<BatchGenerationResult>} Batch generation results
      */
     async generateBatch(formats = ['ttf', 'eot', 'woff', 'woff2']) {
-        const startTime = performance.now();
+        const startTime = perf_hooks_1.performance.now();
         // Validate all formats before starting
         const invalidFormats = formats.filter(format => !FontFormatRegistry.isValidFormat(format));
         if (invalidFormats.length > 0) {
@@ -351,7 +352,7 @@ class FontsBuilder {
             // Generate all formats in parallel
             const generationPromises = formats.map(format => this.generateFormat(format));
             const results = await Promise.all(generationPromises);
-            const endTime = performance.now();
+            const endTime = perf_hooks_1.performance.now();
             // Separate successful and failed results
             const successful = results.filter(result => result.success);
             const failed = results.filter(result => !result.success);
@@ -369,7 +370,7 @@ class FontsBuilder {
             };
         }
         catch (error) {
-            const endTime = performance.now();
+            const endTime = perf_hooks_1.performance.now();
             const batchError = error instanceof Error ? error : new Error(String(error));
             // Return all formats as failed
             const failedResults = formats.map(format => ({

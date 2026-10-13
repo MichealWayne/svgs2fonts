@@ -1,12 +1,3 @@
-/**
- * @module FontsBuilder
- * @author Wayne<michealwayne@163.com>
- * @buildTime 2022.03.20
- * @lastModified 2025-01-22
- * @description Advanced font generation with factory pattern and async pipelines
- * @summary Converts SVG font to various web font formats (TTF, EOT, WOFF, WOFF2)
- * @since 2.0.0
- */
 import { SVGBuilder } from './SVGBuilder';
 /**
  * Font format metadata

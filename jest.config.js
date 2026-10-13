@@ -9,14 +9,8 @@ module.exports = {
   testEnvironment: 'node',
   roots: ['<rootDir>/__tests__', '<rootDir>/src'],
   testRegex: '/__tests__/(.+)\\.test\\.(jsx?|tsx?)$',
-  transform: {
-    '\\.(ts|tsx)$': [
-      'ts-jest',
-      {
-        tsconfig: 'tsconfig.test.json',
-      },
-    ],
-  },
+  transform: { '\\.(ts|tsx)$': 'ts-jest' },
+  globals: { 'ts-jest': { tsconfig: 'tsconfig.test.json' } },
   moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
   moduleNameMapper: {
     '^@/(.*)$': '<rootDir>/src/$1',
