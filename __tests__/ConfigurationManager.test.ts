@@ -80,18 +80,30 @@ describe('ConfigurationManager', () => {
     }).toThrow('inputDirectories');
   });
 
-  test('rejects missing batch input directories that do not exist', () => {
-    const distDir = fs.mkdtempSync(path.join(os.tmpdir(), 'svgs2fonts-config-missing-dir-'));
-    const missingDir = path.join(distDir, 'does-not-exist');
+  test('retains missing batch paths for per-item diagnostics', () => {
+    const missingDir = path.join(os.tmpdir(), 'svgs2fonts-nonexistent-batch-input');
+    const config = createConfiguration({ batchMode: true, inputDirectories: [missingDir] });
+    expect(config.getOptions().inputDirectories).toEqual([missingDir]);
+  });
 
-    expect(() => {
-      new ConfigurationManager({
-        batchMode: true,
-        inputDirectories: [missingDir],
-        dist: distDir,
-        fontName: 'missing-dir',
-      });
-    }).toThrow('Input directories do not exist');
+  test.each([
+    { batchSize: 1.5 },
+    { batchSize: Infinity },
+    { batchSize: NaN },
+    { batchSize: 0 },
+    { unicodeStart: 59999 },
+    { fontName: '../outside' },
+    { fontFormats: 'woff2' },
+    { fontFormats: [] },
+    { outputPattern: '../outside' },
+    { codepointMap: '../outside.json' },
+  ])('rejects invalid configuration %j', extra => {
+    expect(() =>
+      createConfiguration({
+        src: createTempSvgDir('svgs2fonts-config-validation-'),
+        ...extra,
+      } as any)
+    ).toThrow(ConfigurationError);
   });
 
   test('factory helper returns a validated configuration manager', () => {

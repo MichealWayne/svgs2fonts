@@ -29,3 +29,9 @@ coverage/
 .kiro
 .opencode
 openspec
+
+# isolated browser test dependencies and artifacts
+/browser-tests/node_modules/
+/browser-tests/.preview/
+/browser-tests/test-results/
+/browser-tests/playwright-report/

@@ -8,6 +8,7 @@
  * @version 2.1.1
  */
 import { ConfigurationManager } from '../config';
+import { DirectoryReport } from '../types/BuildReport';
 import { PerformanceTracker } from '../core';
 /**
  * Batch mode font generation processor
@@ -43,6 +44,7 @@ export declare class BatchModeProcessor {
      * @since 2.0.0
      */
     process(): Promise<true | Error>;
+    processDetailed(checkOnly?: boolean): Promise<DirectoryReport[]>;
     private resolveOutputDirectory;
     private getCommonInputRoot;
     private getPreservedDirectoryPath;

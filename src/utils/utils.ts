@@ -167,7 +167,7 @@ class Logger {
     this.options = Object.freeze({
       level: LogLevel.INFO,
       timestamp: true,
-      colors: true,
+      colors: Boolean(process.stderr.isTTY),
       ...options,
     });
   }
@@ -208,7 +208,7 @@ class Logger {
   }
 
   private shouldLog(level: LogLevel): boolean {
-    return IS_DEV && level >= this.options.level;
+    return level >= this.options.level && (level >= LogLevel.WARN || IS_DEV);
   }
 
   debug(...args: unknown[]): void {
@@ -219,7 +219,7 @@ class Logger {
 
   info(...args: unknown[]): void {
     if (this.shouldLog(LogLevel.INFO)) {
-      console.log(this.formatMessage(LogLevel.INFO, String(args.join(' '))));
+      console.error(this.formatMessage(LogLevel.INFO, String(args.join(' '))));
     }
   }
 
@@ -315,6 +315,19 @@ class UnicodeGenerator {
   }
 
   private generateDeterministic(iconName: string): number {
+    if (
+      !Number.isInteger(this.options.startUnicode) ||
+      this.options.startUnicode < 0 ||
+      this.options.startUnicode >= this.options.maxUnicode
+    ) {
+      throw new Error('unicodeStart must be an integer between 0 and 59998');
+    }
+    const surrogateCount = Math.max(
+      0,
+      Math.min(this.options.maxUnicode, 0xdfff) - Math.max(this.options.startUnicode, 0xd800) + 1
+    );
+    const capacity = this.options.maxUnicode - this.options.startUnicode + 1 - surrogateCount;
+    if (this.usedCodes.size >= capacity) throw new Error('Unicode range exhausted');
     // Use a better hash function (DJB2 algorithm)
     let hash = 5381;
     for (let i = 0; i < iconName.length; i++) {
@@ -326,7 +339,7 @@ class UnicodeGenerator {
       (hash % (this.options.maxUnicode - this.options.startUnicode)) + this.options.startUnicode;
 
     // Handle collisions by linear probing
-    while (this.usedCodes.has(unicode)) {
+    while (this.usedCodes.has(unicode) || (unicode >= 0xd800 && unicode <= 0xdfff)) {
       unicode++;
       if (unicode > this.options.maxUnicode) {
         unicode = this.options.startUnicode;
@@ -391,3 +404,9 @@ export function getIconStrUnicode(iconName: string, unicodeStart: number): numbe
 
 export { LogLevel };
 export type { LoggerOptions };
+
+/** Isolate font builds while keeping the legacy hash for existing non-colliding names. */
+export function createUnicodeGenerator(unicodeStart: number): (name: string) => number {
+  const generator = new UnicodeGenerator({ startUnicode: unicodeStart });
+  return name => generator.generate(name);
+}

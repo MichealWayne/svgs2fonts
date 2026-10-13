@@ -73,6 +73,7 @@ function writeFile(filePath, fileData, replaceExisting) {
         setFolderSync(dirPath);
         if (!fileData) {
             resolve(constant_1.FAIL_FLAG);
+            return;
         }
         try {
             if (fsExistsSync(filePath)) {
@@ -122,7 +123,7 @@ function filterSvgFiles(svgFolderPath) {
     try {
         const files = fs_1.default.readdirSync(svgFolderPath, 'utf-8');
         files.forEach(file => {
-            if ((0, utils_1.isString)(file) && (0, path_1.extname)(file) === '.svg') {
+            if ((0, utils_1.isString)(file) && (0, path_1.extname)(file).toLowerCase() === '.svg') {
                 svgSet.add((0, path_1.join)(svgFolderPath, file));
             }
         });

@@ -1,206 +1,59 @@
-/**
- * @module SVGBuilder.test
- * @author Wayne<michealwayne@163.com>
- * @Date 2025-07-27 10:30:00
- * @description Tests for the SVGBuilder module
- */
-
+import fs from 'fs';
+import os from 'os';
+import path from 'path';
 import SVGBuilder from '../src/builders/SVGBuilder';
-import { InitOptionsParams } from '../src/types/OptionType';
 
-// Mock dependencies
-jest.mock('fs', () => {
-  const originalFs = jest.requireActual('fs');
-  return {
-    ...originalFs,
-    existsSync: jest.fn(() => true),
-    createReadStream: jest.fn(() => ({
-      pipe: jest.fn(),
-      on: jest.fn((event, callback) => {
-        if (event === 'end') callback();
-        return this;
-      }),
-    })),
-    createWriteStream: jest.fn(() => ({
-      write: jest.fn(),
-      end: jest.fn(),
-      on: jest.fn((event, callback) => {
-        if (event === 'finish') callback();
-        return this;
-      }),
-    })),
-  };
+const svg =
+  '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M0 0 L24 0 L24 24 Z"/></svg>';
+const roots: string[] = [];
+function setup(names = ['home']) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'svgs2fonts-svg-test-'));
+  roots.push(root);
+  const src = path.join(root, 'src');
+  fs.mkdirSync(src);
+  names.forEach(name => fs.writeFileSync(path.join(src, `${name}.svg`), svg));
+  return { src, dist: path.join(root, 'out'), fontName: 'icons', unicodeStart: 10000 };
+}
+afterAll(() => roots.forEach(root => fs.rmSync(root, { recursive: true, force: true })));
+
+test('creates an SVG font and actual glyph mappings', async () => {
+  const options = setup(['home', 'user']);
+  const builder = new SVGBuilder(options);
+  expect(await builder.createSvgsFont()).toBe(true);
+  expect(Object.keys(builder.unicodeMapping)).toEqual(['home', 'user']);
+  expect(fs.readFileSync(path.join(options.dist, 'icons.svg'), 'utf8')).toContain('<glyph');
 });
 
-jest.mock('svgicons2svgfont', () => {
-  return jest.fn().mockImplementation(() => ({
-    pipe: jest.fn(),
-    write: jest.fn(),
-    end: jest.fn(),
-    on: jest.fn((event, callback) => {
-      if (event === 'finish') callback();
-      return this;
-    }),
-  }));
+test('fails on an empty directory with a specific error', async () => {
+  const builder = new SVGBuilder(setup([]));
+  expect(await builder.createSvgsFont()).toBe(false);
+  expect(builder.error?.message).toContain('No SVG');
 });
 
-jest.mock('../src/utils/fsUtils', () => ({
-  filterSvgFiles: jest.fn(() => ['icon1.svg', 'icon2.svg', 'icon3.svg']),
-  mkdirpSync: jest.fn(() => true),
-}));
+test('isolates codepoint allocation across different builds', async () => {
+  const first = new SVGBuilder(setup(['icon-1760']));
+  const second = new SVGBuilder(setup(['icon-4008']));
+  const repeated = new SVGBuilder(setup(['icon-4008']));
+  expect(await first.createSvgsFont()).toBe(true);
+  expect(await second.createSvgsFont()).toBe(true);
+  expect(await repeated.createSvgsFont()).toBe(true);
+  expect(second.unicodeMapping).toEqual(repeated.unicodeMapping);
+  expect(second.unicodeMapping['icon-4008']).toBe('&#26543;');
+});
 
-jest.mock('../src/utils/utils', () => ({
-  log: jest.fn(),
-  errorLog: jest.fn(),
-  getIconStrUnicode: jest.fn((name, start) => start + name.charCodeAt(0)),
-  isSuccessResult: jest.fn(() => true),
-}));
+test('honors explicit mappings and font metrics', async () => {
+  const options = { ...setup(), fontHeight: 2048, normalize: false, codepoints: { home: 57344 } };
+  const builder = new SVGBuilder(options);
+  expect(await builder.createSvgsFont()).toBe(true);
+  const font = fs.readFileSync(path.join(options.dist, 'icons.svg'), 'utf8');
+  expect(font).toContain('units-per-em="2048"');
+  expect(builder.unicodeMapping.home).toBe('&#57344;');
+});
 
-describe('SVGBuilder', () => {
-  let svgBuilder: SVGBuilder;
-  const mockOptions: InitOptionsParams = {
-    src: 'src/svg',
-    dist: 'dist/fonts',
-    fontName: 'testfont',
-    unicodeStart: 0xe000,
-    debug: false,
-    noDemo: false,
-    demoUnicodeHTML: 'demo_unicode.html',
-    demoFontClassHTML: 'demo_fontclass.html',
-  };
-
-  beforeEach(() => {
-    jest.clearAllMocks();
-    svgBuilder = new SVGBuilder(mockOptions);
-  });
-
-  describe('SVG Font Generation', () => {
-    it('should create an SVGBuilder instance', () => {
-      expect(svgBuilder).toBeInstanceOf(SVGBuilder);
-    });
-
-    it('should have required methods', () => {
-      expect(typeof svgBuilder.createSvgsFont).toBe('function');
-      expect(typeof svgBuilder.clearCache).toBe('function');
-    });
-
-    it('should generate SVG font from multiple SVG files', async () => {
-      const result = await svgBuilder.createSvgsFont();
-
-      expect(typeof result).toBe('boolean');
-    });
-
-    it('should handle empty SVG directory', async () => {
-      const { filterSvgFiles } = require('../src/utils/fsUtils');
-      filterSvgFiles.mockReturnValueOnce([]);
-
-      const result = await svgBuilder.createSvgsFont();
-
-      expect(typeof result).toBe('boolean');
-    });
-
-    it('should handle SVG files with different unicode ranges', async () => {
-      const builderWithCustomUnicode = new SVGBuilder({
-        ...mockOptions,
-        unicodeStart: 0xf000,
-      });
-
-      const result = await builderWithCustomUnicode.createSvgsFont();
-
-      expect(typeof result).toBe('boolean');
-    });
-
-    it('should create output directory if it does not exist', async () => {
-      const { mkdirpSync } = require('../src/utils/fsUtils');
-
-      await svgBuilder.createSvgsFont();
-
-      expect(mkdirpSync).toHaveBeenCalled();
-    });
-
-    it('should handle debug mode', async () => {
-      const debugBuilder = new SVGBuilder({
-        ...mockOptions,
-        debug: true,
-      });
-
-      const result = await debugBuilder.createSvgsFont();
-
-      expect(typeof result).toBe('boolean');
-    });
-  });
-
-  describe('Error Handling', () => {
-    it('should handle missing source directory', async () => {
-      const { mkdirpSync } = require('../src/utils/fsUtils');
-      mkdirpSync.mockReturnValueOnce(false);
-
-      const result = await svgBuilder.createSvgsFont();
-
-      expect(typeof result).toBe('boolean');
-    });
-
-    it('should handle file system errors gracefully', async () => {
-      const { filterSvgFiles } = require('../src/utils/fsUtils');
-      filterSvgFiles.mockImplementationOnce(() => {
-        throw new Error('File system error');
-      });
-
-      const result = await svgBuilder.createSvgsFont();
-
-      expect(typeof result).toBe('boolean');
-    });
-  });
-
-  describe('Unicode Management', () => {
-    it('should provide unicode mapping after font creation', () => {
-      const unicodeMapping = svgBuilder.unicodeMapping;
-
-      expect(typeof unicodeMapping).toBe('object');
-    });
-
-    it('should handle custom unicode start values', () => {
-      const customBuilder = new SVGBuilder({
-        ...mockOptions,
-        unicodeStart: 0xf100,
-      });
-
-      expect(customBuilder).toBeDefined();
-    });
-
-    it('should clear cache', () => {
-      expect(() => svgBuilder.clearCache()).not.toThrow();
-    });
-  });
-
-  describe('Configuration', () => {
-    it('should provide build options', () => {
-      const buildOptions = svgBuilder.buildOptions;
-
-      expect(buildOptions).toBeDefined();
-      expect(buildOptions.fontName).toBe('testfont');
-      expect(buildOptions.src).toBe('src/svg');
-      expect(buildOptions.dist).toBe('dist/fonts');
-    });
-
-    it('should handle different SVG file formats', async () => {
-      const result = await svgBuilder.createSvgsFont();
-
-      expect(typeof result).toBe('boolean');
-    });
-
-    it('should handle SVG files with different naming conventions', async () => {
-      const { filterSvgFiles } = require('../src/utils/fsUtils');
-      filterSvgFiles.mockReturnValueOnce([
-        'icon-home.svg',
-        'icon_user.svg',
-        'iconSettings.svg',
-        'icon.search.svg',
-      ]);
-
-      const result = await svgBuilder.createSvgsFont();
-
-      expect(typeof result).toBe('boolean');
-    });
-  });
+test('reports malformed SVG instead of claiming completion', async () => {
+  const options = setup();
+  fs.writeFileSync(path.join(options.src, 'home.svg'), '<svg><path d="broken"/></svg>');
+  const builder = new SVGBuilder(options);
+  expect(await builder.createSvgsFont()).toBe(false);
+  expect(builder.error).toBeInstanceOf(Error);
 });

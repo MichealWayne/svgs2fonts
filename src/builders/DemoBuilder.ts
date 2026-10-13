@@ -1,3 +1,4 @@
+import { performance } from 'perf_hooks';
 /**
  * @module DemoBuilder
  * @author Wayne<michealwayne@163.com>
@@ -13,6 +14,7 @@ import { DEMO_CSS, DEMO_HTML, FAIL_FLAG, SUCCESS_FLAG } from '../constant';
 import { writeFile } from '../utils/fsUtils';
 import { errorLog, isString, log } from '../utils/utils';
 import { SVGBuilder } from './SVGBuilder';
+import { escapeHtml, escapeCss, fontFace } from './presentation';
 
 /**
  * Content structure for demo files generation
@@ -80,7 +82,7 @@ class SimpleTemplateRenderer extends TemplateRenderer {
 
     variables.forEach((value, key) => {
       const pattern = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
-      result = result.replace(pattern, value);
+      result = result.replace(pattern, () => value);
     });
 
     return result;
@@ -159,10 +161,10 @@ class DemoContentBuilder {
     const escapedUnicode = unicodeStr.replace('&', '&amp;');
 
     // Build code HTML fragment
-    this.codeHtml += this.createCodeFragment(iconName, unicodeStr, escapedUnicode);
+    this.codeHtml += this.createCodeFragment(escapeHtml(iconName), unicodeStr, escapedUnicode);
 
     // Build class HTML fragment
-    this.classHtml += this.createClassFragment(iconName);
+    this.classHtml += this.createClassFragment(escapeHtml(iconName));
 
     // Build CSS fragment
     this.classCss += this.createCssFragment(iconName, hexNum);
@@ -218,7 +220,7 @@ class DemoContentBuilder {
    * @returns {string} CSS rule
    */
   private createCssFragment(iconName: string, hexNum: string): string {
-    return `.icon-${iconName}:before { content: "\\${hexNum}"; }`;
+    return `.${escapeCss(`icon-${iconName}`)}:before { content: "\\${hexNum}"; }`;
   }
 
   /**
@@ -227,14 +229,7 @@ class DemoContentBuilder {
    * @returns {string} Formatted CSS content
    */
   private formatCssOutput(): string {
-    return this.classCss
-      ? '\r\n' +
-          this.classCss
-            .split('.')
-            .filter(Boolean)
-            .map(rule => `.${rule}`)
-            .join('\r\n')
-      : '';
+    return this.classCss ? '\n' + this.classCss + '\n' : '';
   }
 }
 
@@ -339,6 +334,7 @@ export class DemoBuilder {
   private readonly contentBuilder: DemoContentBuilder;
   /** File manager for batch file operations */
   private readonly fileManager: DemoFileManager;
+  public error?: Error;
 
   /**
    * Creates a new DemoBuilder instance
@@ -371,9 +367,14 @@ export class DemoBuilder {
       const writeResult = await this.fileManager.writeAll();
 
       // Handle results
+      if (writeResult.failed.length)
+        this.error = new Error(
+          writeResult.failed.map(f => `${f.path}: ${f.error.message}`).join('; ')
+        );
       return this.handleResults(writeResult, demoContent.metadata);
     } catch (error) {
       const demoError = error instanceof Error ? error : new Error(String(error));
+      this.error = demoError;
       errorLog(`[DemoBuilder] Demo generation failed: ${demoError.message}`);
       return false;
     } finally {
@@ -472,7 +473,10 @@ export class DemoBuilder {
    * @returns {string} Rendered CSS
    */
   private renderBaseCSS(fontName: string): string {
-    return this.renderTemplate(DEMO_CSS, new Map([['fontName', fontName]]));
+    return fontFace(
+      fontName,
+      this.svgBuilder.buildOptions.fontFormats || ['svg', 'ttf', 'eot', 'woff', 'woff2']
+    );
   }
 
   /**
@@ -520,7 +524,7 @@ export class DemoBuilder {
       });
 
       // Return success only if at least half the files were written
-      return successfulCount > failedCount ? SUCCESS_FLAG : FAIL_FLAG;
+      return FAIL_FLAG;
     }
   }
 

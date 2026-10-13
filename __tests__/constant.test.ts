@@ -37,7 +37,7 @@ describe('Constants', () => {
     });
 
     it('should have valid HTML structure in DEMO_HTML', () => {
-      expect(DEMO_HTML).toContain('<html>');
+      expect(DEMO_HTML).toContain('<html lang=');
       expect(DEMO_HTML).toContain('</html>');
       expect(DEMO_HTML).toContain('<head>');
       expect(DEMO_HTML).toContain('</head>');
@@ -45,16 +45,12 @@ describe('Constants', () => {
       expect(DEMO_HTML).toContain('</body>');
     });
 
-    it('should include CSS animations in DEMO_HTML', () => {
-      expect(DEMO_HTML).toContain('@keyframes colors');
-      expect(DEMO_HTML).toContain('@-webkit-keyframes colors');
-      expect(DEMO_HTML).toContain('animation: colors');
-    });
-
-    it('should include responsive meta tags', () => {
+    it('provides a static responsive preview with search and copy controls', () => {
+      expect(DEMO_HTML).not.toContain('@keyframes');
       expect(DEMO_HTML).toContain('viewport');
-      expect(DEMO_HTML).toContain('format-detection');
-      expect(DEMO_HTML).toContain('apple-touch-fullscreen');
+      expect(DEMO_HTML).toContain('id="search"');
+      expect(DEMO_HTML).toContain('Copy usage');
+      expect(DEMO_HTML).toContain('</ul>');
     });
   });
 

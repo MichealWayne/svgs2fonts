@@ -1,4 +1,7 @@
 "use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.DemoBuilder = void 0;
+const perf_hooks_1 = require("perf_hooks");
 /**
  * @module DemoBuilder
  * @author Wayne<michealwayne@163.com>
@@ -8,12 +11,11 @@
  * @summary Creates HTML and CSS demo files to showcase the generated icon fonts
  * @since 2.0.0
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.DemoBuilder = void 0;
 const path_1 = require("path");
 const constant_1 = require("../constant");
 const fsUtils_1 = require("../utils/fsUtils");
 const utils_1 = require("../utils/utils");
+const presentation_1 = require("./presentation");
 /**
  * Abstract template engine using strategy pattern
  * @abstract
@@ -39,7 +41,7 @@ class SimpleTemplateRenderer extends TemplateRenderer {
         let result = template;
         variables.forEach((value, key) => {
             const pattern = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
-            result = result.replace(pattern, value);
+            result = result.replace(pattern, () => value);
         });
         return result;
     }
@@ -112,9 +114,9 @@ class DemoContentBuilder {
         const hexNum = Number(unicodeStr.replace(/&#|;/g, '')).toString(16);
         const escapedUnicode = unicodeStr.replace('&', '&amp;');
         // Build code HTML fragment
-        this.codeHtml += this.createCodeFragment(iconName, unicodeStr, escapedUnicode);
+        this.codeHtml += this.createCodeFragment((0, presentation_1.escapeHtml)(iconName), unicodeStr, escapedUnicode);
         // Build class HTML fragment
-        this.classHtml += this.createClassFragment(iconName);
+        this.classHtml += this.createClassFragment((0, presentation_1.escapeHtml)(iconName));
         // Build CSS fragment
         this.classCss += this.createCssFragment(iconName, hexNum);
         this.iconCount++;
@@ -164,7 +166,7 @@ class DemoContentBuilder {
      * @returns {string} CSS rule
      */
     createCssFragment(iconName, hexNum) {
-        return `.icon-${iconName}:before { content: "\\${hexNum}"; }`;
+        return `.${(0, presentation_1.escapeCss)(`icon-${iconName}`)}:before { content: "\\${hexNum}"; }`;
     }
     /**
      * Formats CSS output for better readability
@@ -172,14 +174,7 @@ class DemoContentBuilder {
      * @returns {string} Formatted CSS content
      */
     formatCssOutput() {
-        return this.classCss
-            ? '\r\n' +
-                this.classCss
-                    .split('.')
-                    .filter(Boolean)
-                    .map(rule => `.${rule}`)
-                    .join('\r\n')
-            : '';
+        return this.classCss ? '\n' + this.classCss + '\n' : '';
     }
 }
 /**
@@ -279,7 +274,7 @@ class DemoBuilder {
      * @returns {Promise<boolean>} True if generation was successful, false otherwise
      */
     async html() {
-        const startTime = performance.now();
+        const startTime = perf_hooks_1.performance.now();
         try {
             // Generate demo content
             const demoContent = await this.generateDemoContent(startTime);
@@ -288,10 +283,13 @@ class DemoBuilder {
             // Write all files
             const writeResult = await this.fileManager.writeAll();
             // Handle results
+            if (writeResult.failed.length)
+                this.error = new Error(writeResult.failed.map(f => `${f.path}: ${f.error.message}`).join('; '));
             return this.handleResults(writeResult, demoContent.metadata);
         }
         catch (error) {
             const demoError = error instanceof Error ? error : new Error(String(error));
+            this.error = demoError;
             (0, utils_1.errorLog)(`[DemoBuilder] Demo generation failed: ${demoError.message}`);
             return false;
         }
@@ -317,7 +315,7 @@ class DemoBuilder {
         // Build final content
         return this.contentBuilder.build({
             fontName,
-            generationTime: performance.now() - startTime,
+            generationTime: perf_hooks_1.performance.now() - startTime,
         });
     }
     /**
@@ -373,7 +371,7 @@ class DemoBuilder {
      * @returns {string} Rendered CSS
      */
     renderBaseCSS(fontName) {
-        return this.renderTemplate(constant_1.DEMO_CSS, new Map([['fontName', fontName]]));
+        return (0, presentation_1.fontFace)(fontName, this.svgBuilder.buildOptions.fontFormats || ['svg', 'ttf', 'eot', 'woff', 'woff2']);
     }
     /**
      * Handles results of file write operations
@@ -404,7 +402,7 @@ class DemoBuilder {
                 (0, utils_1.errorLog)(`[DemoBuilder] Failed to write ${path}: ${error.message}`);
             });
             // Return success only if at least half the files were written
-            return successfulCount > failedCount ? constant_1.SUCCESS_FLAG : constant_1.FAIL_FLAG;
+            return constant_1.FAIL_FLAG;
         }
     }
     /**

@@ -270,7 +270,7 @@ describe('FSUtils', () => {
 
       const result = filterSvgFiles('/mixed/files');
 
-      expect(result.size).toBe(2); // Only .svg files (case sensitive)
+      expect(result.size).toBe(3); // Both .svg and .SVG files
       expect(result.has(path.join('/mixed/files', 'icon.svg'))).toBe(true);
       expect(result.has(path.join('/mixed/files', 'another-icon.svg'))).toBe(true);
     });

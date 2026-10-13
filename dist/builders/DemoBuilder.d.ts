@@ -1,12 +1,3 @@
-/**
- * @module DemoBuilder
- * @author Wayne<michealwayne@163.com>
- * @buildTime 2022.03.20
- * @lastModified 2025-01-22
- * @description Advanced demo generation with template engine and builder pattern
- * @summary Creates HTML and CSS demo files to showcase the generated icon fonts
- * @since 2.0.0
- */
 import { SVGBuilder } from './SVGBuilder';
 /**
  * Advanced demo builder using modern patterns and template engine
@@ -22,6 +13,7 @@ export declare class DemoBuilder {
     private readonly contentBuilder;
     /** File manager for batch file operations */
     private readonly fileManager;
+    error?: Error;
     /**
      * Creates a new DemoBuilder instance
      * @param {SVGBuilder} svgBuilder - SVG builder with icon data

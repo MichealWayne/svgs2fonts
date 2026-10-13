@@ -24,77 +24,64 @@ exports.DEMO_CSS = `@font-face {
     url('{{fontName}}.svg') format('svg');
 }`;
 // demo中HTML产物
-exports.DEMO_HTML = `
-<!DOCTYPE html>
-<html>
+exports.DEMO_HTML = `<!DOCTYPE html>
+<html lang="en">
 <head>
-  <!-- include header -->
-  <meta charset="UTF-8">
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0" />
-  <meta name="format-detection" content="telephone=no" />
-  <meta name="apple-touch-fullscreen" content="YES" />
-  <style type="text/css">
-  * {margin: 0;padding: 0;}
-  html, body {width: 100%;}
-  h3 {font-weight: normal;}
-  .m-demos_ctn {margin-top: 50px;padding-right: 320px;display: flex;flex-wrap: wrap;justify-content: space-around;}
-  .m-demos_ctn li {list-style: none;text-align: center;width: 150px;min-height: 150px;}
-  .m-icon_ctn {width: 150px;height: 60px;}
-  .m-code_ctn {position: fixed;right: 0;top: 0;z-index: 2;padding: 5px 10px;width: 300px;max-height: 100%;overflow-y: auto;background-color: #fff;box-shadow: 0 0 20px #999;}
-  .m-code_ctn pre {white-space: pre-wrap;padding: 5px;color: #fff;background-color: #222;}
-  
-  @-webkit-keyframes colors {
-    from {font-size: 26px;color: red;}
-    25% {color: yellow;}
-    50% {font-size: 66px;color: green;} 
-    75% {color: blue;}
-    to {font-size: 26px;color: red;}
-  }
-  @keyframes colors {
-    from {font-size: 26px;color: red;}
-    25% {color: yellow;}
-    50% {font-size: 66px;color: green;} 
-    75% {color: blue;}
-    to {font-size: 26px;color: red;}
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="./{{demoCssFile}}" />
+  <title>{{fontName}} icon preview</title>
+  <style>
+    * { box-sizing: border-box; }
+    body { margin: 0; padding: 24px; font-family: system-ui, sans-serif; background: #f6f8fa; color: #24292f; }
+    input { display: block; padding: 10px; width: 100%; max-width: 420px; }
+    .m-demos_ctn { display: grid; grid-template-columns: repeat(auto-fill,minmax(min(180px,100%),1fr)); gap: 16px; padding: 0; }
+    .m-demos_ctn li { list-style: none; background: white; padding: 16px; border: 1px solid #d0d7de; border-radius: 8px; overflow-wrap: anywhere; }
+    .u-iconfont { font-family: '{{fontName}}'; font-size: 32px; font-style: normal; }
+    button { margin-top: 8px; padding: 8px 12px; min-height: 44px; cursor: pointer; }
+    :focus-visible { outline: 2px solid #0969da; outline-offset: 3px; }
+    pre { white-space: pre-wrap; overflow-wrap: anywhere; }
   </style>
-
-  <!-- font css -->
-  <link rel="stylesheet" rel="stylesheet" href="./{{demoCssFile}}" />
-  <title>svg2fonts demo</title>
 </head>
 <body>
-  <style type="text/css">
-  .u-iconfont{
-    font-family: "{{fontName}}" !important;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
-  }
-  .u-iconfont{
-    display: inline-block;
-    font-size: 26px;
-    font-style: normal;
-    -webkit-animation: colors 3s infinite linear;
-            animation: colors 3s infinite linear;
-  }
-  </style>
-
-  <h1>iconfont(by svgs2fonts)</h1>
-
-  <section class="m-code_ctn">
-  <h3>Main CSS codes: </h3>
-    <pre>
-    {{demoCss}}
-    </pre>
-  </section>
-
-  <ul class="m-demos_ctn">
-  <!-- <em class="u-iconfont">&#xE002;</em> -->
-
-  {{demoHtml}}
-  </li>
+  <main>
+  <h1>{{fontName}} icon preview</h1>
+  <p>Review each icon before using it in your project.</p>
+  <label>Search icons <input id="search" type="search" placeholder="Icon name" /></label>
+  <p id="preview-status" role="status" aria-live="polite" aria-atomic="true"></p>
+  <ul class="m-demos_ctn">{{demoHtml}}</ul>
+  <details><summary>Font CSS</summary><pre>{{demoCss}}</pre></details>
+  </main>
+  <script>
+    const items = Array.from(document.querySelectorAll('.m-demos_ctn li'));
+    const status = document.getElementById('preview-status');
+    const updateCount = () => { status.textContent = items.filter(item => !item.hidden).length + ' of ' + items.length + ' icons'; };
+    updateCount();
+    document.getElementById('search').addEventListener('input', event => {
+      const value = event.target.value.toLowerCase();
+      items.forEach(item => { item.hidden = !item.textContent.toLowerCase().includes(value); });
+      updateCount();
+    });
+    items.forEach(item => {
+      const button = document.createElement('button');
+      button.textContent = 'Copy usage';
+      button.type = 'button';
+      const icon = item.querySelector('em');
+      icon.setAttribute('aria-hidden', 'true');
+      const name = item.querySelector('.m-icon_ctn').getAttribute('title');
+      button.setAttribute('aria-label', 'Copy usage for ' + name);
+      button.addEventListener('click', async () => {
+        const code = item.querySelector('em').outerHTML;
+        try {
+          if (!navigator.clipboard) throw new Error('Clipboard unavailable');
+          await navigator.clipboard.writeText(code);
+          button.textContent = 'Copied';
+          status.textContent = 'Copied usage for ' + name;
+        } catch (_) { window.prompt('Copy this markup:', code); }
+      });
+      item.appendChild(button);
+    });
+  </script>
 </body>
-</html>
-`;
+</html>`;
 //# sourceMappingURL=constant.js.map

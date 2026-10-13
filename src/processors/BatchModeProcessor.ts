@@ -9,8 +9,9 @@
  */
 
 import { ConfigurationManager, createConfiguration } from '../config';
-import { createProgressMonitor, PerformanceTracker, ProgressMonitor } from '../core';
-import { ProgressInfo } from '../types/core/ProcessingTypes';
+import { DirectoryReport } from '../types/BuildReport';
+import { BuildError, canonicalPath, emptyDirectory, issue, progress } from '../core/buildSupport';
+import { PerformanceTracker } from '../core';
 import * as path from 'path';
 import { SingleDirectoryProcessor } from './SingleDirectoryProcessor';
 
@@ -51,106 +52,95 @@ export class BatchModeProcessor {
    * @since 2.0.0
    */
   async process(): Promise<true | Error> {
-    const options = this.configManager.getOptions();
-
     try {
-      const { inputDirectories } = options;
-
-      if (!inputDirectories || inputDirectories.length === 0) {
-        throw new Error('No input directories specified for batch processing');
-      }
-
-      const commonRoot = this.getCommonInputRoot(inputDirectories);
-
-      // Setup monitoring
-
-      let progressMonitor: ProgressMonitor | undefined;
-
-      if (options.progressCallback || options.verbose) {
-        progressMonitor = createProgressMonitor();
-        if (options.progressCallback) {
-          progressMonitor.onProgress(options.progressCallback);
-        }
-      }
-
-      this.performanceTracker?.startPhase('Batch Processing');
-
-      const batchSize = options.batchSize || 3;
-      const results: Array<true | Error> = [];
-
-      // Process directories in batches
-      for (let i = 0; i < inputDirectories.length; i += batchSize) {
-        const batch = inputDirectories.slice(i, i + batchSize);
-
-        // Process batch in parallel
-        const batchPromises = batch.map(async directory => {
-          try {
-            // Create configuration for this directory
-            const dirOptions = {
-              ...options,
-              src: directory,
-              dist: options.dist
-                ? this.resolveOutputDirectory(directory, options.dist, commonRoot, {
-                    outputPattern: options.outputPattern,
-                    preserveDirectoryStructure: options.preserveDirectoryStructure,
-                    fontName: options.fontName,
-                  })
-                : undefined,
-            };
-
-            const dirConfigManager = createConfiguration(dirOptions);
-            const processor = new SingleDirectoryProcessor(
-              dirConfigManager,
-              this.performanceTracker
-            );
-
-            return await processor.process();
-          } catch (error) {
-            if (options.continueOnError) {
-              console.warn(`[svgs2fonts] Failed to process directory ${directory}:`, error);
-              return error instanceof Error ? error : new Error(String(error));
-            }
-            throw error;
-          }
-        });
-
-        const batchResults = await Promise.all(batchPromises);
-        results.push(...batchResults);
-
-        // Report progress
-        if (progressMonitor && options.progressCallback) {
-          const progressInfo: ProgressInfo = {
-            phase: 'Batch Processing',
-            completed: Math.min(i + batchSize, inputDirectories.length),
-            total: inputDirectories.length,
-            current: `Processed batch ${Math.floor(i / batchSize) + 1}`,
-          };
-          options.progressCallback(progressInfo);
-        }
-      }
-
-      this.performanceTracker?.endPhase('Batch Processing');
-
-      // Check results
-      const errors = results.filter((result): result is Error => result instanceof Error);
-      const successes = results.filter(result => result === true);
-
-      if (options.verbose) {
-        const { log } = await import('../utils');
-        log(
-          `[svgs2fonts] Batch processing completed: ${successes.length} successful, ${errors.length} failed`
+      const results = await this.processDetailed();
+      const successful = results.filter(result => result.status === 'success');
+      const failed = results.filter(result => result.status === 'failed');
+      if (
+        failed.length &&
+        (!this.configManager.getOptions().continueOnError || !successful.length)
+      ) {
+        return new Error(
+          failed.flatMap(result => result.errors.map(error => error.message)).join('; ')
         );
       }
-
-      // If all failed or some failed without continueOnError
-      if (errors.length > 0 && !options.continueOnError) {
-        throw new Error(`Batch processing failed: ${errors.length} directories failed`);
-      }
-
+      if (failed.length)
+        console.warn(
+          `[svgs2fonts] Partial build: ${successful.length} succeeded, ${failed.length} failed`
+        );
       return true;
     } catch (error) {
       return error instanceof Error ? error : new Error(String(error));
     }
+  }
+
+  async processDetailed(checkOnly = false): Promise<DirectoryReport[]> {
+    const options = this.configManager.getOptions();
+    const inputs = options.inputDirectories!;
+    const commonRoot = this.getCommonInputRoot(inputs);
+    const targets = inputs.map(directory =>
+      this.resolveOutputDirectory(directory, options.dist, commonRoot, options)
+    );
+    const canonicalTargets = targets.map(canonicalPath);
+    for (let i = 0; i < targets.length; i++) {
+      for (let j = 0; j < i; j++) {
+        const a = canonicalTargets[i],
+          b = canonicalTargets[j];
+        if (a === b || a.startsWith(b + path.sep) || b.startsWith(a + path.sep)) {
+          throw new BuildError(
+            'OUTPUT_COLLISION',
+            `Batch outputs overlap: ${a} and ${b}`,
+            a,
+            'check'
+          );
+        }
+      }
+    }
+    const results: DirectoryReport[] = [];
+    const batchSize = options.batchSize!;
+    for (let i = 0; i < inputs.length; i += batchSize) {
+      const batch = inputs.slice(i, i + batchSize);
+      const completed = await Promise.all(
+        batch.map(async (directory, offset) => {
+          const dirOptions = {
+            ...options,
+            src: directory,
+            dist: targets[i + offset],
+            batchMode: false,
+            inputDirectories: undefined,
+            progressCallback: undefined,
+          };
+          try {
+            const config = createConfiguration(dirOptions);
+            // Each child tracks phases independently; concurrent phase names must not overwrite one another.
+            return await new SingleDirectoryProcessor(config).processDetailed(checkOnly);
+          } catch (error) {
+            const result = emptyDirectory(dirOptions);
+            result.errors.push(issue(error, directory));
+            return result;
+          }
+        })
+      );
+      results.push(...completed);
+      progress(options, 'Batch Processing', results.length, inputs.length);
+      if (!options.continueOnError && completed.some(result => result.status === 'failed')) {
+        for (let index = results.length; index < inputs.length; index++) {
+          results.push({
+            ...emptyDirectory({ ...options, src: inputs[index], dist: targets[index] }),
+            status: 'skipped',
+            warnings: [
+              {
+                code: 'BATCH_SKIPPED',
+                message: 'Skipped after an earlier batch failed',
+                directory: inputs[index],
+              },
+            ],
+          });
+        }
+        break;
+      }
+    }
+    return results;
   }
 
   private resolveOutputDirectory(
@@ -173,9 +163,7 @@ export class BatchModeProcessor {
         .replace(/\[name\]/g, directoryName)
         .replace(/\[fontname\]/g, options.fontName || 'iconfont');
 
-      const normalizedPattern = renderedPattern
-        .split(this.pathSeparatorPattern)
-        .filter(Boolean);
+      const normalizedPattern = renderedPattern.split(this.pathSeparatorPattern).filter(Boolean);
 
       return path.join(baseOutputDirectory, preservedPath, ...normalizedPattern);
     }
@@ -188,7 +176,9 @@ export class BatchModeProcessor {
       return path.dirname(inputDirectories[0]);
     }
 
-    const normalizedParts = inputDirectories.map(directory => path.resolve(directory).split(path.sep));
+    const normalizedParts = inputDirectories.map(directory =>
+      path.resolve(directory).split(path.sep)
+    );
     const sharedParts: string[] = [];
     const shortestLength = Math.min(...normalizedParts.map(parts => parts.length));
 
@@ -201,7 +191,9 @@ export class BatchModeProcessor {
       }
     }
 
-    return sharedParts.length > 0 ? sharedParts.join(path.sep) || path.sep : path.parse(inputDirectories[0]).root;
+    return sharedParts.length > 0
+      ? sharedParts.join(path.sep) || path.sep
+      : path.parse(inputDirectories[0]).root;
   }
 
   private getPreservedDirectoryPath(inputDirectory: string, commonRoot: string): string {

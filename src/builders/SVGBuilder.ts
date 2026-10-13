@@ -1,447 +1,174 @@
-/**
- * @module SVGBuilder
- * @author Wayne<michealwayne@163.com>
- * @buildTime 2022.03.20
- * @lastModified 2025-01-22
- * @description Advanced SVG to font conversion with elegant architecture
- * @summary Converts individual SVG icons into a single SVG font file
- * @since 2.0.0
- */
-
 import fs from 'fs';
 import { basename, join } from 'path';
+import { Readable } from 'stream';
 import SVGIcons2SVGFont from 'svgicons2svgfont';
-
-import { InitOptionsParams } from '../types/OptionType';
+import { EnhancedOptions, InitOptionsParams } from '../types/OptionType';
 import DEFAULT_OPTIONS from './options';
+import { filterSvgFiles } from '../utils/fsUtils';
+import { createUnicodeGenerator } from '../utils/utils';
+import { BuildError, progress } from '../core/buildSupport';
 
-import { filterSvgFiles, mkdirpSync } from '../utils/fsUtils';
-import { errorLog, getIconStrUnicode, isSuccessResult, log } from '../utils/utils';
-
-/**
- * Mapping of icon names to unicode strings
- * @interface SvgUnicodeMap
- */
 export interface SvgUnicodeMap {
-  /** Unicode string for each icon name */
   readonly [iconName: string]: string;
 }
-
-/**
- * Legacy type alias for backward compatibility
- * @deprecated Use SvgUnicodeMap instead
- */
 export type SvgUnicodeObjParams = SvgUnicodeMap;
 
-/**
- * Metadata for SVG font stream
- * @interface SvgFontStreamMetadata
- */
-interface SvgFontStreamMetadata {
-  /** Unicode characters for the glyph */
-  readonly unicode: readonly string[];
-  /** Name of the icon */
-  readonly name: string;
-}
-
-/**
- * Extended ReadStream with metadata for SVG font generation
- * @interface SvgFontStream
- * @extends {fs.ReadStream}
- */
-interface SvgFontStream extends fs.ReadStream {
-  /** Metadata for the glyph */
-  readonly metadata: SvgFontStreamMetadata;
-}
-
-/**
- * Result of font creation operation
- * @interface FontCreationResult
- */
-interface FontCreationResult {
-  /** Whether the operation was successful */
-  readonly success: boolean;
-  /** Mapping of icon names to unicode strings */
-  readonly unicodeMap: SvgUnicodeMap;
-  /** Error that occurred (if unsuccessful) */
-  readonly error?: Error;
-  /** Number of SVG files processed */
-  readonly processedCount: number;
-  /** Total number of SVG files */
-  readonly totalCount: number;
-}
-
-/**
- * Strategy pattern for Unicode generation
- * @interface UnicodeStrategy
- */
-interface UnicodeStrategy {
-  /**
-   * Generates a unicode code point for an icon
-   * @param {string} iconName - Name of the icon
-   * @param {Set<number>} existingCodes - Set of already used code points
-   * @returns {number} Generated unicode code point
-   */
-  generate(iconName: string, existingCodes: Set<number>): number;
-}
-
-/**
- * Safe unicode generation strategy that avoids collisions
- * @class SafeUnicodeStrategy
- * @implements {UnicodeStrategy}
- */
-class SafeUnicodeStrategy implements UnicodeStrategy {
-  /**
-   * Creates a new SafeUnicodeStrategy
-   * @param {number} startUnicode - Starting unicode code point
-   */
-  constructor(private readonly startUnicode: number) {}
-
-  /**
-   * @inheritdoc
-   */
-  generate(iconName: string, existingCodes: Set<number>): number {
-    let unicode = getIconStrUnicode(iconName, this.startUnicode);
-
-    while (existingCodes.has(unicode) && unicode < 59999) {
-      unicode++;
-    }
-
-    return unicode;
-  }
-}
-
-/**
- * Observer pattern for build progress tracking
- * @interface BuildObserver
- */
-interface BuildObserver {
-  /**
-   * Called when progress is made
-   * @param {number} current - Current item index
-   * @param {number} total - Total number of items
-   * @param {string} [currentFile] - Current file being processed
-   */
-  onProgress(current: number, total: number, currentFile?: string): void;
-
-  /**
-   * Called when an error occurs
-   * @param {Error} error - Error that occurred
-   * @param {string} [context] - Context where the error occurred
-   */
-  onError(error: Error, context?: string): void;
-
-  /**
-   * Called when the build is complete
-   * @param {FontCreationResult} result - Result of the build
-   */
-  onComplete(result: FontCreationResult): void;
-}
-
-/**
- * Default implementation of build observer
- * @class DefaultBuildObserver
- * @implements {BuildObserver}
- */
-class DefaultBuildObserver implements BuildObserver {
-  /**
-   * Creates a new DefaultBuildObserver
-   * @param {boolean} [verbose=false] - Whether to log verbose progress
-   */
-  constructor(private readonly verbose: boolean = false) {}
-
-  /**
-   * @inheritdoc
-   */
-  onProgress(current: number, total: number, currentFile?: string): void {
-    if (this.verbose && current % 10 === 0) {
-      const progress = ((current / total) * 100).toFixed(1);
-      log(
-        `[SVGBuilder] Progress: ${progress}% (${current}/${total})${
-          currentFile ? ` - ${currentFile}` : ''
-        }`
-      );
-    }
-  }
-
-  /**
-   * @inheritdoc
-   */
-  onError(error: Error, context?: string): void {
-    errorLog(`[SVGBuilder] ${context ? `${context}: ` : ''}${error.message}`);
-  }
-
-  /**
-   * @inheritdoc
-   */
-  onComplete(result: FontCreationResult): void {
-    if (result.success) {
-      log(
-        `[success][SVGBuilder] Font creation completed! Processed ${result.processedCount}/${result.totalCount} files`
-      );
-    } else {
-      errorLog(`[SVGBuilder] Font creation failed: ${result.error?.message}`);
-    }
-  }
-}
-
-/**
- * Abstract base class for SVG font builders
- * Uses Template Method pattern for consistent processing flow
- * @abstract
- * @class SVGBuilder
- */
 export abstract class SVGBuilder {
-  /** Build configuration options */
-  protected readonly options: InitOptionsParams;
-  /** Set of SVG file paths to process */
+  protected readonly options: InitOptionsParams & EnhancedOptions;
   protected readonly svgsPaths: ReadonlySet<string>;
-  /** Strategy for unicode generation */
-  protected readonly unicodeStrategy: UnicodeStrategy;
-  /** Observer for build progress */
-  protected readonly observer: BuildObserver;
-  /** Mapping of icon names to unicode strings */
   protected svgUnicodeObj: SvgUnicodeMap = Object.freeze({});
+  protected lastError?: Error;
 
-  /**
-   * Creates a new SVGBuilder
-   * @param {Partial<InitOptionsParams>} options - Build options
-   */
-  constructor(options: Partial<InitOptionsParams>) {
+  constructor(options: Partial<EnhancedOptions>, files?: string[]) {
     this.options = Object.freeze({ ...DEFAULT_OPTIONS, ...options });
-    try {
-      this.svgsPaths = filterSvgFiles(this.options.src);
-    } catch (error) {
-      errorLog(error);
-      this.svgsPaths = new Set();
-    }
-    this.unicodeStrategy = new SafeUnicodeStrategy(this.options.unicodeStart);
-    this.observer = new DefaultBuildObserver(this.options.debug);
+    this.svgsPaths = files ? new Set(files) : filterSvgFiles(this.options.src);
   }
-
-  /**
-   * Gets the build options
-   * @returns {InitOptionsParams} Build options
-   */
-  public get buildOptions(): InitOptionsParams {
+  get buildOptions(): InitOptionsParams & EnhancedOptions {
     return this.options;
   }
-
-  /**
-   * Template method that defines the algorithm structure for font creation
-   * @returns {Promise<boolean>} True if font creation was successful
-   */
-  public async createSvgsFont(): Promise<boolean> {
+  get unicodeMapping(): SvgUnicodeMap {
+    return this.svgUnicodeObj;
+  }
+  get error(): Error | undefined {
+    return this.lastError;
+  }
+  async createSvgsFont(): Promise<boolean> {
+    this.lastError = undefined;
     try {
-      const result = await this.executeFontCreation();
-      this.observer.onComplete(result);
-      return result.success;
-    } catch (error) {
-      const fontError = error instanceof Error ? error : new Error(String(error));
-      this.observer.onError(fontError, 'Font creation');
+      await this.executeFontCreation();
+      return true;
+    } catch (e) {
+      this.lastError = e instanceof Error ? e : new Error(String(e));
       return false;
     }
   }
-
-  /**
-   * Hook method for font creation implementation
-   * @protected
-   * @abstract
-   * @returns {Promise<FontCreationResult>} Font creation result
-   */
-  protected abstract executeFontCreation(): Promise<FontCreationResult>;
-
-  /**
-   * Hook method for cleanup implementation
-   * @protected
-   * @abstract
-   */
-  protected abstract performCleanup(): void;
-
-  /**
-   * Clears the unicode mapping cache
-   */
-  public clearCache(): void {
-    try {
-      this.performCleanup();
-      this.svgUnicodeObj = Object.freeze({});
-    } catch (error) {
-      const cleanupError = error instanceof Error ? error : new Error(String(error));
-      this.observer.onError(cleanupError, 'Cache cleanup');
-    }
-  }
-
-  /**
-   * Gets the unicode mapping
-   * @returns {SvgUnicodeMap} Mapping of icon names to unicode strings
-   */
-  public get unicodeMapping(): SvgUnicodeMap {
-    return this.svgUnicodeObj;
+  protected abstract executeFontCreation(): Promise<void>;
+  clearCache(): void {
+    this.svgUnicodeObj = Object.freeze({});
   }
 }
 
-/**
- * Concrete implementation using modern async/await patterns
- * and defensive programming techniques
- */
 export default class ConcreteSVGBuilder extends SVGBuilder {
-  private static readonly TIMEOUT_MS = 30000;
-  private static readonly BATCH_LOG_INTERVAL = 10;
-
-  protected async executeFontCreation(): Promise<FontCreationResult> {
-    const destinationPath = join(this.options.dist, `${this.options.fontName}.svg`);
-
-    log(`[running][SVGBuilder] Starting font creation: ${destinationPath}`);
-
-    // Prepare output directory with error handling
-    const dirResult = mkdirpSync(this.options.dist);
-    if (!isSuccessResult(dirResult)) {
-      throw new Error(`Failed to create output directory (${this.options.dist}): ${dirResult}`);
-    }
-
-    return this.createFontWithStreams(destinationPath);
-  }
-
-  private async createFontWithStreams(destinationPath: string): Promise<FontCreationResult> {
-    const svgPathsArray = Array.from(this.svgsPaths);
-    const unicodeCache = new Set<number>();
-    const tempUnicodeMap: Record<string, string> = {};
-
-    return new Promise((resolve, reject) => {
-      const fontStream = this.createFontStream();
-      const writeStream = this.createWriteStream(destinationPath);
-
-      // Error handling with cleanup
-      const cleanup = this.createCleanupFunction(fontStream, writeStream);
-      const timeoutId = setTimeout(() => {
-        cleanup();
-        reject(new Error('Font creation timeout'));
-      }, ConcreteSVGBuilder.TIMEOUT_MS);
-
-      // Success handler
-      writeStream.on('finish', () => {
-        clearTimeout(timeoutId);
-        cleanup();
-
-        this.svgUnicodeObj = Object.freeze(tempUnicodeMap);
-        resolve({
-          success: true,
-          unicodeMap: this.svgUnicodeObj,
-          processedCount: svgPathsArray.length,
-          totalCount: svgPathsArray.length,
-        });
-      });
-
-      // Error handlers
-      const handleError = (error: Error) => {
-        clearTimeout(timeoutId);
-        cleanup();
-        resolve({
-          success: false,
-          unicodeMap: Object.freeze({}),
-          error,
-          processedCount: 0,
-          totalCount: svgPathsArray.length,
-        });
-      };
-
-      fontStream.on('error', handleError);
-      writeStream.on('error', handleError);
-
-      // Process SVG files
-      fontStream.pipe(writeStream);
-      this.processSvgFiles(fontStream, svgPathsArray, unicodeCache, tempUnicodeMap);
-      fontStream.end();
-    });
-  }
-
-  private createFontStream(): SVGIcons2SVGFont {
-    return new SVGIcons2SVGFont({
+  protected async executeFontCreation(): Promise<void> {
+    const files = [...this.svgsPaths];
+    if (!files.length)
+      throw new BuildError(
+        'NO_SVG_FILES',
+        `No SVG icons found in ${this.options.src}`,
+        this.options.src,
+        'svg'
+      );
+    fs.mkdirSync(this.options.dist, { recursive: true });
+    const destination = join(this.options.dist, `${this.options.fontName}.svg`);
+    const generateUnicode = createUnicodeGenerator(this.options.unicodeStart);
+    const unicodeMap: Record<string, string> = Object.create(null);
+    const used = new Set<number>();
+    const font = new SVGIcons2SVGFont({
       ...this.options,
-      normalize: true,
-      fontHeight: 1000,
-      centerHorizontally: true,
-    });
-  }
-
-  private createWriteStream(path: string): fs.WriteStream {
-    return fs.createWriteStream(path);
-  }
-
-  private createCleanupFunction(
-    fontStream: SVGIcons2SVGFont,
-    writeStream: fs.WriteStream
-  ): () => void {
-    return () => {
-      try {
-        if (fontStream && !fontStream.destroyed) {
-          fontStream.removeAllListeners();
-        }
-        if (writeStream && !writeStream.destroyed) {
-          writeStream.removeAllListeners();
-          writeStream.destroy();
-        }
-      } catch (error) {
-        // Silent cleanup - errors here are not critical
-      }
-    };
-  }
-
-  private processSvgFiles(
-    fontStream: SVGIcons2SVGFont,
-    svgPaths: readonly string[],
-    unicodeCache: Set<number>,
-    unicodeMap: Record<string, string>
-  ): void {
-    svgPaths.forEach((svgPath, index) => {
-      try {
-        const glyph = this.createGlyphStream(svgPath, unicodeCache, unicodeMap);
-        if (glyph) {
-          fontStream.write(glyph);
-        }
-
-        // Progress notification
-        if (index % ConcreteSVGBuilder.BATCH_LOG_INTERVAL === 0) {
-          this.observer.onProgress(index + 1, svgPaths.length, basename(svgPath));
-        }
-      } catch (error) {
-        const glyphError = error instanceof Error ? error : new Error(String(error));
-        this.observer.onError(glyphError, `Processing ${svgPath}`);
-      }
-    });
-  }
-
-  private createGlyphStream(
-    svgPath: string,
-    unicodeCache: Set<number>,
-    unicodeMap: Record<string, string>
-  ): SvgFontStream | null {
-    const iconName = this.extractIconName(svgPath);
-    if (!iconName) return null;
-
-    const unicode = this.unicodeStrategy.generate(iconName, unicodeCache);
-    unicodeCache.add(unicode);
-    unicodeMap[iconName] = `&#${unicode};`;
-
-    const glyph = fs.createReadStream(svgPath) as SvgFontStream;
-
-    // Use direct property assignment instead of defineProperty for compatibility
-    (glyph as any).metadata = {
-      unicode: [String.fromCharCode(unicode)],
-      name: iconName,
-    };
-
-    return glyph;
-  }
-
-  private extractIconName(svgPath: string): string | null {
-    const fileName = basename(svgPath);
-    const match = fileName.match(/^(.+)\.svg$/i);
-    return match?.[1] || null;
-  }
-
-  protected performCleanup(): void {
-    // Modern SVG builder doesn't need extensive cleanup
-    // Memory management is handled by GC and proper scoping
+      normalize: this.options.normalize ?? true,
+      fontHeight: this.options.fontHeight ?? 1000,
+      centerHorizontally: this.options.centerHorizontally ?? true,
+      log: this.options.verbose
+        ? (message: string) => console.error(`[svgs2fonts] ${message}`)
+        : () => {},
+    } as any);
+    const output = fs.createWriteStream(destination);
+    const glyphs: Readable[] = [];
+    let timer: NodeJS.Timeout;
+    let currentFile = this.options.src;
+    try {
+      await new Promise<void>((resolve, reject) => {
+        let settled = false;
+        const fail = (e: Error) => {
+          if (settled) return;
+          settled = true;
+          reject(
+            e instanceof BuildError
+              ? e
+              : new BuildError('INVALID_SVG', `${currentFile}: ${e.message}`, currentFile, 'svg')
+          );
+          font.destroy();
+          output.destroy();
+          glyphs.forEach(glyph => glyph.destroy());
+        };
+        timer = setTimeout(
+          () =>
+            fail(
+              new BuildError(
+                'SVG_TIMEOUT',
+                'SVG font creation exceeded 30 seconds',
+                this.options.src,
+                'svg'
+              )
+            ),
+          30000
+        );
+        font.on('error', fail);
+        output.on('error', fail);
+        output.on('finish', () => {
+          if (!settled) {
+            settled = true;
+            resolve();
+          }
+        });
+        font.pipe(output);
+        const feed = async () => {
+          for (const file of files) {
+            currentFile = file;
+            if (settled) return;
+            const name = basename(file).replace(/\.svg$/i, '');
+            const code =
+              this.options.codepoints &&
+              Object.prototype.hasOwnProperty.call(this.options.codepoints, name)
+                ? this.options.codepoints[name]
+                : generateUnicode(name);
+            if (
+              !Number.isInteger(code) ||
+              code < 0 ||
+              code > 65535 ||
+              (code >= 0xd800 && code <= 0xdfff) ||
+              used.has(code)
+            ) {
+              throw new BuildError(
+                'CODEPOINT_CONFLICT',
+                `Invalid or duplicate codepoint for ${name}`,
+                file,
+                'svg'
+              );
+            }
+            used.add(code);
+            unicodeMap[name] = `&#${code};`;
+            const content = await fs.promises.readFile(file, 'utf8');
+            if (settled) return;
+            const glyph = Readable.from([content]);
+            (glyph as any).metadata = {
+              unicode: [String.fromCharCode(code)],
+              name: name
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&apos;'),
+            };
+            glyph.on('error', e =>
+              fail(new BuildError('INVALID_SVG', `${file}: ${e.message}`, file, 'svg'))
+            );
+            glyphs.push(glyph);
+            await new Promise<void>((done, rejectWrite) => {
+              font.write(glyph, (error?: Error | null) => (error ? rejectWrite(error) : done()));
+            });
+            progress(this.options, 'SVG Processing', glyphs.length, files.length, name);
+          }
+          if (!settled) font.end();
+        };
+        feed().catch(e => fail(e instanceof Error ? e : new Error(String(e))));
+      });
+      this.svgUnicodeObj = Object.freeze(unicodeMap);
+    } finally {
+      clearTimeout(timer!);
+      font.destroy();
+      output.destroy();
+      glyphs.forEach(glyph => glyph.destroy());
+    }
   }
 }

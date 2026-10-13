@@ -26,7 +26,7 @@
  * }
  */
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.LogLevel = exports.getIconStrUnicode = exports.isObject = exports.isNumber = exports.isString = exports.isSuccessResult = exports.debugLog = exports.warnLog = exports.errorLog = exports.log = void 0;
+exports.createUnicodeGenerator = exports.LogLevel = exports.getIconStrUnicode = exports.isObject = exports.isNumber = exports.isString = exports.isSuccessResult = exports.debugLog = exports.warnLog = exports.errorLog = exports.log = void 0;
 const constant_1 = require("../constant");
 /**
  * Log level enumeration for structured logging
@@ -98,7 +98,7 @@ class Logger {
         this.options = Object.freeze({
             level: LogLevel.INFO,
             timestamp: true,
-            colors: true,
+            colors: Boolean(process.stderr.isTTY),
             ...options,
         });
     }
@@ -130,7 +130,7 @@ class Logger {
         return parts.join(' ');
     }
     shouldLog(level) {
-        return constant_1.IS_DEV && level >= this.options.level;
+        return level >= this.options.level && (level >= LogLevel.WARN || constant_1.IS_DEV);
     }
     debug(...args) {
         if (this.shouldLog(LogLevel.DEBUG)) {
@@ -139,7 +139,7 @@ class Logger {
     }
     info(...args) {
         if (this.shouldLog(LogLevel.INFO)) {
-            console.log(this.formatMessage(LogLevel.INFO, String(args.join(' '))));
+            console.error(this.formatMessage(LogLevel.INFO, String(args.join(' '))));
         }
     }
     warn(...args) {
@@ -225,6 +225,15 @@ class UnicodeGenerator {
         return unicode;
     }
     generateDeterministic(iconName) {
+        if (!Number.isInteger(this.options.startUnicode) ||
+            this.options.startUnicode < 0 ||
+            this.options.startUnicode >= this.options.maxUnicode) {
+            throw new Error('unicodeStart must be an integer between 0 and 59998');
+        }
+        const surrogateCount = Math.max(0, Math.min(this.options.maxUnicode, 0xdfff) - Math.max(this.options.startUnicode, 0xd800) + 1);
+        const capacity = this.options.maxUnicode - this.options.startUnicode + 1 - surrogateCount;
+        if (this.usedCodes.size >= capacity)
+            throw new Error('Unicode range exhausted');
         // Use a better hash function (DJB2 algorithm)
         let hash = 5381;
         for (let i = 0; i < iconName.length; i++) {
@@ -233,7 +242,7 @@ class UnicodeGenerator {
         // Map hash to unicode range
         let unicode = (hash % (this.options.maxUnicode - this.options.startUnicode)) + this.options.startUnicode;
         // Handle collisions by linear probing
-        while (this.usedCodes.has(unicode)) {
+        while (this.usedCodes.has(unicode) || (unicode >= 0xd800 && unicode <= 0xdfff)) {
             unicode++;
             if (unicode > this.options.maxUnicode) {
                 unicode = this.options.startUnicode;
@@ -279,4 +288,10 @@ function getIconStrUnicode(iconName, unicodeStart) {
     return globalUnicodeGenerator.generate(iconName);
 }
 exports.getIconStrUnicode = getIconStrUnicode;
+/** Isolate font builds while keeping the legacy hash for existing non-colliding names. */
+function createUnicodeGenerator(unicodeStart) {
+    const generator = new UnicodeGenerator({ startUnicode: unicodeStart });
+    return name => generator.generate(name);
+}
+exports.createUnicodeGenerator = createUnicodeGenerator;
 //# sourceMappingURL=utils.js.map

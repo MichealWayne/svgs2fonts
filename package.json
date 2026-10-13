@@ -1,14 +1,18 @@
 {
   "name": "svgs2fonts",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "author": "Wayne",
-  "description": "svg icons to icons fonts(svg,ttf,eot,woff,woff2)",
+  "description": "Convert SVG icons to icon fonts (woff2, woff, ttf, eot, svg) with CSS, manifest and previews",
   "main": "dist/index.js",
   "typings": "./dist/index.d.ts",
   "scripts": {
     "build": "rimraf dist && tsc",
-    "test": "jest",
-    "test:example": "npm run build && cross-env NODE_ENV=development node examples/index"
+    "test": "jest --runInBand",
+    "test:example": "npm run build && cross-env NODE_ENV=development node examples/index",
+    "prepack": "npm run build && node scripts/check-package.js",
+    "test:package": "node scripts/verify-package.js",
+    "test:runtime": "node scripts/runtime-smoke.js",
+    "test:browser": "npm run build && npm --prefix browser-tests test --"
   },
   "repository": {
     "type": "git",
@@ -23,11 +27,11 @@
     "fonts",
     "svgs2fonts"
   ],
-  "license": "ISC",
+  "license": "MIT",
   "bugs": {
-    "url": "https://github.com/MichealWayne/svgs2fonts.git"
+    "url": "https://github.com/MichealWayne/svgs2fonts/issues"
   },
-  "homepage": "https://github.com/MichealWayne/svgs2fonts.git",
+  "homepage": "https://github.com/MichealWayne/svgs2fonts#readme",
   "devDependencies": {
     "@jest/types": "^26.3.0",
     "@types/jest": "^26.0.24",
@@ -54,6 +58,7 @@
     "minimist": "^1.2.0",
     "mkdirp": "^0.5.1",
     "prettier": "^3.6.2",
+    "sax": "^1.2.4",
     "svg2ttf": "^6.0.2",
     "svgicons2svgfont": "^9.0.3",
     "ttf2eot": "^2.0.0",
@@ -73,5 +78,17 @@
   },
   "bin": {
     "svgs2fonts": "./bin/index.js"
+  },
+  "files": [
+    "dist",
+    "bin",
+    "README.md",
+    "README-en.md",
+    "CHANGELOG.md",
+    "docs",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=16"
   }
 }
