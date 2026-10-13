@@ -30,7 +30,8 @@ export function createPerformanceTracker(): PerformanceTracker {
       const phaseDetails = Object.entries(this.phases)
         .map(([name, data]) => {
           const duration = data.duration || 0;
-          const percentage = Math.round((duration / totalDuration) * 100);
+          const percentage =
+            totalDuration > 0 ? Math.round((duration / totalDuration) * 100) : 0;
           return `${name}: ${duration}ms (${percentage}%)`;
         })
         .join('\n  ');
