@@ -11,11 +11,17 @@ function npm(args, options = {}) {
     return execFileSync(process.execPath, [process.env.npm_execpath, ...args], options);
   return execFileSync('npm', args, options);
 }
+function parsePackResult(output) {
+  // Older npm versions print lifecycle output before the --json result.
+  const jsonStart = output.indexOf('[', output.lastIndexOf('\n>') + 1);
+  assert(jsonStart !== -1, 'npm pack did not return a JSON result');
+  return JSON.parse(output.slice(jsonStart));
+}
 const cache =
   process.env.SVGS2FONTS_TEST_CACHE || npm(['config', 'get', 'cache'], { encoding: 'utf8' }).trim();
 
 try {
-  const packed = JSON.parse(
+  const packed = parsePackResult(
     npm(['pack', '--json', '--pack-destination', root, '--cache', cache], {
       cwd: project,
       encoding: 'utf8',
